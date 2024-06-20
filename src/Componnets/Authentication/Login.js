@@ -5,7 +5,7 @@ import { Baseurl } from "../../config";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -14,20 +14,27 @@ function Login() {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
+  const isEmail = (value) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
+      const isEmailAddress = isEmail(usernameOrEmail);
+      const payload = isEmailAddress
+        ? { email: usernameOrEmail, password }
+        : { username: usernameOrEmail, password };
+
       const response = await fetch(Baseurl + "/api/v1/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -110,8 +117,8 @@ function Login() {
                             className="form-control"
                             id="usernameOrEmail"
                             placeholder="Enter username or email"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            value={usernameOrEmail}
+                            onChange={(e) => setUsernameOrEmail(e.target.value)}
                           />
                         </div>
 

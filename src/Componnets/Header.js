@@ -5,6 +5,29 @@ import { Baseurl } from "../config";
 
 function Header() {
   const [showModal, setShowModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+
+  const toggleDrawer = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const closeDrawer = () => {
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 460) {
+        closeDrawer();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const navigate = useNavigate();
   const handleShowModal = () => {
@@ -93,7 +116,8 @@ function Header() {
                 <button
                   type="button"
                   className="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"
-                  id="topnav-hamburger-icon"
+                  id="drawer-toggle"
+                  onClick={toggleDrawer}
                 >
                   <span className="hamburger-icon">
                     <span></span>
@@ -102,7 +126,7 @@ function Header() {
                   </span>
                 </button>
 
-                <form className="app-search d-none d-md-block">
+                <form className="app-search  d-md-block">
                   <div className="position-relative">
                     <input
                       type="text"
@@ -116,120 +140,6 @@ function Header() {
                       className="mdi mdi-close-circle search-widget-icon search-widget-icon-close d-none"
                       id="search-close-options"
                     ></span>
-                  </div>
-                  <div
-                    className="dropdown-menu dropdown-menu-lg"
-                    id="search-dropdown"
-                  >
-                    <div data-simplebar="" style={{ maxHeight: "320px" }}>
-                      <div className="dropdown-header">
-                        <h6 className="text-overflow text-muted mb-0 text-uppercase">
-                          Recent Searches
-                        </h6>
-                      </div>
-
-                      <div className="dropdown-item bg-transparent text-wrap">
-                        <Link
-                          to="/"
-                          className="btn btn-soft-secondary btn-sm rounded-pill"
-                        >
-                          how to setup <i className="mdi mdi-magnify ms-1"></i>
-                        </Link>
-                        <Link
-                          to="/"
-                          className="btn btn-soft-secondary btn-sm rounded-pill"
-                        >
-                          buttons <i className="mdi mdi-magnify ms-1"></i>
-                        </Link>
-                      </div>
-
-                      <div className="dropdown-header mt-2">
-                        <h6 className="text-overflow text-muted mb-1 text-uppercase">
-                          Pages
-                        </h6>
-                      </div>
-
-                      <Link to="#" className="dropdown-item notify-item">
-                        <i className="ri-bubble-chart-line align-middle fs-18 text-muted me-2"></i>
-                        <span>Analytics Dashboard</span>
-                      </Link>
-
-                      <Link to="#" className="dropdown-item notify-item">
-                        <i className="ri-lifebuoy-line align-middle fs-18 text-muted me-2"></i>
-                        <span>Help Center</span>
-                      </Link>
-
-                      <Link to="#" className="dropdown-item notify-item">
-                        <i className="ri-user-settings-line align-middle fs-18 text-muted me-2"></i>
-                        <span>My account settings</span>
-                      </Link>
-
-                      <div className="dropdown-header mt-2">
-                        <h6 className="text-overflow text-muted mb-2 text-uppercase">
-                          Members
-                        </h6>
-                      </div>
-
-                      <div className="notification-list">
-                        <Link to="#" className="dropdown-item notify-item py-2">
-                          <div className="d-flex">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/users/avatar-2.jpg"
-                              className="me-3 rounded-circle avatar-xs"
-                              alt="user-pic"
-                            />
-                            <div className="flex-grow-1">
-                              <h6 className="m-0">Angela Bernier</h6>
-                              <span className="fs-11 mb-0 text-muted">
-                                Manager
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-
-                        <Link to="#" className="dropdown-item notify-item py-2">
-                          <div className="d-flex">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/users/avatar-3.jpg"
-                              className="me-3 rounded-circle avatar-xs"
-                              alt="user-pic"
-                            />
-                            <div className="flex-grow-1">
-                              <h6 className="m-0">David Grasso</h6>
-                              <span className="fs-11 mb-0 text-muted">
-                                Web Designer
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-
-                        <Link to="#" className="dropdown-item notify-item py-2">
-                          <div className="d-flex">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/users/avatar-5.jpg"
-                              className="me-3 rounded-circle avatar-xs"
-                              alt="user-pic"
-                            />
-                            <div className="flex-grow-1">
-                              <h6 className="m-0">Mike Bunch</h6>
-                              <span className="fs-11 mb-0 text-muted">
-                                React Developer
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="text-center pt-3 pb-1">
-                      <Link
-                        to="/pages-search-results"
-                        className="btn btn-primary btn-sm"
-                      >
-                        View All Results
-                        <i className="ri-arrow-right-line ms-1"></i>
-                      </Link>
-                    </div>
                   </div>
                 </form>
               </div>
@@ -480,7 +390,10 @@ function Header() {
             </div>
           </div>
         </header>
-        <div className="app-menu navbar-menu" style={{ overflowY: "auto" }}>
+        <div
+          className={`app-menu navbar-menu ${isOpen ? "open" : "closed"}`}
+          style={{ overflowY: "auto" }}
+        >
           <div className="navbar-brand-box">
             <Link to="/" className="logo logo-dark">
               <span className="logo-sm">
@@ -541,86 +454,89 @@ function Header() {
                     className="collapse menu-dropdown"
                     id="sidebarDashboards"
                   ></div>
+                  <li className="menu-title">
+                    <i className="ri-more-fill"></i>
+                    <span data-key="t-pages">PRODUCT MANAGEMENT</span>
+                  </li>
                 </li>
-                <li className="nav-item">
-                  <Link
-                    className="nav-link menu-link"
-                    to="/#sidebarApps"
-                    data-bs-toggle="collapse"
-                    role="button"
-                    aria-expanded="false"
-                    aria-controls="sidebarApps"
-                  >
-                    <i className="ri-apps-2-line"></i>
-                    <span data-key="t-apps">Manage Product</span>
-                  </Link>
-                  <div className="collapse menu-dropdown" id="sidebarApps">
-                    <ul className="nav nav-sm flex-column">
-                      <li className="nav-item">
-                        <Link
-                          to="/Product"
-                          className="nav-link"
-                          data-key="t-chat"
-                        >
-                          All Product
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link
-                          to="/AddProduct"
-                          className="nav-link"
-                          data-key="t-chat"
-                        >
-                          Add Product
-                        </Link>
-                      </li>
 
-                      <li className="nav-item">
-                        <Link
-                          to="/Stockout"
-                          className="nav-link"
-                          data-key="t-chat"
-                        >
-                          Stock Out Products
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link
-                          to="/review"
-                          className="nav-link"
-                          data-key="t-chat"
-                        >
-                          Products Reviews
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
                 <li className="nav-item">
-                  <Link
-                    className="nav-link menu-link"
-                    to="/#sidebarLayouts"
-                    data-bs-toggle="collapse"
-                    role="button"
-                    aria-expanded="false"
-                    aria-controls="sidebarLayouts"
-                  >
-                    <i className="ri-layout-3-line"></i>
-                    <span data-key="t-layouts">Manage Categories</span>
-                  </Link>
-                  <div className="collapse menu-dropdown" id="sidebarLayouts">
-                    <ul className="nav nav-sm flex-column">
-                      <li className="nav-item">
-                        <Link
-                          to="/Categories"
-                          className="nav-link"
-                          data-key="t-horizontal"
-                        >
-                          Categories
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
+                  <li className="nav-item">
+                    <Link to="/Categories" className="nav-link menu-link">
+                      <i className="ri-layout-3-line"></i>
+                      <span>Category</span>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/SubCategory" className="nav-link menu-link">
+                      <i className="ri-layout-3-line"></i>
+                      <span>SubCategory</span>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/AddOns" className="nav-link menu-link">
+                      <i className="ri-layout-3-line"></i>
+                      <span>Add on</span>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      className="nav-link menu-link"
+                      to="/#sidebarApps"
+                      data-bs-toggle="collapse"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="sidebarApps"
+                    >
+                      <i className="ri-apps-2-line"></i>
+                      <span data-key="t-apps">Manage Product</span>
+                    </Link>
+                    <div className="collapse menu-dropdown" id="sidebarApps">
+                      <ul className="nav nav-sm flex-column">
+                        <li className="nav-item">
+                          <Link
+                            to="/Product"
+                            className="nav-link"
+                            data-key="t-chat"
+                          >
+                            All Product
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link
+                            to="/AddProduct"
+                            className="nav-link"
+                            data-key="t-chat"
+                          >
+                            Add Product
+                          </Link>
+                        </li>
+
+                        <li className="nav-item">
+                          <Link
+                            to="/Stockout"
+                            className="nav-link"
+                            data-key="t-chat"
+                          >
+                            Stock Out Products
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link
+                            to="/review"
+                            className="nav-link"
+                            data-key="t-chat"
+                          >
+                            Products Reviews
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </li>
+                </li>
+                <li className="menu-title">
+                  <i className="ri-more-fill"></i>
+                  <span data-key="t-pages">ORDER MANAGEMENT</span>
                 </li>
                 <li className="nav-item">
                   <Link to="/Order" className="nav-link menu-link">
@@ -634,6 +550,10 @@ function Header() {
                     <span>Transaction</span>
                   </Link>
                 </li>
+                <li className="menu-title">
+                  <i className="ri-more-fill"></i>
+                  <span data-key="t-pages">USER MANAGEMENT</span>
+                </li>
                 <li className="nav-item">
                   <Link to="/customer" className="nav-link menu-link">
                     <i className="ri-layout-3-line"></i>
@@ -642,40 +562,15 @@ function Header() {
                 </li>
                 <li className="menu-title">
                   <i className="ri-more-fill"></i>
-                  <span data-key="t-pages">Setting</span>
+                  <span data-key="t-pages">PROMOTIONS</span>
                 </li>
                 <li className="nav-item">
-                  <Link
-                    className="nav-link menu-link"
-                    to="/#sidebarAuth"
-                    data-bs-toggle="collapse"
-                    role="button"
-                    aria-expanded="false"
-                    aria-controls="sidebarAuth"
-                  >
-                    <i className="ri-account-circle-line"></i>
-                    <span data-key="t-authentication">Setting</span>
-                  </Link>
-                  <div className="collapse menu-dropdown" id="sidebarAuth">
-                    <ul className="nav nav-sm flex-column">
-                      <li className="nav-item">
-                        <Link to="/tax" className="nav-link">
-                          Taxes
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link to="/Coupon" className="nav-link">
-                          Coupons
-                        </Link>
-                      </li>
-
-                      <li className="nav-item">
-                        <Link to="/Shipping" className="nav-link">
-                          Delivery Charge
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
+                  <li className="nav-item">
+                    <Link to="/Slider" className="nav-link menu-link">
+                      <i className="ri-layout-3-line"></i>
+                      <span>Sliders</span>
+                    </Link>
+                  </li>
                 </li>
                 <li className="nav-item">
                   <Link
@@ -687,7 +582,7 @@ function Header() {
                     aria-controls="sidebarLanding"
                   >
                     <i className="ri-rocket-line"></i>
-                    <span data-key="t-landing">Banner</span>
+                    <span data-key="t-landing">Banners</span>
                   </Link>
                   <div className="collapse menu-dropdown" id="sidebarLanding">
                     <ul className="nav nav-sm flex-column">
@@ -697,41 +592,54 @@ function Header() {
                           className="nav-link"
                           data-key="t-nft-landing"
                         >
-                          Banner
+                          Banner Section 1
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/bannersection2"
+                          className="nav-link"
+                          data-key="t-nft-landing"
+                        >
+                          Banner Section 2
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/bannersection3"
+                          className="nav-link"
+                          data-key="t-nft-landing"
+                        >
+                          Banner Section 3
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/bannersection2"
+                          className="nav-link"
+                          data-key="t-nft-landing"
+                        >
+                          Banner Section 4
                         </Link>
                       </li>
                     </ul>
                   </div>
                 </li>
                 <li className="nav-item">
-                  <Link
-                    className="nav-link menu-link"
-                    to="/#sidebarAdvanceUI"
-                    data-bs-toggle="collapse"
-                    role="button"
-                    aria-expanded="false"
-                    aria-controls="sidebarAdvanceUI"
-                  >
-                    <i className="ri-stack-line"></i>
-                    <span data-key="t-advance-ui">Manage Team</span>
+                  <Link to="/Coupon" className="nav-link menu-link">
+                    <i className="ri-layout-3-line"></i>
+                    <span>Coupon</span>
                   </Link>
-                  <div className="collapse menu-dropdown" id="sidebarAdvanceUI">
-                    <ul className="nav nav-sm flex-column">
-                      <li className="nav-item">
-                        <Link
-                          to="/team"
-                          className="nav-link"
-                          data-key="t-sweet-alerts"
-                        >
-                          Team
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
+                </li>
+                <li className="nav-item">
+                  <Link to="/Notification" className="nav-link menu-link">
+                    <i className="ri-layout-3-line"></i>
+                    <span>Notification</span>
+                  </Link>
                 </li>
                 <li className="menu-title">
                   <i className="ri-more-fill"></i>
-                  <span data-key="t-components">Components</span>
+                  <span data-key="t-components">SYSTEM SETTINGS</span>
                 </li>
                 <li className="nav-item">
                   <Link
@@ -743,17 +651,17 @@ function Header() {
                     aria-controls="sidebarPages"
                   >
                     <i className="ri-pages-line"></i>
-                    <span data-key="t-pages">Manage Site</span>
+                    <span data-key="t-pages">Pages</span>
                   </Link>
                   <div className="collapse menu-dropdown" id="sidebarPages">
                     <ul className="nav nav-sm flex-column">
                       <li className="nav-item">
                         <Link
-                          to="/Profile"
+                          to="/Bloges"
                           className="nav-link"
                           data-key="t-team"
                         >
-                          Profile
+                          Bloges
                         </Link>
                       </li>
 
@@ -766,14 +674,22 @@ function Header() {
                           FAQs
                         </Link>
                       </li>
-
                       <li className="nav-item">
                         <Link
-                          to="/Profile"
+                          to="/pages-faqs"
+                          className="nav-link"
+                          data-key="t-faqs"
+                        >
+                          Testimonial
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/ReturnPolicy"
                           className="nav-link"
                           data-key="t-sitemap"
                         >
-                          Change Password
+                          Return Policy
                         </Link>
                       </li>
 
@@ -808,21 +724,55 @@ function Header() {
                     aria-controls="sidebarAdvanceUI"
                   >
                     <i className="ri-stack-line"></i>
-                    <span data-key="t-advance-ui">Manage Bloges</span>
+                    <span data-key="t-advance-ui">Genral settings</span>
                   </Link>
                   <div className="collapse menu-dropdown" id="sidebarAdvanceUI">
                     <ul className="nav nav-sm flex-column">
                       <li className="nav-item">
                         <Link
-                          to="/advance-ui-sweetalerts"
+                          to="/Profile"
                           className="nav-link"
                           data-key="t-sweet-alerts"
                         >
-                          Bloges
+                          Profile
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="#"
+                          className="nav-link"
+                          data-key="t-sweet-alerts"
+                        >
+                          Mentainens
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/InquiryList"
+                          className="nav-link"
+                          data-key="t-sweet-alerts"
+                        >
+                          Enquiries
                         </Link>
                       </li>
                     </ul>
                   </div>
+                </li>
+                <li className="menu-title">
+                  <i className="ri-more-fill"></i>
+                  <span data-key="t-pages">EMPLOYEE MANAGEMENT</span>
+                </li>
+                <li className="nav-item">
+                  <Link to="/Order" className="nav-link menu-link">
+                    <i className="ri-layout-3-line"></i>
+                    <span>Employee Role</span>
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/transaction" className="nav-link menu-link">
+                    <i className="ri-layout-3-line"></i>
+                    <span>Employee</span>
+                  </Link>
                 </li>
               </ul>
             </div>

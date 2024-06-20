@@ -17,12 +17,27 @@ import OrderList from "./Componnets/Order/OrderList";
 import Transaction from "./Componnets/Transaction/Transaction";
 import OrderDetail from "./Componnets/Order/OrderDetail";
 import Customer from "./Componnets/Customer/Customer";
-import Banner from "./Componnets/GenralSetting/Banner";
+import Banner from "./Componnets/GenralSetting/Banners/Banner";
 import Tax from "./Componnets/GenralSetting/Tax";
 import Team from "./Componnets/Team/Team";
 import Profile from "./Componnets/SiteSetting/Profile";
 import Coupon from "./Componnets/GenralSetting/Coupon";
 import Shipping from "./Componnets/GenralSetting/ShipingCharg";
+import SubCategory from "./Componnets/Category/SubCategory";
+import Addon from "./Componnets/Category/Addon";
+import Section2 from "./Componnets/GenralSetting/Banners/Section2";
+import Section3 from "./Componnets/GenralSetting/Banners/Section3";
+import Section4 from "./Componnets/GenralSetting/Banners/Section4";
+import Sliderlist from "./Componnets/GenralSetting/Slider/Sliderlist";
+import Addslider from "./Componnets/GenralSetting/Slider/AddSlider";
+import Notification from "./Componnets/GenralSetting/Notification";
+import Faq from "./Componnets/GenralSetting/Faq";
+import PrivacyPolicy from "./Componnets/GenralSetting/Privacypolicy";
+import Termsandcondition from "./Componnets/GenralSetting/Termandcondition";
+import ReturnPolicy from "./Componnets/GenralSetting/ReturnPolicy";
+import ListBlog from "./Componnets/GenralSetting/Blogs/ListBlog";
+import Addblogs from "./Componnets/GenralSetting/Blogs/Addblogs";
+import Inquiry from "./Componnets/GenralSetting/Inquiry";
 function App() {
   return (
     <>
@@ -43,15 +58,36 @@ function App() {
             <Route path="/AddProduct" element={<AddProduct />}></Route>
             <Route path="/Stockout" element={<StockOut />}></Route>
             <Route path="/Categories" element={<Category />}></Route>
+            <Route path="/SubCategory" element={<SubCategory />}></Route>
+            <Route path="/AddOns" element={<Addon />}></Route>
             <Route path="/Order" element={<OrderList />}></Route>
             <Route path="/orderdetail" element={<OrderDetail />}></Route>
             <Route path="/transaction" element={<Transaction />}></Route>
             <Route path="/customer" element={<Customer />}></Route>
             <Route path="/banner" element={<Banner />}></Route>
+            <Route path="/Slider" element={<Sliderlist />}></Route>
+            <Route path="/addslider" element={<Addslider />}></Route>
+            <Route path="/bannersection2" element={<Section2 />}></Route>
+            <Route path="/bannersection3" element={<Section3 />}></Route>
+            <Route path="/bannersection4" element={<Section4 />}></Route>
             <Route path="/Tax" element={<Tax />}></Route>
             <Route path="/team" element={<Team />}></Route>
             <Route path="/Profile" element={<Profile />}></Route>
             <Route path="/Coupon" element={<Coupon />}></Route>
+            <Route path="/Notification" element={<Notification />}></Route>
+            <Route path="/pages-faqs" element={<Faq />}></Route>
+            <Route path="/ReturnPolicy" element={<ReturnPolicy />}></Route>
+            <Route path="/Bloges" element={<ListBlog />}></Route>
+            <Route path="/Addblogs" element={<Addblogs />}></Route>
+            <Route path="/InquiryList" element={<Inquiry />}></Route>
+            <Route
+              path="/pages-term-conditions"
+              element={<Termsandcondition />}
+            ></Route>
+            <Route
+              path="/pages-privacy-policy"
+              element={<PrivacyPolicy />}
+            ></Route>
             <Route path="/Shipping" element={<Shipping />}></Route>
           </Route>
         </Routes>

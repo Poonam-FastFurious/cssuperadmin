@@ -1,152 +1,17 @@
-import { Link } from "react-router-dom";
+import React from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import { Baseurl } from "../../config";
-import axios from "axios";
-function Category() {
-  const [categoriesTitle, setCategoriesTitle] = useState("");
-  const [link, setLink] = useState("");
-  const [status, setStatus] = useState("");
-  const [image, setImage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState([]);
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
-  const clearForm = () => {
-    setCategoriesTitle(""); // Clear the state for categoriesTitle
-    setLink(""); // Clear the state for link
-    setStatus(""); // Clear the state for status
-    setImage(null); // Clear the state for image
-  };
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-  };
-  const handelsubmit = async (e) => {
-    e.preventDefault();
+import { Link } from "react-router-dom";
 
-    const formData = new FormData();
-    formData.append("categoriesTitle", categoriesTitle);
-    formData.append("link", link);
-    formData.append("status", status);
-
-    formData.append("image", image);
-
-    try {
-      setLoading(true);
-      const response = await fetch(Baseurl + "/api/v1/category/add", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Category added successfully ", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          onClose: () => {
-            clearForm();
-            window.location.reload();
-          },
-        });
-      } else {
-        throw new Error("category upload failed");
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-      toast.error("Banner upload failed", {
-        position: "top-right",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } finally {
-      setLoading(false); // Set loading back to false after request completes
-    }
-  };
-  const handleDelete = async (id) => {
-    try {
-      const response = await axios.delete(
-        Baseurl + `/api/v1/category/delete/?id=${id}`
-      );
-      if (response.data.success) {
-        // Filter out the deleted category from the state
-        setCategory(category.filter((cat) => cat._id !== id));
-        toast.success("Category deleted successfully", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          onClose: () => {
-            // Clear the form
-            window.location.reload();
-          },
-        });
-      } else {
-        throw new Error(response.data.message); // Throw error with response message
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-      toast.error(error.message || "Failed to delete category", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    }
-  };
-  const handleDeleteConfirmation = () => {
-    if (categoryToDelete) {
-      handleDelete(categoryToDelete);
-      setCategoryToDelete(null); // Reset categoryToDelete state after deletion
-    }
-  };
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await axios.get(
-          Baseurl + "/api/v1/category/allcategory"
-        );
-        setCategory(response.data.data);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      }
-    };
-
-    fetchCategory();
-  }, []);
+function Section4() {
   return (
     <>
-      <ToastContainer />
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
             <div class="row">
               <div class="col-12">
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                  <h4 class="mb-sm-0">Add category</h4>
+                  <h4 class="mb-sm-0">Add Banner</h4>
 
                   <div class="page-title-right">
                     <ol class="breadcrumb m-0">
@@ -222,7 +87,9 @@ function Category() {
                               <th class="sort" data-sort="email">
                                 Title
                               </th>
-
+                              <th class="sort" data-sort="phone">
+                                Place
+                              </th>
                               <th class="sort" data-sort="date">
                                 Link
                               </th>
@@ -235,60 +102,198 @@ function Category() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {category.map((cat, index) => (
-                              <tr key={index}>
-                                <th scope="row">
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
+                            <tr>
+                              <th scope="row">
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="chk_child"
+                                    value="option1"
+                                  />
+                                </div>
+                              </th>
+                              <td class="id" style={{ display: "none;" }}>
+                                <Link to="#" class="fw-medium link-primary">
+                                  #VZ2101
+                                </Link>
+                              </td>
 
-                                <td class="email">
-                                  <img
-                                    className="avatar-xs rounded-circle"
-                                    src={cat.image}
-                                    alt=""
-                                  ></img>
-                                </td>
-                                <td class="phone">{cat.categoriesTitle}</td>
-                                <td class="date">{cat.link}</td>
-                                <td class="status">
-                                  <span class="badge bg-success-subtle text-success text-uppercase">
-                                    {cat.status}
-                                  </span>
-                                </td>
-                                <td>
-                                  <div class="d-flex gap-2">
-                                    <div class="edit">
-                                      <button
-                                        class="btn btn-sm btn-success edit-item-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editModal"
-                                      >
-                                        Edit
-                                      </button>
-                                    </div>
-                                    <div class="remove">
-                                      <button
-                                        class="btn btn-sm btn-danger remove-item-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteRecordModal"
-                                        onClick={() =>
-                                          setCategoryToDelete(cat._id)
-                                        }
-                                      >
-                                        Remove
-                                      </button>
-                                    </div>
+                              <td class="email">marycousar@velzon.com</td>
+                              <td class="phone">580-464-4694</td>
+                              <td class="date">06 Apr, 2021</td>
+                              <td class="status">
+                                <span class="badge bg-success-subtle text-success text-uppercase">
+                                  Active
+                                </span>
+                              </td>
+                              <td>
+                                <div class="d-flex gap-2">
+                                  <div class="edit">
+                                    <button
+                                      class="btn btn-sm btn-success edit-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#showModal"
+                                    >
+                                      Edit
+                                    </button>
                                   </div>
-                                </td>
-                              </tr>
-                            ))}
+                                  <div class="remove">
+                                    <button
+                                      class="btn btn-sm btn-danger remove-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#deleteRecordModal"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>{" "}
+                            <tr>
+                              <th scope="row">
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="chk_child"
+                                    value="option1"
+                                  />
+                                </div>
+                              </th>
+                              <td class="id" style={{ display: "none;" }}>
+                                <Link to="#" class="fw-medium link-primary">
+                                  #VZ2101
+                                </Link>
+                              </td>
+
+                              <td class="email">marycousar@velzon.com</td>
+                              <td class="phone">580-464-4694</td>
+                              <td class="date">06 Apr, 2021</td>
+                              <td class="status">
+                                <span class="badge bg-success-subtle text-success text-uppercase">
+                                  Active
+                                </span>
+                              </td>
+                              <td>
+                                <div class="d-flex gap-2">
+                                  <div class="edit">
+                                    <button
+                                      class="btn btn-sm btn-success edit-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#showModal"
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                  <div class="remove">
+                                    <button
+                                      class="btn btn-sm btn-danger remove-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#deleteRecordModal"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>{" "}
+                            <tr>
+                              <th scope="row">
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="chk_child"
+                                    value="option1"
+                                  />
+                                </div>
+                              </th>
+                              <td class="id" style={{ display: "none;" }}>
+                                <Link to="#" class="fw-medium link-primary">
+                                  #VZ2101
+                                </Link>
+                              </td>
+
+                              <td class="email">marycousar@velzon.com</td>
+                              <td class="phone">580-464-4694</td>
+                              <td class="date">06 Apr, 2021</td>
+                              <td class="status">
+                                <span class="badge bg-success-subtle text-success text-uppercase">
+                                  Active
+                                </span>
+                              </td>
+                              <td>
+                                <div class="d-flex gap-2">
+                                  <div class="edit">
+                                    <button
+                                      class="btn btn-sm btn-success edit-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#showModal"
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                  <div class="remove">
+                                    <button
+                                      class="btn btn-sm btn-danger remove-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#deleteRecordModal"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>{" "}
+                            <tr>
+                              <th scope="row">
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="chk_child"
+                                    value="option1"
+                                  />
+                                </div>
+                              </th>
+                              <td class="id" style={{ display: "none;" }}>
+                                <Link to="#" class="fw-medium link-primary">
+                                  #VZ2101
+                                </Link>
+                              </td>
+
+                              <td class="email">marycousar@velzon.com</td>
+                              <td class="phone">580-464-4694</td>
+                              <td class="date">06 Apr, 2021</td>
+                              <td class="status">
+                                <span class="badge bg-success-subtle text-success text-uppercase">
+                                  Active
+                                </span>
+                              </td>
+                              <td>
+                                <div class="d-flex gap-2">
+                                  <div class="edit">
+                                    <button
+                                      class="btn btn-sm btn-success edit-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#showModal"
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                  <div class="remove">
+                                    <button
+                                      class="btn btn-sm btn-danger remove-item-btn"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#deleteRecordModal"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                         <div class="noresult" style={{ display: "none" }}>
@@ -367,7 +372,6 @@ function Category() {
                       type="button"
                       class="btn w-sm btn-danger"
                       id="delete-record"
-                      onClick={handleDeleteConfirmation}
                     >
                       Yes, Delete It!
                     </button>
@@ -397,11 +401,7 @@ function Category() {
                     id="close-modal"
                   ></button>
                 </div>
-                <form
-                  class="tablelist-form"
-                  autocomplete="off"
-                  onSubmit={handelsubmit}
-                >
+                <form class="tablelist-form" autocomplete="off">
                   <div class="modal-body">
                     <div class="mb-3" id="modal-id" style={{ display: "none" }}>
                       <label for="id-field" class="form-label">
@@ -418,141 +418,7 @@ function Category() {
 
                     <div class="mb-3">
                       <label for="customername-field" class="form-label">
-                        Categories Title
-                      </label>
-                      <input
-                        type="text"
-                        id="customername-field"
-                        class="form-control"
-                        placeholder="Enter Title"
-                        required=""
-                        onChange={(e) => setCategoriesTitle(e.target.value)}
-                        value={categoriesTitle}
-                      />
-                      <div class="invalid-feedback">Please enter a Title</div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="email-field" class="form-label">
-                        Link
-                      </label>
-                      <input
-                        type="text"
-                        id="email-field"
-                        class="form-control"
-                        placeholder="Enter Link"
-                        required=""
-                        onChange={(e) => setLink(e.target.value)}
-                        value={link}
-                      />
-                      <div class="invalid-feedback">Please enter an Link.</div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="phone-field" class="form-label">
-                        Image
-                      </label>
-                      <input
-                        type="file"
-                        id="phone-field"
-                        class="form-control"
-                        placeholder="Enter Phone no."
-                        required=""
-                        onChange={handleImageChange}
-                      />
-                      <div class="invalid-feedback">Please enter a phone.</div>
-                    </div>
-
-                    <div>
-                      <label for="status-field" class="form-label">
-                        Status
-                      </label>
-                      <select
-                        class="form-control"
-                        data-trigger=""
-                        name="status-field"
-                        id="status-field"
-                        required=""
-                        onChange={(e) => setStatus(e.target.value)}
-                        value={status}
-                      >
-                        <option value="">Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Block</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <div class="hstack gap-2 justify-content-end">
-                      <button
-                        type="button"
-                        class="btn btn-light"
-                        data-bs-dismiss="modal"
-                      >
-                        Close
-                      </button>
-                      <button
-                        type="submit"
-                        class="btn btn-success"
-                        id="add-btn"
-                      >
-                        Add Categories
-                      </button>
-                    </div>
-                    {loading && (
-                      <div className="loader">
-                        <div
-                          className="spinner-border text-primary"
-                          role="status"
-                        >
-                          <span className="visually-hidden">Loading...</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div
-            class="modal fade"
-            id="editModal"
-            tabindex="-1"
-            aria-labelledby="exampleModalLabel"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header bg-light p-3">
-                  <h5 class="modal-title" id="exampleModalLabel">
-                    Upadte category
-                  </h5>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    id="close-modal"
-                  ></button>
-                </div>
-                <form class="tablelist-form" autocomplete="off">
-                  <div class="modal-body">
-                    <div class="mb-3" id="modal-id">
-                      <label for="id-field" class="form-label">
-                        ID
-                      </label>
-                      <input
-                        type="text"
-                        id="id-field"
-                        class="form-control"
-                        placeholder="ID"
-                        readonly=""
-                      />
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="customername-field" class="form-label">
-                        Category Title
+                        Banner Title
                       </label>
                       <input
                         type="text"
@@ -589,7 +455,25 @@ function Category() {
                         placeholder="Enter Phone no."
                         required=""
                       />
-                      <div class="invalid-feedback">Please enter a Image</div>
+                      <div class="invalid-feedback">Please enter a phone.</div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="date-field" class="form-label">
+                        Place
+                      </label>
+                      <select
+                        class="form-control"
+                        data-trigger=""
+                        name="status-field"
+                        id="status-field"
+                        required=""
+                      >
+                        <option value="">Home </option>
+                        <option value="Active">Offer</option>
+                        <option value="Block">Block</option>
+                      </select>
+                      <div class="invalid-feedback">Please select a date.</div>
                     </div>
 
                     <div>
@@ -618,14 +502,20 @@ function Category() {
                       >
                         Close
                       </button>
-
                       <button
+                        type="submit"
+                        class="btn btn-success"
+                        id="add-btn"
+                      >
+                        Add Banner
+                      </button>
+                      {/* <button
                         type="button"
                         class="btn btn-success"
                         id="edit-btn"
                       >
                         Update
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </form>
@@ -638,4 +528,4 @@ function Category() {
   );
 }
 
-export default Category;
+export default Section4;
