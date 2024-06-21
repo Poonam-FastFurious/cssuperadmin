@@ -278,6 +278,24 @@ function AddProduct() {
                                 </div>
                               </div>
                             </div>
+                            <div className="mb-3 col-lg-3">
+                              <label
+                                className="form-label"
+                                htmlFor="orders-input"
+                              >
+                                Rating
+                              </label>
+                              <input
+                                type="number"
+                                className="form-control"
+                                id="orders-input"
+                                placeholder="rating"
+                                required=""
+                              />
+                              <div className="invalid-feedback">
+                                Please Enter a product orders.
+                              </div>
+                            </div>
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
                                 <label
@@ -316,7 +334,10 @@ function AddProduct() {
                               {isChecked && (
                                 <div className="d-flex gap-4 w">
                                   <div className="mb-3">
-                                    <label className="form-label" htmlFor="attribute-input">
+                                    <label
+                                      className="form-label"
+                                      htmlFor="attribute-input"
+                                    >
                                       Attribute
                                     </label>
                                     <input
@@ -329,7 +350,10 @@ function AddProduct() {
                                   <div className="row">
                                     <div className="col">
                                       <div className="mb-3">
-                                        <label className="form-label" htmlFor="variation-input">
+                                        <label
+                                          className="form-label"
+                                          htmlFor="variation-input"
+                                        >
                                           Variation
                                         </label>
                                         <input
@@ -344,7 +368,6 @@ function AddProduct() {
                                 </div>
                               )}
                             </div>
-
                           </div>
                         </div>
                       </div>

@@ -12,6 +12,7 @@ function Category() {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const clearForm = () => {
     setCategoriesTitle(""); // Clear the state for categoriesTitle
@@ -138,6 +139,9 @@ function Category() {
 
     fetchCategory();
   }, []);
+  const filteredCategories = category.filter((cat) =>
+    cat.categoriesTitle.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <>
       <ToastContainer />
@@ -193,6 +197,8 @@ function Category() {
                                 type="text"
                                 class="form-control search"
                                 placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                               />
                               <i class="ri-search-line search-icon"></i>
                             </div>
@@ -236,7 +242,7 @@ function Category() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {category.map((cat, index) => (
+                            {filteredCategories.map((cat, index) => (
                               <tr key={index}>
                                 <th scope="row">
                                   <div class="form-check">

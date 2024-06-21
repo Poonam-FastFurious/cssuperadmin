@@ -265,7 +265,9 @@ function SubCategory() {
                                 </td>
                                 <td class="phone">{subcat.subCategoryTitle}</td>
                                 <td class="date">
-                                  {subcat.category.categoriesTitle}
+                                  {subcat.category
+                                    ? subcat.category.categoriesTitle
+                                    : "No Category"}
                                 </td>
                                 <td class="date">{subcat.link}</td>
                                 <td class="status">
