@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { RiDeleteBin6Line } from "react-icons/ri";
+
 import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { Baseurl } from "../../config";
 import axios from "axios";
+import Swal from "sweetalert2";
 function Category() {
   const [categoriesTitle, setCategoriesTitle] = useState("");
   const [link, setLink] = useState("");
@@ -11,7 +12,7 @@ function Category() {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
+
   const clearForm = () => {
     setCategoriesTitle(""); // Clear the state for categoriesTitle
     setLink(""); // Clear the state for link
@@ -56,7 +57,9 @@ function Category() {
           theme: "light",
           onClose: () => {
             clearForm();
-            window.location.reload();
+            const modalElement = document.getElementById("showModal");
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
           },
         });
       } else {
@@ -79,50 +82,54 @@ function Category() {
     }
   };
   const handleDelete = async (id) => {
-    try {
-      const response = await axios.delete(
-        Baseurl + `/api/v1/category/delete/?id=${id}`
-      );
-      if (response.data.success) {
-        // Filter out the deleted category from the state
-        setCategory(category.filter((cat) => cat._id !== id));
-        toast.success("Category deleted successfully", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          onClose: () => {
-            // Clear the form
-            window.location.reload();
-          },
+    // Show confirmation dialog using SweetAlert 2
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will not be able to recover this category!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, keep it",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await axios.delete(
+            Baseurl + `/api/v1/category/delete/?id=${id}`
+          );
+          if (response.data.success) {
+            // Using SweetAlert 2 for success message
+            Swal.fire({
+              icon: "success",
+              title: "Category deleted successfully",
+              timer: 1000,
+              showConfirmButton: false,
+            }).then(() => {
+              setCategory(category.filter((cat) => cat._id !== id));
+              window.location.reload(); // Reload the page or update state as needed
+            });
+          } else {
+            throw new Error(response.data.message); // Throw error with response message
+          }
+        } catch (error) {
+          console.error("Error:", error.message);
+          // Using SweetAlert 2 for error message
+          Swal.fire({
+            icon: "error",
+            title: "Failed to delete category",
+            text: error.message || "Failed to delete category",
+          });
+        }
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // Handle cancel action (if needed)
+        Swal.fire({
+          title: "Cancelled",
+          text: "Category deletion cancelled",
+          icon: "info",
         });
-      } else {
-        throw new Error(response.data.message); // Throw error with response message
       }
-    } catch (error) {
-      console.error("Error:", error.message);
-      toast.error(error.message || "Failed to delete category", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    }
+    });
   };
-  const handleDeleteConfirmation = () => {
-    if (categoryToDelete) {
-      handleDelete(categoryToDelete);
-      setCategoryToDelete(null); // Reset categoryToDelete state after deletion
-    }
-  };
+
   useEffect(() => {
     const fetchCategory = async () => {
       try {
@@ -276,11 +283,7 @@ function Category() {
                                     <div class="remove">
                                       <button
                                         class="btn btn-sm btn-danger remove-item-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteRecordModal"
-                                        onClick={() =>
-                                          setCategoryToDelete(cat._id)
-                                        }
+                                        onClick={() => handleDelete(cat._id)}
                                       >
                                         Remove
                                       </button>
@@ -328,54 +331,7 @@ function Category() {
               </div>
             </div>
           </div>
-          <div
-            class="modal fade zoomIn"
-            id="deleteRecordModal"
-            tabindex="-1"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    id="btn-close"
-                  ></button>
-                </div>
-                <div class="modal-body">
-                  <div class="mt-2 text-center">
-                    <RiDeleteBin6Line style={{ width: "100%" }} />
-                    <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                      <h4>Are you Sure ?</h4>
-                      <p class="text-muted mx-4 mb-0">
-                        Are you Sure You want to Remove this Record ?
-                      </p>
-                    </div>
-                  </div>
-                  <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
-                    <button
-                      type="button"
-                      class="btn w-sm btn-light"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      class="btn w-sm btn-danger"
-                      id="delete-record"
-                      onClick={handleDeleteConfirmation}
-                    >
-                      Yes, Delete It!
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
           <div
             class="modal fade"
             id="showModal"

@@ -1,26 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { RiDeleteBin6Line } from "react-icons/ri";
+
 import { Link } from "react-router-dom";
 import { Baseurl } from "../../config";
+import { toast } from "react-toastify";
 
 function Customer() {
-  const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!fullName || !email || !password) {
+      setError("Please fill out all fields.");
+      return;
+    }
+
+    try {
+      const response = await fetch(Baseurl + "/api/v1/user/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: fullName,
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      console.log("Customer added:", data);
+
+      // Reset form
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setError("");
+      toast.success("Customer added successfully!");
+      const modalElement = document.getElementById("showModal");
+      const modal = window.bootstrap.Modal.getInstance(modalElement);
+      modal.hide();
+      // Optionally close the modal here
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Failed to add customer.");
+    }
+  };
   useEffect(() => {
     fetch(Baseurl + "/api/v1/user/alluser")
       .then((response) => response.json())
       .then((data) => setUsers(data.data))
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
-  // Function to handle showing the modal
-  const handleShowModal = () => {
-    setShowModal(true);
-  };
 
-  // Function to handle closing the modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
   return (
     <>
       <div class="main-content">
@@ -220,10 +259,7 @@ function Customer() {
                                       </Link>
                                     </li>
                                     <li className="list-inline-item">
-                                      <button
-                                        className="text-danger d-inline-block remove-item-btn"
-                                        onClick={() => handleShowModal(user.id)}
-                                      >
+                                      <button className="text-danger d-inline-block remove-item-btn">
                                         <i className="ri-delete-bin-5-fill fs-16"></i>
                                       </button>
                                     </li>
@@ -284,7 +320,11 @@ function Customer() {
                               id="close-modal"
                             ></button>
                           </div>
-                          <form class="tablelist-form" autocomplete="off">
+                          <form
+                            class="tablelist-form"
+                            autocomplete="off"
+                            onSubmit={handleSubmit}
+                          >
                             <div class="modal-body">
                               <input type="hidden" id="id-field" />
 
@@ -293,11 +333,15 @@ function Customer() {
                                 id="modal-id"
                                 style={{ display: "none;" }}
                               >
-                                <label for="id-field1" class="form-label">
+                                <label
+                                  for="id-field1"
+                                  class="form-label"
+                                  style={{ visibility: "hidden" }}
+                                >
                                   ID
                                 </label>
                                 <input
-                                  type="text"
+                                  type="hidden"
                                   id="id-field1"
                                   class="form-control"
                                   placeholder="ID"
@@ -318,6 +362,8 @@ function Customer() {
                                   class="form-control"
                                   placeholder="Enter name"
                                   required=""
+                                  value={fullName}
+                                  onChange={(e) => setFullName(e.target.value)}
                                 />
                                 <div class="invalid-feedback">
                                   Please enter a customer name.
@@ -334,62 +380,34 @@ function Customer() {
                                   class="form-control"
                                   placeholder="Enter email"
                                   required=""
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
                                 />
                                 <div class="invalid-feedback">
                                   Please enter an email.
                                 </div>
                               </div>
-
+                              {error && (
+                                <div className="alert alert-danger">
+                                  {error}
+                                </div>
+                              )}
                               <div class="mb-3">
                                 <label for="phone-field" class="form-label">
-                                  Phone
+                                  Password
                                 </label>
                                 <input
-                                  type="text"
+                                  type="password"
                                   id="phone-field"
                                   class="form-control"
-                                  placeholder="Enter phone no."
+                                  placeholder="Enter password ."
                                   required=""
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <div class="invalid-feedback">
                                   Please enter a phone.
                                 </div>
-                              </div>
-
-                              <div class="mb-3">
-                                <label for="date-field" class="form-label">
-                                  Joining Date
-                                </label>
-                                <input
-                                  type="date"
-                                  id="date-field"
-                                  class="form-control"
-                                  data-provider="flatpickr"
-                                  data-date-format="d M, Y"
-                                  required=""
-                                  placeholder="Select date"
-                                />
-                                <div class="invalid-feedback">
-                                  Please select a date.
-                                </div>
-                              </div>
-
-                              <div>
-                                <label for="status-field" class="form-label">
-                                  Status
-                                </label>
-                                <select
-                                  class="form-control"
-                                  data-choices=""
-                                  data-choices-search-false=""
-                                  name="status-field"
-                                  id="status-field"
-                                  required=""
-                                >
-                                  <option value="">Status</option>
-                                  <option value="Active">Active</option>
-                                  <option value="Block">Block</option>
-                                </select>
                               </div>
                             </div>
                             <div class="modal-footer">
@@ -422,49 +440,6 @@ function Customer() {
           </div>
         </div>
       </div>
-      {showModal && (
-        <div
-          className="modal fade show"
-          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
-          tabIndex="-1"
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={handleCloseModal}
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="mt-2 text-center">
-                  <RiDeleteBin6Line style={{ width: "100%" }} />
-                  <div className="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                    <h4>Are you Sure ?</h4>
-                    <p className="text-muted mx-4 mb-0">
-                      Are you Sure You want to Remove this Record ?
-                    </p>
-                  </div>
-                </div>
-                <div className="d-flex gap-2 justify-content-center mt-4 mb-2">
-                  <button
-                    type="button"
-                    className="btn w-sm btn-light"
-                    onClick={handleCloseModal}
-                  >
-                    Close
-                  </button>
-                  <button type="button" className="btn w-sm btn-danger">
-                    Yes, Delete It!
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

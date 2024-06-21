@@ -676,7 +676,7 @@ function Header() {
                       </li>
                       <li className="nav-item">
                         <Link
-                          to="/pages-faqs"
+                          to="/Testimonial"
                           className="nav-link"
                           data-key="t-faqs"
                         >

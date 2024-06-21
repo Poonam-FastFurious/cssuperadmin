@@ -40,6 +40,7 @@ import Addblogs from "./Componnets/GenralSetting/Blogs/Addblogs";
 import Inquiry from "./Componnets/GenralSetting/Inquiry";
 import ProductDetail from "./Componnets/Product/ProductDetail";
 import Employeerol from "./Componnets/EmployeeManagement/Employeerol";
+import Testimonial from "./Componnets/GenralSetting/Testimonial";
 function App() {
   return (
     <>
@@ -84,6 +85,7 @@ function App() {
             <Route path="/Addblogs" element={<Addblogs />}></Route>
             <Route path="/InquiryList" element={<Inquiry />}></Route>
             <Route path="/Empolyerole" element={<Employeerol />}></Route>
+            <Route path="/Testimonial" element={<Testimonial />}></Route>
             <Route
               path="/pages-term-conditions"
               element={<Termsandcondition />}

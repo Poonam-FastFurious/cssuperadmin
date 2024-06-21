@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Baseurl } from "../../config";
 
 /* eslint-disable react/no-unescaped-entities */
 function Profile() {
@@ -11,39 +12,53 @@ function Profile() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [editable, setEditable] = useState(false);
-  const adminId = localStorage.getItem("AdminId");
-  const token = localStorage.getItem("token");
+  const adminId = localStorage.getItem("adminId");
+  const token = localStorage.getItem("accessToken");
   const [adminProfile, setAdminProfile] = useState("");
-  //   const fetchAdminProfile = () => {
-  //     fetch(`/api/v1/admin/Profile?adminId=${adminId}`, {
-  //       method: "GET",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     })
-  //       .then((response) => {
-  //         if (!response.ok) {
-  //           throw new Error("Failed to fetch admin profile");
-  //         }
-  //         return response.json();
-  //       })
-  //       .then((data) => {
-  //         setAdminProfile(data.data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching admin profile:", error);
-  //         // Handle error (e.g., show error message)
-  //       });
-  //   };
-  //   useEffect(() => {
-  //     fetchAdminProfile();
-  //   }, []);
-
-  // Function to toggle the editable state
   const toggleEditable = () => {
     setEditable(!editable);
   };
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        // Get accessToken from local storage
+        const accessToken = localStorage.getItem("accessToken");
 
+        // Make sure accessToken exists before making the fetch request
+        if (!accessToken) {
+          throw new Error("Access token not found");
+        }
+
+        // Fetch admin profile with accessToken in headers
+        const response = await fetch(
+          `${Baseurl}/api/v1/admin/Profile?adminId=${adminId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`, // Include accessToken in Authorization header
+              "Content-Type": "application/json",
+              // Add other headers if needed
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        setAdminProfile(data.data);
+        console.log(data.data); // Log the fetched data
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Handle error or redirect to login page
+      }
+    };
+
+    fetchAdminProfile();
+    // Call the fetch function
+  }, []);
+  console.log(adminProfile.email);
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -58,7 +73,7 @@ function Profile() {
     setSuccess("");
 
     // API request to change password
-    fetch("/api/v1/admin/change-password", {
+    fetch(Baseurl + "/api/v1/admin/change-password", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -208,7 +223,7 @@ function Profile() {
                         type="email"
                         className="form-control"
                         id="gitUsername"
-                        value={adminProfile.username}
+                        value={adminProfile.firstName}
                       />
                     </div>
                     <div className="mb-3 d-flex">
