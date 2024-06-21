@@ -1,10 +1,60 @@
-import React from "react";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import React, { useEffect, useState } from "react";
+
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import { Baseurl } from "../../config";
 
 function Addon() {
+  // State to manage form inputs and messages
+  const [addons, setAddons] = useState([]);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [status, setStatus] = useState("");
+  useEffect(() => {
+    fetchAddons();
+  }, []);
+
+  const fetchAddons = async () => {
+    try {
+      const response = await fetch(Baseurl + "/api/v1/addons/alladdons");
+      if (response.ok) {
+        const data = await response.json();
+        setAddons(data.data);
+      } else {
+        console.log("Failed to fetch addons.");
+      }
+    } catch (error) {
+      console.log("Failed to fetch addons.", error);
+    }
+  };
+
+  const handleAddAddon = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(Baseurl + "/api/v1/addons/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, price, status }),
+      });
+      if (response.ok) {
+        toast.success("addon add   successfully!");
+        window.location.reload();
+        setName("");
+        setPrice("");
+        setStatus("");
+      } else {
+        console.log("Failed to add addon. Please try again.");
+      }
+    } catch (error) {
+      console.log("Failed to add addon. Please try again.");
+    }
+  };
+
   return (
     <>
+      <ToastContainer autoClose={1000} />
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -98,49 +148,47 @@ function Addon() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-
-                              <td class="email">marycousar@velzon.com</td>
-
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#editModal"
-                                    >
-                                      Edit
-                                    </button>
+                            {addons.map((addon) => (
+                              <tr key={addon.id}>
+                                <th scope="row">
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      name="chk_child"
+                                      value={addon.id}
+                                    />
                                   </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
+                                </th>
+                                <td className="email">{addon.name}</td>
+                                <td className="date">{addon.price}</td>
+                                <td className="status">
+                                  <span
+                                    className={`badge bg-success-subtle text-success text-uppercase`}
+                                  >
+                                    {addon.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div className="d-flex gap-2">
+                                    <div className="edit">
+                                      <button
+                                        className="btn btn-sm btn-success edit-item-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editModal"
+                                      >
+                                        Edit
+                                      </button>
+                                    </div>
+                                    <div className="remove">
+                                      <button className="btn btn-sm btn-danger remove-item-btn">
+                                        Remove
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              </td>
-                            </tr>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                         <div class="noresult" style={{ display: "none" }}>
@@ -180,53 +228,7 @@ function Addon() {
               </div>
             </div>
           </div>
-          <div
-            class="modal fade zoomIn"
-            id="deleteRecordModal"
-            tabindex="-1"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    id="btn-close"
-                  ></button>
-                </div>
-                <div class="modal-body">
-                  <div class="mt-2 text-center">
-                    <RiDeleteBin6Line style={{ width: "100%" }} />
-                    <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                      <h4>Are you Sure ?</h4>
-                      <p class="text-muted mx-4 mb-0">
-                        Are you Sure You want to Remove this Record ?
-                      </p>
-                    </div>
-                  </div>
-                  <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
-                    <button
-                      type="button"
-                      class="btn w-sm btn-light"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      class="btn w-sm btn-danger"
-                      id="delete-record"
-                    >
-                      Yes, Delete It!
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
           <div
             class="modal fade"
             id="showModal"
@@ -248,7 +250,11 @@ function Addon() {
                     id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off">
+                <form
+                  class="tablelist-form"
+                  autocomplete="off"
+                  onSubmit={handleAddAddon}
+                >
                   <div class="modal-body">
                     <div class="mb-3" id="modal-id" style={{ display: "none" }}>
                       <label for="id-field" class="form-label">
@@ -273,6 +279,8 @@ function Addon() {
                         class="form-control"
                         placeholder="Enter Title"
                         required=""
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                       />
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
@@ -282,11 +290,13 @@ function Addon() {
                         Price
                       </label>
                       <input
-                        type="email"
+                        type="number"
                         id="email-field"
                         class="form-control"
                         placeholder="Enter Link"
                         required=""
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
                       />
                       <div class="invalid-feedback">Please enter an Link.</div>
                     </div>
@@ -301,10 +311,12 @@ function Addon() {
                         name="status-field"
                         id="status-field"
                         required=""
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
                       >
                         <option value="">Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Block">Block</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Block</option>
                       </select>
                     </div>
                   </div>

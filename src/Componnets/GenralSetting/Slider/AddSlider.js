@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import { Baseurl } from "../../../config";
 
 function Addslider() {
-  const [image, setImage] = useState("");
+  const [sliderImage, setSliderImage] = useState("");
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [link, setLink] = useState("");
@@ -15,14 +16,14 @@ function Addslider() {
   };
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    setSliderImage(e.target.files[0]);
   };
 
   const handelsubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("image", image);
+    formData.append("sliderImage", sliderImage);
     formData.append("title", title);
     formData.append("details", details);
     formData.append("link", link);
@@ -30,13 +31,10 @@ function Addslider() {
     setLoading(true); // Start loader
 
     try {
-      const response = await fetch(
-        "https://ssagriculturebackend.onrender.com/api/v1/Banner/add",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(Baseurl + "/api/v1/slider/add", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -45,7 +43,7 @@ function Addslider() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success("Banner uploaded successfully", {
+        toast.success("Slider  uploaded successfully", {
           position: "top-right",
           autoClose: 1000,
           hideProgressBar: false,
@@ -57,7 +55,7 @@ function Addslider() {
           onClose: () => {
             // Clear the form
             setTitle("");
-            setImage("");
+            setSliderImage("");
 
             setDetails("");
             setLink("");
@@ -65,11 +63,11 @@ function Addslider() {
           },
         });
       } else {
-        throw new Error("Banner upload failed");
+        throw new Error("Slider upload failed");
       }
     } catch (error) {
       console.error("Error:", error.message);
-      toast.error("Banner upload failed", {
+      toast.error("Slider upload failed", {
         position: "top-right",
         autoClose: 1000,
         hideProgressBar: false,
@@ -86,6 +84,7 @@ function Addslider() {
 
   return (
     <>
+      <ToastContainer autoClose={1000} />
       <div className="main-content">
         <div className="page-content">
           <div className="col-xl-12 col-lg-8">
@@ -151,7 +150,7 @@ function Addslider() {
                       />
                     </div>
                   </div>
-                  {image && (
+                  {sliderImage && (
                     <ul className="list-unstyled mb-0" id="dropzone-preview">
                       <li className="mt-2" id="dropzone-preview-list">
                         <div className="border rounded">
@@ -159,7 +158,7 @@ function Addslider() {
                             <div className="flex-shrink-0 me-3">
                               <div className="avatar-sm bg-light rounded">
                                 <img
-                                  src={URL.createObjectURL(image)}
+                                  src={URL.createObjectURL(sliderImage)}
                                   alt="Selected"
                                   style={{
                                     width: "300px",
@@ -232,8 +231,15 @@ function Addslider() {
               </div>
 
               <div className="">
-                <button type="submit" className="btn btn-success">
-                  Add Slider
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading && (
+                    <span className="spinner-border spinner-border-sm me-1"></span>
+                  )}
+                  {loading ? "Loading..." : "Submit"}
                 </button>
               </div>
             </form>

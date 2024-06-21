@@ -1,7 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Baseurl } from "../../../config";
 
 function Sliderlist() {
+  const [sliders, setSliders] = useState([]);
+  useEffect(() => {
+    const fetchSliders = async () => {
+      try {
+        const response = await fetch(Baseurl + "/api/v1/slider/allslider");
+        if (!response.ok) {
+          throw new Error("Failed to fetch sliders");
+        }
+        const data = await response.json();
+        setSliders(data.data);
+      } catch (error) {
+        console.error("Error fetching sliders:", error);
+      }
+    };
+
+    fetchSliders();
+  }, []);
+  const deleteSlider = async (id) => {
+    try {
+      const response = await fetch(Baseurl + "/api/v1/slider/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete slider");
+      }
+      // Update sliders state after successful deletion
+      setSliders(sliders.filter((slider) => slider._id !== id));
+    } catch (error) {
+      console.error("Error deleting slider:", error);
+    }
+  };
   return (
     <>
       <div className="main-content">
@@ -57,29 +93,36 @@ function Sliderlist() {
                 </tr>
               </thead>
               <tbody>
-                <tr key={""}>
-                  <th scope="row">
-                    <img
-                      style={{ maxWidth: "70px", maxHeight: "70px" }}
-                      src=""
-                      alt=""
-                    />
-                  </th>
-                  <td>title</td>
-                  <td>details</td>
-                  <td>title</td>
-
-                  <td>
-                    <div className="hstack gap-3 flex-wrap">
-                      <Link to="#" className="link-success fs-15">
-                        <i className="ri-edit-2-line"></i>
-                      </Link>
-                      <Link to="#" className="link-danger fs-15">
-                        <i className="ri-delete-bin-line"></i>
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
+                {sliders.map((slider) => (
+                  <tr key={slider._id}>
+                    <th scope="row">
+                      <img
+                        style={{ maxWidth: "70px", maxHeight: "70px" }}
+                        src={slider.sliderImage}
+                        alt={slider.title}
+                      />
+                    </th>
+                    <td>{slider.title}</td>
+                    <td>{slider.details}</td>
+                    <td>{slider.link}</td>
+                    <td>
+                      <div className="hstack gap-3 flex-wrap">
+                        <Link
+                          to={`/edit/${slider._id}`}
+                          className="link-success fs-15"
+                        >
+                          <i className="ri-edit-2-line"></i>
+                        </Link>
+                        <Link
+                          onClick={() => deleteSlider(slider._id)}
+                          className="link-danger fs-15"
+                        >
+                          <i className="ri-delete-bin-line"></i>
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

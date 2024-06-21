@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { Link } from "react-router-dom";
+import { Baseurl } from "../../config";
 
 function Customer() {
   const [showModal, setShowModal] = useState(false);
-
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    fetch(Baseurl + "/api/v1/user/alluser")
+      .then((response) => response.json())
+      .then((data) => setUsers(data.data))
+      .catch((error) => console.error("Error fetching users:", error));
+  }, []);
   // Function to handle showing the modal
   const handleShowModal = () => {
     setShowModal(true);
@@ -177,58 +184,53 @@ function Customer() {
                               </th>
                             </tr>
                           </thead>
-                          <tbody class="list form-check-all">
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
+                          <tbody className="list form-check-all">
+                            {users.map((user) => (
+                              <tr key={user.id}>
+                                <th scope="row">
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      name="chk_child"
+                                      value="option1"
+                                    />
+                                  </div>
+                                </th>
 
-                              <td class="customer_name">Mary Cousar</td>
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <ul class="list-inline hstack gap-2 mb-0">
-                                  <li
-                                    class="list-inline-item edit"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-trigger="hover"
-                                    data-bs-placement="top"
-                                    title="Edit"
-                                  >
-                                    <Link
-                                      to="#showModal"
-                                      class="text-primary d-inline-block edit-item-btn"
-                                    >
-                                      <i class="ri-pencil-fill fs-16"></i>
-                                    </Link>
-                                  </li>
-                                  <li
-                                    class="list-inline-item"
-                                    onClick={handleShowModal}
-                                  >
-                                    <Link
-                                      class="text-danger d-inline-block remove-item-btn"
-                                      to="#deleteRecordModal"
-                                    >
-                                      <i class="ri-delete-bin-5-fill fs-16"></i>
-                                    </Link>
-                                  </li>
-                                </ul>
-                              </td>
-                            </tr>
+                                <td className="customer_name">
+                                  {user.fullName}
+                                </td>
+                                <td className="email">{user.email}</td>
+                                <td className="phone">{user.phone}</td>
+                                <td className="date">{user.createdAt}</td>
+                                <td className="status">
+                                  <span className="badge bg-success-subtle text-success text-uppercase">
+                                    active
+                                  </span>
+                                </td>
+                                <td>
+                                  <ul className="list-inline hstack gap-2 mb-0">
+                                    <li className="list-inline-item edit">
+                                      <Link
+                                        to={`#edit/${user.id}`}
+                                        className="text-primary d-inline-block edit-item-btn"
+                                      >
+                                        <i className="ri-pencil-fill fs-16"></i>
+                                      </Link>
+                                    </li>
+                                    <li className="list-inline-item">
+                                      <button
+                                        className="text-danger d-inline-block remove-item-btn"
+                                        onClick={() => handleShowModal(user.id)}
+                                      >
+                                        <i className="ri-delete-bin-5-fill fs-16"></i>
+                                      </button>
+                                    </li>
+                                  </ul>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                         <div class="noresult" style={{ display: "none" }}>

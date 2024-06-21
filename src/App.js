@@ -38,6 +38,8 @@ import ReturnPolicy from "./Componnets/GenralSetting/ReturnPolicy";
 import ListBlog from "./Componnets/GenralSetting/Blogs/ListBlog";
 import Addblogs from "./Componnets/GenralSetting/Blogs/Addblogs";
 import Inquiry from "./Componnets/GenralSetting/Inquiry";
+import ProductDetail from "./Componnets/Product/ProductDetail";
+import Employeerol from "./Componnets/EmployeeManagement/Employeerol";
 function App() {
   return (
     <>
@@ -55,6 +57,7 @@ function App() {
           >
             <Route path="/" element={<Home />}></Route>
             <Route path="/Product" element={<Listproduct />}></Route>
+            <Route path="/details" element={<ProductDetail />}></Route>
             <Route path="/AddProduct" element={<AddProduct />}></Route>
             <Route path="/Stockout" element={<StockOut />}></Route>
             <Route path="/Categories" element={<Category />}></Route>
@@ -80,6 +83,7 @@ function App() {
             <Route path="/Bloges" element={<ListBlog />}></Route>
             <Route path="/Addblogs" element={<Addblogs />}></Route>
             <Route path="/InquiryList" element={<Inquiry />}></Route>
+            <Route path="/Empolyerole" element={<Employeerol />}></Route>
             <Route
               path="/pages-term-conditions"
               element={<Termsandcondition />}

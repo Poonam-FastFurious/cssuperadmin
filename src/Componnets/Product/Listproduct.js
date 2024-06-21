@@ -502,7 +502,7 @@ function Listproduct() {
                                     </div>
                                   </td>
                                   <td>
-                                    <Link to="#" className="fw-semibold">
+                                    <Link to="/details" className="fw-semibold">
                                       Proven® Zinc Copper Alkaline Hydrogen RO
                                       Water Purifier
                                       <br />

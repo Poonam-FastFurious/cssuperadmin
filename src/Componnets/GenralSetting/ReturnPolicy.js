@@ -1,61 +1,84 @@
+import React, { useState } from "react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { MdDescription } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Baseurl } from "../../config";
 
 function ReturnPolicy() {
+  const [returnPolicyData, setReturnPolicyData] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true); // Start loading
+      const response = await fetch(Baseurl + "/api/v1/Returnpolicy/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ReturnPolicy: returnPolicyData }),
+      });
+
+      if (response.ok) {
+        // Return policy added successfully
+        toast.success("Return policy added successfully");
+      } else {
+        // Handle error response
+        toast.error("Failed to add return policy");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("An error occurred");
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
+
   return (
     <>
       <div className="main-content">
         <div className="page-content">
           <div className="container-fluid">
-            <div className="row">
-              <div className="col-12">
-                <div className="page-title-box d-sm-flex align-items-center justify-content-between">
-                  <h4 className="mb-sm-0">ReturnPolicy</h4>
-
-                  <div className="page-title-right">
-                    <ol className="breadcrumb m-0">
-                      <li className="breadcrumb-item">
-                        <Link to="">ProvenRo agri</Link>
-                      </li>
-                      <li className="breadcrumb-item active">ReturnPolicy</li>
-                    </ol>
-                  </div>
+            {/* Your existing JSX code */}
+            <CKEditor
+              editor={ClassicEditor}
+              data={MdDescription}
+              onChange={(event, editor) =>
+                setReturnPolicyData(editor.getData())
+              }
+            />
+            <button
+              type="button"
+              className={`btn btn-info ${loading ? "disabled" : ""}`}
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <div
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                >
+                  <span className="visually-hidden">Loading...</span>
                 </div>
-              </div>
-            </div>
+              ) : (
+                <i className="ri-file-download-line align-bottom me-1"></i>
+              )}
+              Add Return Policy
+            </button>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
           </div>
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="card" id="orderList">
-                <div className="card-header border-0">
-                  <div className="row align-items-center gy-3">
-                    <div className="col-sm">
-                      <h5 className="card-title mb-0">ReturnPolicy</h5>
-                    </div>
-                    <div className="col-sm-auto">
-                      <div className="d-flex gap-1 flex-wrap">
-                        <button
-                          className="btn btn-soft-danger"
-                          id="remove-actions"
-                        >
-                          <i className="ri-delete-bin-2-line"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card-body border border-dashed border-end-0 border-start-0"></div>
-
-                <CKEditor editor={ClassicEditor} data={MdDescription} />
-              </div>
-            </div>
-          </div>
-          <button type="button" className="btn btn-info">
-            <i className="ri-file-download-line align-bottom me-1"></i>
-            Add FAQ
-          </button>
         </div>
       </div>
     </>

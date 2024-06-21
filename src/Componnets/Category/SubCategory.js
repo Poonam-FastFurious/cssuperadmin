@@ -1,10 +1,151 @@
-import React from "react";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+
 import { Link } from "react-router-dom";
+import { Baseurl } from "../../config";
+import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 function SubCategory() {
+  const [category, setCategory] = useState([]);
+  const [subcategory, setSubcategory] = useState([]);
+  const [subCategoryTitle, setSubCategoryTitle] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [status, setStatus] = useState("");
+  const [link, setLink] = useState("");
+  const [image, setImage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const clearForm = () => {
+    setSubCategoryTitle(""); // Clear the state for categoriesTitle
+    setLink(""); // Clear the state for link
+    setStatus(""); // Clear the state for status
+    setImage(null); // Clear the state for image
+  };
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
+  const handelsubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("subCategoryTitle", subCategoryTitle);
+    formData.append("link", link);
+    formData.append("status", status);
+    formData.append("categoryName", categoryName);
+
+    formData.append("image", image);
+
+    try {
+      setLoading(true);
+      const response = await fetch(Baseurl + "/api/v1/subcategory/add", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("SubCategory added successfully ", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          onClose: () => {
+            clearForm();
+            window.location.reload();
+          },
+        });
+      } else {
+        throw new Error("Subcategory upload failed");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("category creation failed", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false); // Set loading back to false after request completes
+    }
+  };
+  useEffect(() => {
+    const fetchCategory = async () => {
+      try {
+        const response = await axios.get(
+          Baseurl + "/api/v1/category/allcategory"
+        );
+        setCategory(response.data.data);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    };
+    const fetchsubcategory = async () => {
+      try {
+        const response = await axios.get(
+          Baseurl + "/api/v1/subcategory/allcategory"
+        );
+        setSubcategory(response.data.data);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    };
+
+    fetchCategory();
+    fetchsubcategory();
+  }, []);
+  const handleRemove = async (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(Baseurl + "/api/v1/subcategory/delete", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          });
+
+          if (response.ok) {
+            toast.success("Subcategory deleted successfully!");
+            window.location.reload();
+          } else {
+            toast.error("Failed to delete subcategory!");
+            console.error("Error:", response.statusText);
+          }
+        } catch (error) {
+          toast.error("Failed to delete subcategory!");
+          console.error("There was an error deleting the subcategory:", error);
+        }
+      }
+    });
+  };
+
   return (
     <>
+      <ToastContainer autoClose={1000} />
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -102,182 +243,59 @@ function SubCategory() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
+                            {subcategory.map((subcat, index) => (
+                              <tr key={index}>
+                                <th scope="row">
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      name="chk_child"
+                                      value="option1"
+                                    />
+                                  </div>
+                                </th>
 
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">demo cat</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#editModal"
-                                    >
-                                      Edit
-                                    </button>
+                                <td class="email">
+                                  <img
+                                    className="avatar-xs rounded-circle"
+                                    src={subcat.image}
+                                    alt=""
+                                  ></img>
+                                </td>
+                                <td class="phone">{subcat.subCategoryTitle}</td>
+                                <td class="date">
+                                  {subcat.category.categoriesTitle}
+                                </td>
+                                <td class="date">{subcat.link}</td>
+                                <td class="status">
+                                  <span class="badge bg-success-subtle text-success text-uppercase">
+                                    {subcat.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div class="d-flex gap-2">
+                                    <div class="edit">
+                                      <button
+                                        class="btn btn-sm btn-success edit-item-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editModal"
+                                      >
+                                        Edit
+                                      </button>
+                                    </div>
+                                    <div class="remove">
+                                      <button
+                                        class="btn btn-sm btn-danger remove-item-btn"
+                                        onClick={() => handleRemove(subcat._id)}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">demo cat</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#editModal"
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">demo cat</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#editModal"
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">demo cat</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#editModal"
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                         <div class="noresult" style={{ display: "none" }}>
@@ -317,53 +335,7 @@ function SubCategory() {
               </div>
             </div>
           </div>
-          <div
-            class="modal fade zoomIn"
-            id="deleteRecordModal"
-            tabindex="-1"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    id="btn-close"
-                  ></button>
-                </div>
-                <div class="modal-body">
-                  <div class="mt-2 text-center">
-                    <RiDeleteBin6Line style={{ width: "100%" }} />
-                    <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                      <h4>Are you Sure ?</h4>
-                      <p class="text-muted mx-4 mb-0">
-                        Are you Sure You want to Remove this Record ?
-                      </p>
-                    </div>
-                  </div>
-                  <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
-                    <button
-                      type="button"
-                      class="btn w-sm btn-light"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      class="btn w-sm btn-danger"
-                      id="delete-record"
-                    >
-                      Yes, Delete It!
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
           <div
             class="modal fade"
             id="showModal"
@@ -385,7 +357,11 @@ function SubCategory() {
                     id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off">
+                <form
+                  class="tablelist-form"
+                  autocomplete="off"
+                  onSubmit={handelsubmit}
+                >
                   <div class="modal-body">
                     <div class="mb-3" id="modal-id" style={{ display: "none" }}>
                       <label for="id-field" class="form-label">
@@ -409,10 +385,15 @@ function SubCategory() {
                         name="status-field"
                         id="status-field"
                         required=""
+                        onChange={(e) => setCategoryName(e.target.value)}
+                        value={categoryName}
                       >
                         <option value="">Category</option>
-                        <option value="Active">Demo</option>
-                        <option value="Block">Demo cat</option>
+                        {category.map((cat) => (
+                          <option key={cat._id} value={cat.categoriesTitle}>
+                            {cat.categoriesTitle}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div class="mb-3">
@@ -425,6 +406,8 @@ function SubCategory() {
                         class="form-control"
                         placeholder="Enter Title"
                         required=""
+                        onChange={(e) => setSubCategoryTitle(e.target.value)}
+                        value={subCategoryTitle}
                       />
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
@@ -434,11 +417,13 @@ function SubCategory() {
                         Link
                       </label>
                       <input
-                        type="email"
+                        type="text"
                         id="email-field"
                         class="form-control"
                         placeholder="Enter Link"
                         required=""
+                        onChange={(e) => setLink(e.target.value)}
+                        value={link}
                       />
                       <div class="invalid-feedback">Please enter an Link.</div>
                     </div>
@@ -453,6 +438,7 @@ function SubCategory() {
                         class="form-control"
                         placeholder="Enter Phone no."
                         required=""
+                        onChange={handleImageChange}
                       />
                       <div class="invalid-feedback">Please enter a images</div>
                     </div>
@@ -467,9 +453,11 @@ function SubCategory() {
                         name="status-field"
                         id="status-field"
                         required=""
+                        onChange={(e) => setStatus(e.target.value)}
+                        value={status}
                       >
                         <option value="">Status</option>
-                        <option value="Active">Active</option>
+                        <option value="active">Active</option>
                         <option value="Block">Block</option>
                       </select>
                     </div>
@@ -491,6 +479,16 @@ function SubCategory() {
                         Add SubCategories
                       </button>
                     </div>
+                    {loading && (
+                      <div className="loader">
+                        <div
+                          className="spinner-border text-primary"
+                          role="status"
+                        >
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>

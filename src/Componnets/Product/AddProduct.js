@@ -264,6 +264,26 @@ function AddProduct() {
                                   className="form-label"
                                   htmlFor="orders-input"
                                 >
+                                  Rating
+                                </label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  id="orders-input"
+                                  placeholder="rating"
+                                  required=""
+                                />
+                                <div className="invalid-feedback">
+                                  Please Enter a product orders.
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label
+                                  className="form-label"
+                                  htmlFor="orders-input"
+                                >
                                   Is item have Atribute
                                 </label>
 
@@ -291,44 +311,40 @@ function AddProduct() {
                                 </div>
                               </div>
                             </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="orders-input"
-                                >
-                                  Rating
-                                </label>
-                                <input
-                                  type="number"
-                                  className="form-control"
-                                  id="orders-input"
-                                  placeholder="rating"
-                                  required=""
-                                />
-                                <div className="invalid-feedback">
-                                  Please Enter a product orders.
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
+
+                            <div className="col-lg-6 col-sm-6">
                               {isChecked && (
-                                <div className="mb-3">
-                                  <label
-                                    className="form-label"
-                                    htmlFor="attribute-input"
-                                  >
-                                    Additional Attribute
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="attribute-input"
-                                    placeholder="Enter additional attribute"
-                                  />
+                                <div className="d-flex gap-4 w">
+                                  <div className="mb-3">
+                                    <label className="form-label" htmlFor="attribute-input">
+                                      Attribute
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      id="attribute-input"
+                                      placeholder="Enter additional attribute"
+                                    />
+                                  </div>
+                                  <div className="row">
+                                    <div className="col">
+                                      <div className="mb-3">
+                                        <label className="form-label" htmlFor="variation-input">
+                                          Variation
+                                        </label>
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          id="variation-input"
+                                          placeholder="Enter  variation"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               )}
                             </div>
+
                           </div>
                         </div>
                       </div>
