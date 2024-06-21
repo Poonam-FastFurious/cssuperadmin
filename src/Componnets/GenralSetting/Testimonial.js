@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { Baseurl } from "../../config";
-import axios from "axios";
+
 import Swal from "sweetalert2";
 
 function Testimonial() {
@@ -12,10 +12,14 @@ function Testimonial() {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await axios.get(
-          Baseurl + "api/v1/testimonial/alltestimonial"
+        const response = await fetch(
+          Baseurl + "/api/v1/testimonial/alltestimonial"
         );
-        setTestimonials(response.data.data); // Assuming response.data is an array of testimonials
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setTestimonials(data.data); // Assuming response.data is an array of testimonials
       } catch (error) {
         console.error("Error fetching testimonials:", error);
         // Handle error (show error message, retry logic, etc.)
@@ -24,6 +28,7 @@ function Testimonial() {
 
     fetchTestimonials();
   }, []);
+  console.log(testimonials);
   const handleAddClick = () => {
     setModalVisible(true);
   };

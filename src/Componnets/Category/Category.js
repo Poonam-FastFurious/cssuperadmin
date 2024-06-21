@@ -82,14 +82,15 @@ function Category() {
     }
   };
   const handleDelete = async (id) => {
-    // Show confirmation dialog using SweetAlert 2
+    // Display confirmation dialog using SweetAlert 2
     Swal.fire({
       title: "Are you sure?",
       text: "You will not be able to recover this category!",
       icon: "warning",
       showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "No, keep it",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -119,13 +120,6 @@ function Category() {
             text: error.message || "Failed to delete category",
           });
         }
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        // Handle cancel action (if needed)
-        Swal.fire({
-          title: "Cancelled",
-          text: "Category deletion cancelled",
-          icon: "info",
-        });
       }
     });
   };
