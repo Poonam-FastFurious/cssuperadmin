@@ -1,7 +1,30 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Baseurl } from "../../config";
 
 function StockOut() {
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(Baseurl + "/api/v1/Product/products");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const stockOutProducts = data.products.filter(
+          (product) => product.stock.quantity < 4
+        );
+
+        setProducts(stockOutProducts);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+  console.log(products);
   return (
     <>
       <div className="main-content">
@@ -15,7 +38,7 @@ function StockOut() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">SSAgriculture</Link>
                       </li>
                       <li className="breadcrumb-item active">
                         StockOut Product
@@ -55,184 +78,62 @@ function StockOut() {
                       <th scope="col">Image</th>
                       <th scope="col">Price</th>
                       <th scope="col">Status</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Item Type</th>
+                      <th scope="col">Rating</th>
+                      <th scope="col">Stock</th>
                       <th scope="col">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="cardtableCheck04"
+                    {products.map((product, index) => (
+                      <tr key={index}>
+                        <td>
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              value=""
+                              id="cardtableCheck04"
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="cardtableCheck04"
+                            ></label>
+                          </div>
+                        </td>
+                        <td>
+                          <Link to="#" className="fw-semibold">
+                            {product.productTitle}
+                            <br />
+                            Category : {product.category}
+                          </Link>
+                        </td>
+                        <td>
+                          <img
+                            src={product.image}
+                            alt=""
+                            style={{ width: "100px" }}
                           />
-                          <label
-                            className="form-check-label"
-                            htmlFor="cardtableCheck04"
-                          ></label>
-                        </div>
-                      </td>
-                      <td>
-                        <Link to="#" className="fw-semibold">
-                          Proven® Zinc Copper Alkaline Hydrogen RO Water
-                          Purifier
-                          <br />
-                          Category : Domestic Ro
-                        </Link>
-                      </td>
-                      <td>50</td>
-                      <td> Rs.5,299.00</td>
-                      <td>48</td>
-                      <td>4.2</td>
-                      <td>
-                        <span className="badge bg-success">
-                          12 Oct, 202110:05 AM
-                        </span>
-                      </td>
-                      <td>
-                        <div className="hstack gap-3 flex-wrap">
-                          <Link to="#" className="link-success fs-15">
-                            <i className="ri-edit-2-line"></i>
-                          </Link>
-                          <Link to="#" className="link-danger fs-15">
-                            <i className="ri-delete-bin-line"></i>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="cardtableCheck04"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="cardtableCheck04"
-                          ></label>
-                        </div>
-                      </td>
-                      <td>
-                        <Link to="#" className="fw-semibold">
-                          Proven® Zinc Copper Alkaline Hydrogen RO Water
-                          Purifier
-                          <br />
-                          Category : Domestic Ro
-                        </Link>
-                      </td>
-                      <td>50</td>
-                      <td> Rs.5,299.00</td>
-                      <td>48</td>
-                      <td>4.2</td>
-                      <td>
-                        <span className="badge bg-success">
-                          12 Oct, 202110:05 AM
-                        </span>
-                      </td>
-                      <td>
-                        <div className="hstack gap-3 flex-wrap">
-                          <Link to="#" className="link-success fs-15">
-                            <i className="ri-edit-2-line"></i>
-                          </Link>
-                          <Link to="#" className="link-danger fs-15">
-                            <i className="ri-delete-bin-line"></i>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>{" "}
-                    <tr>
-                      <td>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="cardtableCheck04"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="cardtableCheck04"
-                          ></label>
-                        </div>
-                      </td>
-                      <td>
-                        <Link to="#" className="fw-semibold">
-                          Proven® Zinc Copper Alkaline Hydrogen RO Water
-                          Purifier
-                          <br />
-                          Category : Domestic Ro
-                        </Link>
-                      </td>
-                      <td>50</td>
-                      <td> Rs.5,299.00</td>
-                      <td>48</td>
-                      <td>4.2</td>
-                      <td>
-                        <span className="badge bg-success">
-                          12 Oct, 202110:05 AM
-                        </span>
-                      </td>
-                      <td>
-                        <div className="hstack gap-3 flex-wrap">
-                          <Link to="#" className="link-success fs-15">
-                            <i className="ri-edit-2-line"></i>
-                          </Link>
-                          <Link to="#" className="link-danger fs-15">
-                            <i className="ri-delete-bin-line"></i>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>{" "}
-                    <tr>
-                      <td>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="cardtableCheck04"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="cardtableCheck04"
-                          ></label>
-                        </div>
-                      </td>
-                      <td>
-                        <Link to="#" className="fw-semibold">
-                          Proven® Zinc Copper Alkaline Hydrogen RO Water
-                          Purifier
-                          <br />
-                          Category : Domestic Ro
-                        </Link>
-                      </td>
-                      <td>50</td>
-                      <td> Rs.5,299.00</td>
-                      <td>48</td>
-                      <td>4.2</td>
-                      <td>
-                        <span className="badge bg-success">
-                          12 Oct, 202110:05 AM
-                        </span>
-                      </td>
-                      <td>
-                        <div className="hstack gap-3 flex-wrap">
-                          <Link to="#" className="link-success fs-15">
-                            <i className="ri-edit-2-line"></i>
-                          </Link>
-                          <Link to="#" className="link-danger fs-15">
-                            <i className="ri-delete-bin-line"></i>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                        <td> Rs {product.oneTimePrice}</td>
+                        <td>{product.status}</td>
+                        <td>{product.rating}</td>
+                        <td>
+                          <span className="badge bg-success">
+                            {product.stock}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="hstack gap-3 flex-wrap">
+                            <Link to="#" className="link-success fs-15">
+                              <i className="ri-edit-2-line"></i>
+                            </Link>
+                            <Link to="#" className="link-danger fs-15">
+                              <i className="ri-delete-bin-line"></i>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

@@ -6,7 +6,6 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 function AddProduct() {
   const [isChecked, setIsChecked] = useState(false);
 
-  // Handler for checkbox change
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };

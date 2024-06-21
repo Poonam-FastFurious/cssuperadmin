@@ -1,8 +1,30 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import axios from "axios";
+
 function Listproduct() {
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/v1/Product/products"
+        );
+        setProducts(response.data.products);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Fetch data on component mount (using useEffect)
+
+  console.log(products); // Empty dependency array means this effect runs only once
+
   return (
     <>
       <div className="main-content">
@@ -479,62 +501,66 @@ function Listproduct() {
                                   <th scope="col">Product</th>
                                   <th scope="col">Stock</th>
                                   <th scope="col">Price</th>
-                                  <th scope="col">Subscription</th>
+
                                   <th scope="col">Rating</th>
                                   <th scope="col">Status</th>
                                   <th scope="col">Action</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        value=""
-                                        id="cardtableCheck04"
-                                      />
-                                      <label
-                                        className="form-check-label"
-                                        htmlFor="cardtableCheck04"
-                                      ></label>
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <Link to="/details" className="fw-semibold">
-                                      Proven® Zinc Copper Alkaline Hydrogen RO
-                                      Water Purifier
-                                      <br />
-                                      Category : Domestic Ro
-                                    </Link>
-                                  </td>
-                                  <td>50</td>
-                                  <td> Rs215.00</td>
-                                  <td>48</td>
-                                  <td>4.2</td>
-                                  <td>
-                                    <span className="badge bg-success">
-                                      12 Oct, 202110:05 AM
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <div className="hstack gap-3 flex-wrap">
+                                {products.map((product, index) => (
+                                  <tr key={index}>
+                                    <td>
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          value=""
+                                          id="cardtableCheck04"
+                                        />
+                                        <label
+                                          className="form-check-label"
+                                          htmlFor="cardtableCheck04"
+                                        ></label>
+                                      </div>
+                                    </td>
+                                    <td>
                                       <Link
-                                        to="#;"
-                                        className="link-success fs-15"
+                                        to={`${product._id}`}
+                                        className="fw-semibold"
                                       >
-                                        <i className="ri-edit-2-line"></i>
+                                        {product.name}
+                                        <br />
+                                        Category :{product.category}
                                       </Link>
-                                      <Link
-                                        to="#;"
-                                        className="link-danger fs-15"
-                                      >
-                                        <i className="ri-delete-bin-line"></i>
-                                      </Link>
-                                    </div>
-                                  </td>
-                                </tr>
+                                    </td>
+                                    <td>{product.stock.quantity}</td>
+                                    <td> Rs{product.price}</td>
+
+                                    <td>{product.rating}</td>
+                                    <td>
+                                      <span className="badge bg-success">
+                                        {product.visibility}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <div className="hstack gap-3 flex-wrap">
+                                        <Link
+                                          to="#;"
+                                          className="link-success fs-15"
+                                        >
+                                          <i className="ri-edit-2-line"></i>
+                                        </Link>
+                                        <Link
+                                          to="#;"
+                                          className="link-danger fs-15"
+                                        >
+                                          <i className="ri-delete-bin-line"></i>
+                                        </Link>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
                           </div>

@@ -1,8 +1,29 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
 
 function ProductDetail() {
+  const [products, setProducts] = useState([]);
+  const { id } = useParams();
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/v1/Product/product?id=${id}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setProducts(data.data);
+      } catch (err) {
+        throw new Error("data not fetch ", err);
+      }
+    };
+
+    fetchProducts();
+  }, [id]);
   return (
     <>
       <div className="main-content">
@@ -75,11 +96,11 @@ function ProductDetail() {
                         <div className="mt-xl-0 mt-5">
                           <div className="d-flex">
                             <div className="flex-grow-1">
-                              <h4>Producttitle</h4>
+                              <h4>{products.name}</h4>
                               <div className="hstack gap-3 flex-wrap">
                                 <div>
                                   <Link to="#" className="text-primary d-block">
-                                    product category
+                                    {products.description}
                                   </Link>
                                 </div>
                                 <div className="vr"></div>
@@ -110,8 +131,10 @@ function ProductDetail() {
                                     </div>
                                   </div>
                                   <div className="flex-grow-1">
-                                    <p className="text-muted mb-1">Price :</p>
-                                    <h5 className="mb-0">RsPrice</h5>
+                                    <p className="text-muted mb-1">
+                                      Price :{products.price}
+                                    </p>
+                                    <h5 className="mb-0">{products.price}</h5>
                                   </div>
                                 </div>
                               </div>
@@ -127,7 +150,7 @@ function ProductDetail() {
                                   </div>
                                   <div className="flex-grow-1">
                                     <p className="text-muted mb-1">
-                                      Subscription Price :
+                                      off price Price :
                                     </p>
                                     <h5 className="mb-0">cutprice</h5>
                                   </div>
@@ -147,7 +170,7 @@ function ProductDetail() {
                                     <p className="text-muted mb-1">
                                       Available Stocks :
                                     </p>
-                                    <h5 className="mb-0">stock</h5>
+                                    <h5 className="mb-0">50</h5>
                                   </div>
                                 </div>
                               </div>
@@ -163,7 +186,9 @@ function ProductDetail() {
                                   </div>
                                   <div className="flex-grow-1">
                                     <p className="text-muted mb-1">status :</p>
-                                    <h5 className="mb-0">stauts</h5>
+                                    <h5 className="mb-0">
+                                      {products.visibility}
+                                    </h5>
                                   </div>
                                 </div>
                               </div>
