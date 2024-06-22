@@ -100,7 +100,7 @@ function AddProduct() {
     }
 
     try {
-      await axios.post(Baseurl + "api/v1/product/add", formData, {
+      await axios.post(Baseurl + "/api/v1/product/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
