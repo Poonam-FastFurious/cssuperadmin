@@ -1,8 +1,127 @@
-import React from "react";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
-function OrderList() {
+/* eslint-disable react/no-unescaped-entities */
+function Order() {
+  const [orders, setOrders] = useState([]);
+  const [canceledOrders, setCanceledOrders] = useState([]);
+  const [delivered, setDelivered] = useState([]);
+  const [shiped, setShiped] = useState([]);
+  const [fetching, setFetching] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [newStatus, setNewStatus] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 20;
+
+  // Calculate indexes for slicing current page items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = orders.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Pagination control handlers
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setFetching(true);
+        const response = await fetch(
+          "https://ssagricultureapi.brandbell.in/api/v1/order/allorder"
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setOrders(data.data);
+        const filteredCanceledOrders = data.data.filter(
+          (order) => order.status === "Cancelled"
+        );
+        setCanceledOrders(filteredCanceledOrders);
+        const filterdeliverd = data.data.filter(
+          (order) => order.status === "Delivered"
+        );
+        setDelivered(filterdeliverd);
+
+        const filtershiped = data.data.filter(
+          (order) => order.status === "Shipped"
+        );
+        setShiped(filtershiped);
+      } catch (err) {
+        throw (new Error("data not fetch "), err);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+  const handleEditClick = (order) => {
+    setSelectedOrder(order);
+    setNewStatus(order.status);
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!selectedOrder) return;
+    try {
+      const response = await fetch(
+        "https://ssagricultureapi.brandbell.in/api/v1/order/updateorder",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderID: selectedOrder.orderID, // assuming _id is the unique identifier for the order
+            status: newStatus,
+          }),
+        }
+      );
+      if (!response.ok) {
+        console.log("error");
+      }
+      // Update the local state to reflect the status change
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === selectedOrder._id
+            ? { ...order, status: newStatus }
+            : order
+        )
+      );
+      setCanceledOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === selectedOrder._id
+            ? { ...order, status: newStatus }
+            : order
+        )
+      );
+      setSelectedOrder(null); // Close the modal
+      toast.success("Status updated successfully!", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        onClose: () => {
+          const modalElement = document.getElementById("showModal");
+          const modal = window.bootstrap.Modal.getInstance(modalElement);
+          if (modal) {
+            modal.hide();
+          }
+        },
+      });
+      // Hide the modal programmatically
+    } catch (err) {
+      console.error("Failed to update order status", err);
+    }
+  };
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(orders.length / itemsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+
   return (
     <>
       <div className="main-content">
@@ -16,7 +135,7 @@ function OrderList() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="">SSAGRICULTURE</Link>
                       </li>
                       <li className="breadcrumb-item active">Orders</li>
                     </ol>
@@ -45,9 +164,9 @@ function OrderList() {
                       <div>
                         <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                           <span className="counter-value" data-target="559.25">
-                            0
+                            {orders.length}
                           </span>
-                          k
+
                         </h4>
                         <Link
                           to=""
@@ -87,7 +206,7 @@ function OrderList() {
                       <div>
                         <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                           <span className="counter-value" data-target="36894">
-                            0
+                            {shiped.length}
                           </span>
                         </h4>
                         <Link
@@ -128,9 +247,9 @@ function OrderList() {
                       <div>
                         <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                           <span className="counter-value" data-target="183.35">
-                            0
+                            {delivered.length}
                           </span>
-                          M
+
                         </h4>
                         <Link
                           to=""
@@ -166,11 +285,11 @@ function OrderList() {
                     <div className="d-flex align-items-end justify-content-between mt-4">
                       <div>
                         <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                          $
+
                           <span className="counter-value" data-target="165.89">
-                            0
+                            {canceledOrders.length}
                           </span>
-                          k
+
                         </h4>
                         <Link
                           to=""
@@ -413,85 +532,119 @@ function OrderList() {
                                 </tr>
                               </thead>
                               <tbody className="list form-check-all">
-                                <tr>
-                                  <th scope="row">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="checkAll"
-                                        value="option1"
-                                      />
-                                    </div>
-                                  </th>
-                                  <td className="id">
-                                    <Link
-                                      to="/orderdetail"
-                                      className="fw-medium link-primary"
-                                    >
-                                      OrderId
-                                    </Link>
-                                  </td>
-                                  <td className="customer_name">Customer</td>
-                                  <td className="product_name"></td>
-                                  <td className="date"></td>
-                                  <td className="amount"></td>
-                                  <td className="payment"></td>
-                                  <td className="status">
-                                    <span className="badge bg-warning-subtle text-warning text-uppercase"></span>
-                                  </td>
-                                  <td>
-                                    <ul className="list-inline hstack gap-2 mb-0">
-                                      <li
-                                        className="list-inline-item"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="View"
+                                {currentItems.map((order, index) => (
+                                  <tr key={index}>
+                                    <th scope="row">
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          name="checkAll"
+                                          value="option1"
+                                        />
+                                      </div>
+                                    </th>
+                                    <td className="id">
+                                      <Link
+                                        to={`${order._id}`}
+                                        className="fw-medium link-primary"
                                       >
-                                        <Link
-                                          to={""}
-                                          className="text-primary d-inline-block"
+                                        {order.orderID}
+                                      </Link>
+                                    </td>
+                                    <td className="customer_name">
+                                      {order.customer}
+                                    </td>
+                                    <td className="product_name">
+                                      {order.products.length}
+                                    </td>
+                                    <td className="date">
+                                      {new Date(
+                                        order.createdAt
+                                      ).toLocaleDateString()}
+                                    </td>
+                                    <td className="amount">
+                                      {order.totalAmount}
+                                    </td>
+                                    <td className="payment">
+                                      {order.paymentInfo.method}
+                                    </td>
+                                    <td className="status">
+                                      <span className="badge bg-warning-subtle text-warning text-uppercase">
+                                        {order.status}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <ul className="list-inline hstack gap-2 mb-0">
+                                        <li
+                                          className="list-inline-item"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="View"
                                         >
-                                          <i className="ri-eye-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                      <li
-                                        className="list-inline-item edit"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="Edit"
-                                      >
-                                        <Link
-                                          to="#showModal"
-                                          data-bs-toggle="modal"
-                                          className="text-primary d-inline-block edit-item-btn"
+                                          <Link
+                                            to={`${order._id}`}
+                                            className="text-primary d-inline-block"
+                                          >
+                                            <i className="ri-eye-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                        <li
+                                          className="list-inline-item edit"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="Edit"
                                         >
-                                          <i className="ri-pencil-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                    </ul>
-                                  </td>
-                                </tr>
+                                          <Link
+                                            to="#showModal"
+                                            data-bs-toggle="modal"
+                                            className="text-primary d-inline-block edit-item-btn"
+                                            onClick={() =>
+                                              handleEditClick(order)
+                                            }
+                                          >
+                                            <i className="ri-pencil-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
-
-                            <div className="noresult">
-                              <div className="text-center">
-                                <lord-icon
-                                  src="../../../msoeawqm.json"
-                                  trigger="loop"
-                                  colors="primary:#121331,secondary:#08a88a"
-                                  style={{ width: "75px", height: "75px" }}
-                                ></lord-icon>
-                                <h5 className="mt-2">Sorry! No Result Found</h5>
-                                <p className="text-muted mb-0">
-                                  We've searched more than 150+ customers. We
-                                  did not find any customer for your search.
-                                </p>
+                            <ul className="pagination justify-content-end">
+                              {pageNumbers.map((number) => (
+                                <li key={number} className="page-item">
+                                  <button
+                                    onClick={() => paginate(number)}
+                                    className="page-link"
+                                  >
+                                    {number}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                            {orders.length === 0 && !fetching && (
+                              <div className="noresult">
+                                <div className="text-center">
+                                  <lord-icon
+                                    src="../../../msoeawqm.json"
+                                    trigger="loop"
+                                    colors="primary:#121331,secondary:#08a88a"
+                                    style={{ width: "75px", height: "75px" }}
+                                  ></lord-icon>
+                                  <h5 className="mt-2">
+                                    Sorry! No Result Found
+                                  </h5>
+                                  <p className="text-muted mb-0">
+                                    We've searched more than 150+ customers. We
+                                    did not find any customer for your search.
+                                  </p>
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                         <div
@@ -543,83 +696,107 @@ function OrderList() {
                                 </tr>
                               </thead>
                               <tbody className="list form-check-all">
-                                <tr>
-                                  <th scope="row">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="checkAllCancelled"
-                                        value="option1"
-                                      />
-                                    </div>
-                                  </th>
-                                  <td className="id">
-                                    <Link
-                                      to={""}
-                                      className="fw-medium link-primary"
-                                    ></Link>
-                                  </td>
-                                  <td className="customer_name"></td>
-                                  <td className="product_name"></td>
-                                  <td className="date"></td>
-                                  <td className="amount"></td>
-                                  <td className="payment"></td>
-                                  <td className="status">
-                                    <span className="badge bg-warning-subtle text-warning text-uppercase"></span>
-                                  </td>
-                                  <td>
-                                    <ul className="list-inline hstack gap-2 mb-0">
-                                      <li
-                                        className="list-inline-item"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="View"
+                                {delivered.map((order, index) => (
+                                  <tr key={index}>
+                                    <th scope="row">
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          name="checkAllCancelled"
+                                          value="option1"
+                                        />
+                                      </div>
+                                    </th>
+                                    <td className="id">
+                                      <Link
+                                        to={`${order._id}`}
+                                        className="fw-medium link-primary"
                                       >
-                                        <Link
-                                          to={""}
-                                          className="text-primary d-inline-block"
+                                        {order.orderID}
+                                      </Link>
+                                    </td>
+                                    <td className="customer_name">
+                                      {order.customer}
+                                    </td>
+                                    <td className="product_name">
+                                      {order.products.length}
+                                    </td>
+                                    <td className="date">
+                                      {new Date(
+                                        order.createdAt
+                                      ).toLocaleDateString()}
+                                    </td>
+                                    <td className="amount">
+                                      {order.totalAmount}
+                                    </td>
+                                    <td className="payment">
+                                      {order.paymentInfo.method}
+                                    </td>
+                                    <td className="status">
+                                      <span className="badge bg-warning-subtle text-warning text-uppercase">
+                                        {order.status}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <ul className="list-inline hstack gap-2 mb-0">
+                                        <li
+                                          className="list-inline-item"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="View"
                                         >
-                                          <i className="ri-eye-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                      <li
-                                        className="list-inline-item edit"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="Edit"
-                                      >
-                                        <Link
-                                          to="#showModal"
-                                          data-bs-toggle="modal"
-                                          className="text-primary d-inline-block edit-item-btn"
+                                          <Link
+                                            to={`${order._id}`}
+                                            className="text-primary d-inline-block"
+                                          >
+                                            <i className="ri-eye-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                        <li
+                                          className="list-inline-item edit"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="Edit"
                                         >
-                                          <i className="ri-pencil-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                    </ul>
-                                  </td>
-                                </tr>
+                                          <Link
+                                            to="#showModal"
+                                            data-bs-toggle="modal"
+                                            className="text-primary d-inline-block edit-item-btn"
+                                            onClick={() =>
+                                              handleEditClick(order)
+                                            }
+                                          >
+                                            <i className="ri-pencil-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
-
-                            <div className="noresult">
-                              <div className="text-center">
-                                <lord-icon
-                                  src="../../../msoeawqm.json"
-                                  trigger="loop"
-                                  colors="primary:#121331,secondary:#08a88a"
-                                  style={{ width: "75px", height: "75px" }}
-                                ></lord-icon>
-                                <h5 className="mt-2">Sorry! No Result Found</h5>
-                                <p className="text-muted mb-0">
-                                  We've searched more than 150+ customers. We
-                                  did not find any customer for your search.
-                                </p>
+                            {delivered.length === 0 && !fetching && (
+                              <div className="noresult">
+                                <div className="text-center">
+                                  <lord-icon
+                                    src="../../../msoeawqm.json"
+                                    trigger="loop"
+                                    colors="primary:#121331,secondary:#08a88a"
+                                    style={{ width: "75px", height: "75px" }}
+                                  ></lord-icon>
+                                  <h5 className="mt-2">
+                                    Sorry! No Result Found
+                                  </h5>
+                                  <p className="text-muted mb-0">
+                                    We've searched more than 150+ customers. We
+                                    did not find any customer for your search.
+                                  </p>
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                         <div
@@ -672,80 +849,107 @@ function OrderList() {
                                 </tr>
                               </thead>
                               <tbody className="list form-check-all">
-                                <tr>
-                                  <th scope="row">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="checkAllCancelled"
-                                        value="option1"
-                                      />
-                                    </div>
-                                  </th>
-                                  <td className="id">
-                                    <Link
-                                      to={""}
-                                      className="fw-medium link-primary"
-                                    ></Link>
-                                  </td>
-                                  <td className="customer_name"></td>
-                                  <td className="product_name"></td>
-                                  <td className="date"></td>
-                                  <td className="amount"></td>
-                                  <td className="payment"></td>
-                                  <td className="status">
-                                    <span className="badge bg-warning-subtle text-warning text-uppercase"></span>
-                                  </td>
-                                  <td>
-                                    <ul className="list-inline hstack gap-2 mb-0">
-                                      <li
-                                        className="list-inline-item"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="View"
+                                {shiped.map((order, index) => (
+                                  <tr key={index}>
+                                    <th scope="row">
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          name="checkAllCancelled"
+                                          value="option1"
+                                        />
+                                      </div>
+                                    </th>
+                                    <td className="id">
+                                      <Link
+                                        to={`${order._id}`}
+                                        className="fw-medium link-primary"
                                       >
-                                        <Link className="text-primary d-inline-block">
-                                          <i className="ri-eye-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                      <li
-                                        className="list-inline-item edit"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="Edit"
-                                      >
-                                        <Link
-                                          to="#showModal"
-                                          data-bs-toggle="modal"
-                                          className="text-primary d-inline-block edit-item-btn"
+                                        {order.orderID}
+                                      </Link>
+                                    </td>
+                                    <td className="customer_name">
+                                      {order.customer}
+                                    </td>
+                                    <td className="product_name">
+                                      {order.products.length}
+                                    </td>
+                                    <td className="date">
+                                      {new Date(
+                                        order.createdAt
+                                      ).toLocaleDateString()}
+                                    </td>
+                                    <td className="amount">
+                                      {order.totalAmount}
+                                    </td>
+                                    <td className="payment">
+                                      {order.paymentInfo.method}
+                                    </td>
+                                    <td className="status">
+                                      <span className="badge bg-warning-subtle text-warning text-uppercase">
+                                        {order.status}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <ul className="list-inline hstack gap-2 mb-0">
+                                        <li
+                                          className="list-inline-item"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="View"
                                         >
-                                          <i className="ri-pencil-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                    </ul>
-                                  </td>
-                                </tr>
+                                          <Link
+                                            to={`${order._id}`}
+                                            className="text-primary d-inline-block"
+                                          >
+                                            <i className="ri-eye-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                        <li
+                                          className="list-inline-item edit"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="Edit"
+                                        >
+                                          <Link
+                                            to="#showModal"
+                                            data-bs-toggle="modal"
+                                            className="text-primary d-inline-block edit-item-btn"
+                                            onClick={() =>
+                                              handleEditClick(order)
+                                            }
+                                          >
+                                            <i className="ri-pencil-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
-
-                            <div className="noresult">
-                              <div className="text-center">
-                                <lord-icon
-                                  src="../../../msoeawqm.json"
-                                  trigger="loop"
-                                  colors="primary:#121331,secondary:#08a88a"
-                                  style={{ width: "75px", height: "75px" }}
-                                ></lord-icon>
-                                <h5 className="mt-2">Sorry! No Result Found</h5>
-                                <p className="text-muted mb-0">
-                                  We've searched more than 150+ customers. We
-                                  did not find any customer for your search.
-                                </p>
+                            {shiped.length === 0 && !fetching && (
+                              <div className="noresult">
+                                <div className="text-center">
+                                  <lord-icon
+                                    src="../../../msoeawqm.json"
+                                    trigger="loop"
+                                    colors="primary:#121331,secondary:#08a88a"
+                                    style={{ width: "75px", height: "75px" }}
+                                  ></lord-icon>
+                                  <h5 className="mt-2">
+                                    Sorry! No Result Found
+                                  </h5>
+                                  <p className="text-muted mb-0">
+                                    We've searched more than 150+ customers. We
+                                    did not find any customer for your search.
+                                  </p>
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                         <div
@@ -798,77 +1002,107 @@ function OrderList() {
                                 </tr>
                               </thead>
                               <tbody className="list form-check-all">
-                                <tr>
-                                  <th scope="row">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="checkAllCancelled"
-                                        value="option1"
-                                      />
-                                    </div>
-                                  </th>
-                                  <td className="id">
-                                    <Link className="fw-medium link-primary"></Link>
-                                  </td>
-                                  <td className="customer_name"></td>
-                                  <td className="product_name"></td>
-                                  <td className="date"></td>
-                                  <td className="amount"></td>
-                                  <td className="payment"></td>
-                                  <td className="status">
-                                    <span className="badge bg-warning-subtle text-warning text-uppercase"></span>
-                                  </td>
-                                  <td>
-                                    <ul className="list-inline hstack gap-2 mb-0">
-                                      <li
-                                        className="list-inline-item"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="View"
+                                {canceledOrders.map((order, index) => (
+                                  <tr key={index}>
+                                    <th scope="row">
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          name="checkAllCancelled"
+                                          value="option1"
+                                        />
+                                      </div>
+                                    </th>
+                                    <td className="id">
+                                      <Link
+                                        to={`${order._id}`}
+                                        className="fw-medium link-primary"
                                       >
-                                        <Link className="text-primary d-inline-block">
-                                          <i className="ri-eye-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                      <li
-                                        className="list-inline-item edit"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-trigger="hover"
-                                        data-bs-placement="top"
-                                        title="Edit"
-                                      >
-                                        <Link
-                                          to="#showModal"
-                                          data-bs-toggle="modal"
-                                          className="text-primary d-inline-block edit-item-btn"
+                                        {order.orderID}
+                                      </Link>
+                                    </td>
+                                    <td className="customer_name">
+                                      {order.customer}
+                                    </td>
+                                    <td className="product_name">
+                                      {order.products.length}
+                                    </td>
+                                    <td className="date">
+                                      {new Date(
+                                        order.createdAt
+                                      ).toLocaleDateString()}
+                                    </td>
+                                    <td className="amount">
+                                      {order.totalAmount}
+                                    </td>
+                                    <td className="payment">
+                                      {order.paymentInfo.method}
+                                    </td>
+                                    <td className="status">
+                                      <span className="badge bg-warning-subtle text-warning text-uppercase">
+                                        {order.status}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <ul className="list-inline hstack gap-2 mb-0">
+                                        <li
+                                          className="list-inline-item"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="View"
                                         >
-                                          <i className="ri-pencil-fill fs-16"></i>
-                                        </Link>
-                                      </li>
-                                    </ul>
-                                  </td>
-                                </tr>
+                                          <Link
+                                            to={`${order._id}`}
+                                            className="text-primary d-inline-block"
+                                          >
+                                            <i className="ri-eye-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                        <li
+                                          className="list-inline-item edit"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-trigger="hover"
+                                          data-bs-placement="top"
+                                          title="Edit"
+                                        >
+                                          <Link
+                                            to="#showModal"
+                                            data-bs-toggle="modal"
+                                            className="text-primary d-inline-block edit-item-btn"
+                                            onClick={() =>
+                                              handleEditClick(order)
+                                            }
+                                          >
+                                            <i className="ri-pencil-fill fs-16"></i>
+                                          </Link>
+                                        </li>
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
-
-                            <div className="noresult">
-                              <div className="text-center">
-                                <lord-icon
-                                  src="../../../msoeawqm.json"
-                                  trigger="loop"
-                                  colors="primary:#121331,secondary:#08a88a"
-                                  style={{ width: "75px", height: "75px" }}
-                                ></lord-icon>
-                                <h5 className="mt-2">Sorry! No Result Found</h5>
-                                <p className="text-muted mb-0">
-                                  We've searched more than 150+ customers. We
-                                  did not find any customer for your search.
-                                </p>
+                            {canceledOrders.length === 0 && !fetching && (
+                              <div className="noresult">
+                                <div className="text-center">
+                                  <lord-icon
+                                    src="../../../msoeawqm.json"
+                                    trigger="loop"
+                                    colors="primary:#121331,secondary:#08a88a"
+                                    style={{ width: "75px", height: "75px" }}
+                                  ></lord-icon>
+                                  <h5 className="mt-2">
+                                    Sorry! No Result Found
+                                  </h5>
+                                  <p className="text-muted mb-0">
+                                    We've searched more than 150+ customers. We
+                                    did not find any customer for your search.
+                                  </p>
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -912,6 +1146,8 @@ function OrderList() {
                                   name="delivered-status"
                                   required=""
                                   id="delivered-status"
+                                  value={newStatus}
+                                  onChange={(e) => setNewStatus(e.target.value)}
                                 >
                                   <option value="Pending">Pending</option>
                                   <option value="Processing">Processing</option>
@@ -936,6 +1172,7 @@ function OrderList() {
                                   type="button"
                                   className="btn btn-success"
                                   id="edit-btn"
+                                  onClick={handleUpdateStatus}
                                 >
                                   Update
                                 </button>
@@ -950,191 +1187,10 @@ function OrderList() {
               </div>
             </div>
           </div>
-        </div>{" "}
-        <div
-          class="modal fade zoomIn"
-          id="deleteRecordModal"
-          tabindex="-1"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  id="btn-close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <div class="mt-2 text-center">
-                  <RiDeleteBin6Line style={{ width: "100%" }} />
-                  <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                    <h4>Are you Sure ?</h4>
-                    <p class="text-muted mx-4 mb-0">
-                      Are you Sure You want to Remove this Record ?
-                    </p>
-                  </div>
-                </div>
-                <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
-                  <button
-                    type="button"
-                    class="btn w-sm btn-light"
-                    data-bs-dismiss="modal"
-                  >
-                    Close
-                  </button>
-                  <button
-                    type="button"
-                    class="btn w-sm btn-danger"
-                    id="delete-record"
-                  >
-                    Yes, Delete It!
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="modal fade"
-          id="showModal"
-          tabindex="-1"
-          aria-labelledby="exampleModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header bg-light p-3">
-                <h5 class="modal-title" id="exampleModalLabel">
-                  Add category
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  id="close-modal"
-                ></button>
-              </div>
-              <form class="tablelist-form" autocomplete="off">
-                <div class="modal-body">
-                  <div class="mb-3" id="modal-id" style={{ display: "none" }}>
-                    <label for="id-field" class="form-label">
-                      ID
-                    </label>
-                    <input
-                      type="text"
-                      id="id-field"
-                      class="form-control"
-                      placeholder="ID"
-                      readonly=""
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="customername-field" class="form-label">
-                      Banner Title
-                    </label>
-                    <input
-                      type="text"
-                      id="customername-field"
-                      class="form-control"
-                      placeholder="Enter Title"
-                      required=""
-                    />
-                    <div class="invalid-feedback">Please enter a Title</div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="email-field" class="form-label">
-                      Link
-                    </label>
-                    <input
-                      type="email"
-                      id="email-field"
-                      class="form-control"
-                      placeholder="Enter Link"
-                      required=""
-                    />
-                    <div class="invalid-feedback">Please enter an Link.</div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="phone-field" class="form-label">
-                      Image
-                    </label>
-                    <input
-                      type="file"
-                      id="phone-field"
-                      class="form-control"
-                      placeholder="Enter Phone no."
-                      required=""
-                    />
-                    <div class="invalid-feedback">Please enter a phone.</div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="date-field" class="form-label">
-                      Place
-                    </label>
-                    <select
-                      class="form-control"
-                      data-trigger=""
-                      name="status-field"
-                      id="status-field"
-                      required=""
-                    >
-                      <option value="">Home </option>
-                      <option value="Active">Offer</option>
-                      <option value="Block">Block</option>
-                    </select>
-                    <div class="invalid-feedback">Please select a date.</div>
-                  </div>
-
-                  <div>
-                    <label for="status-field" class="form-label">
-                      Status
-                    </label>
-                    <select
-                      class="form-control"
-                      data-trigger=""
-                      name="status-field"
-                      id="status-field"
-                      required=""
-                    >
-                      <option value="">Status</option>
-                      <option value="Active">Active</option>
-                      <option value="Block">Block</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <div class="hstack gap-2 justify-content-end">
-                    <button
-                      type="button"
-                      class="btn btn-light"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <button type="submit" class="btn btn-success" id="add-btn">
-                      Add Customer
-                    </button>
-                    <button type="button" class="btn btn-success" id="edit-btn">
-                      Update
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
         </div>
       </div>
     </>
   );
 }
 
-export default OrderList;
+export default Order;

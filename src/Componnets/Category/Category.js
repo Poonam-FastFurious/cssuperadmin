@@ -13,7 +13,12 @@ function Category() {
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
+  // New state variables for editing
+  const [editId, setEditId] = useState("");
+  const [editCategoriesTitle, setEditCategoriesTitle] = useState("");
+  const [editLink, setEditLink] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editImage, setEditImage] = useState("");
   const clearForm = () => {
     setCategoriesTitle(""); // Clear the state for categoriesTitle
     setLink(""); // Clear the state for link
@@ -22,6 +27,77 @@ function Category() {
   };
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
+  };
+  const handleEditImageChange = (e) => {
+    setEditImage(e.target.files[0]);
+  };
+  const handleEditClick = (cat) => {
+    setEditId(cat._id);
+    setEditCategoriesTitle(cat.categoriesTitle);
+    setEditLink(cat.link);
+    setEditStatus(cat.status);
+    setEditImage(null);
+  };
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("id", editId);
+    formData.append("categoriesTitle", editCategoriesTitle);
+    formData.append("link", editLink);
+    formData.append("status", editStatus);
+    if (editImage) {
+      formData.append("image", editImage);
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(Baseurl + "/api/v1/category/update", {
+        method: "PATCH",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Category updated successfully", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          onClose: () => {
+            const modalElement = document.getElementById("editModal");
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+
+          },
+        });
+      } else {
+        throw new Error("Category update failed");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("Category update failed", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   const handelsubmit = async (e) => {
     e.preventDefault();
@@ -276,6 +352,7 @@ function Category() {
                                         class="btn btn-sm btn-success edit-item-btn"
                                         data-bs-toggle="modal"
                                         data-bs-target="#editModal"
+                                        onClick={() => handleEditClick(cat)}
                                       >
                                         Edit
                                       </button>
@@ -491,7 +568,7 @@ function Category() {
                     id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off">
+                <form class="tablelist-form" autocomplete="off" onSubmit={handleEditSubmit}>
                   <div class="modal-body">
                     <div class="mb-3" id="modal-id">
                       <label for="id-field" class="form-label">
@@ -503,6 +580,7 @@ function Category() {
                         class="form-control"
                         placeholder="ID"
                         readonly=""
+                        value={editId}
                       />
                     </div>
 
@@ -516,6 +594,10 @@ function Category() {
                         class="form-control"
                         placeholder="Enter Title"
                         required=""
+                        value={editCategoriesTitle}
+                        onChange={(e) =>
+                          setEditCategoriesTitle(e.target.value)
+                        }
                       />
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
@@ -525,11 +607,13 @@ function Category() {
                         Link
                       </label>
                       <input
-                        type="email"
+                        type="text"
                         id="email-field"
                         class="form-control"
                         placeholder="Enter Link"
                         required=""
+                        value={editLink}
+                        onChange={(e) => setEditLink(e.target.value)}
                       />
                       <div class="invalid-feedback">Please enter an Link.</div>
                     </div>
@@ -544,6 +628,7 @@ function Category() {
                         class="form-control"
                         placeholder="Enter Phone no."
                         required=""
+                        onChange={handleEditImageChange}
                       />
                       <div class="invalid-feedback">Please enter a Image</div>
                     </div>
@@ -558,10 +643,12 @@ function Category() {
                         name="status-field"
                         id="status-field"
                         required=""
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
                       >
-                        <option value="">Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Block">Block</option>
+                        <option >Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                       </select>
                     </div>
                   </div>
@@ -576,7 +663,7 @@ function Category() {
                       </button>
 
                       <button
-                        type="button"
+                        type="submit"
                         class="btn btn-success"
                         id="edit-btn"
                       >

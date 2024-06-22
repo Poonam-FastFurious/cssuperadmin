@@ -1,20 +1,10 @@
 import React, { useState } from "react";
-import { RiDeleteBin6Line } from "react-icons/ri";
+
 import { Link } from "react-router-dom";
 
 function Coupon() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
-  // Function to handle showing the modal
-  const handleShowModal = () => {
-    setShowModal(true);
-  };
-
-  // Function to handle closing the modal
-  const handleCloseModaldelete = () => {
-    setShowModal(false);
-  };
   const handleAddClick = () => {
     setModalVisible(true);
   };
@@ -202,7 +192,7 @@ function Coupon() {
                                     <Link
                                       className="text-danger d-inline-block remove-item-btn"
                                       to="#deleteRecordModal"
-                                      onClick={handleShowModal}
+
                                     >
                                       <i className="ri-delete-bin-5-fill fs-16"></i>
                                     </Link>
@@ -387,56 +377,7 @@ function Coupon() {
                         </div>
                       </div>
                     )}
-                    {showModal && (
-                      <div
-                        className="modal fade show"
-                        style={{
-                          display: "block",
-                          backgroundColor: "rgba(0,0,0,0.5)",
-                        }}
-                        tabIndex="-1"
-                      >
-                        <div className="modal-dialog modal-dialog-centered">
-                          <div className="modal-content">
-                            <div className="modal-header">
-                              <button
-                                type="button"
-                                className="btn-close"
-                                onClick={handleCloseModaldelete}
-                                aria-label="Close"
-                              ></button>
-                            </div>
-                            <div className="modal-body">
-                              <div className="mt-2 text-center">
-                                <RiDeleteBin6Line style={{ width: "100%" }} />
-                                <div className="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-                                  <h4>Are you Sure ?</h4>
-                                  <p className="text-muted mx-4 mb-0">
-                                    Are you Sure You want to Remove this Record
-                                    ?
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="d-flex gap-2 justify-content-center mt-4 mb-2">
-                                <button
-                                  type="button"
-                                  className="btn w-sm btn-light"
-                                  onClick={handleCloseModaldelete}
-                                >
-                                  Close
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn w-sm btn-danger"
-                                >
-                                  Yes, Delete It!
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 </div>
               </div>

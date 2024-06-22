@@ -15,7 +15,14 @@ function SubCategory() {
   const [link, setLink] = useState("");
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
-
+  // New state variables for editing
+  const [editId, setEditId] = useState("");
+  const [editsubCategoryTitle, setEditsubCategoryTitle] = useState("");
+  const [editLink, setEditLink] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editImage, setEditImage] = useState("");
+  const [editcategoryName, setEditcategoryName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const clearForm = () => {
     setSubCategoryTitle(""); // Clear the state for categoriesTitle
     setLink(""); // Clear the state for link
@@ -24,6 +31,79 @@ function SubCategory() {
   };
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
+  };
+  const handleEditImageChange = (e) => {
+    setEditImage(e.target.files[0]);
+  };
+  const handleEditClick = (cat) => {
+    setEditId(cat._id);
+    setEditsubCategoryTitle(cat.subCategoryTitle);
+    setEditLink(cat.link);
+    setEditStatus(cat.status);
+    setEditcategoryName(cat.editcategoryName);
+    setEditImage(null);
+  };
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("id", editId);
+    formData.append("editsubCategoryTitle", editsubCategoryTitle);
+    formData.append("link", editLink);
+    formData.append("status", editStatus);
+    formData.append("editcategoryName", editcategoryName);
+    if (editImage) {
+      formData.append("image", editImage);
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:3000/api/v1/subcategory/update", {
+        method: "PATCH",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Category updated successfully", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          onClose: () => {
+            const modalElement = document.getElementById("editModal");
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+
+          },
+        });
+      } else {
+        throw new Error("Category update failed");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("Category update failed", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   const handelsubmit = async (e) => {
     e.preventDefault();
@@ -142,7 +222,9 @@ function SubCategory() {
       }
     });
   };
-
+  const filteredCategories = subcategory.filter((cat) =>
+    cat.subCategoryTitle.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <>
       <ToastContainer autoClose={1000} />
@@ -198,6 +280,8 @@ function SubCategory() {
                                 type="text"
                                 class="form-control search"
                                 placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                               />
                               <i class="ri-search-line search-icon"></i>
                             </div>
@@ -243,7 +327,7 @@ function SubCategory() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {subcategory.map((subcat, index) => (
+                            {filteredCategories.map((subcat, index) => (
                               <tr key={index}>
                                 <th scope="row">
                                   <div class="form-check">
@@ -282,6 +366,7 @@ function SubCategory() {
                                         class="btn btn-sm btn-success edit-item-btn"
                                         data-bs-toggle="modal"
                                         data-bs-target="#editModal"
+                                        onClick={() => handleEditClick(subcat)}
                                       >
                                         Edit
                                       </button>
@@ -517,7 +602,7 @@ function SubCategory() {
                     id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off">
+                <form class="tablelist-form" autocomplete="off" onSubmit={handleEditSubmit}>
                   <div class="modal-body">
                     <div class="mb-3" id="modal-id">
                       <label for="id-field" class="form-label">
@@ -529,6 +614,7 @@ function SubCategory() {
                         class="form-control"
                         placeholder="#gg@123"
                         readonly=""
+                        value={editId}
                       />
                     </div>
 
@@ -542,6 +628,10 @@ function SubCategory() {
                         class="form-control"
                         placeholder="Enter Title"
                         required=""
+                        value={editsubCategoryTitle}
+                        onChange={(e) =>
+                          setEditsubCategoryTitle(e.target.value)
+                        }
                       />
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
@@ -551,11 +641,13 @@ function SubCategory() {
                         Link
                       </label>
                       <input
-                        type="email"
+                        type="text"
                         id="email-field"
                         class="form-control"
                         placeholder="Enter Link"
                         required=""
+                        value={editLink}
+                        onChange={(e) => setEditLink(e.target.value)}
                       />
                       <div class="invalid-feedback">Please enter an Link.</div>
                     </div>
@@ -570,6 +662,7 @@ function SubCategory() {
                         class="form-control"
                         placeholder="Enter Phone no."
                         required=""
+                        onChange={handleEditImageChange}
                       />
                       <div class="invalid-feedback">Please enter a images</div>
                     </div>
@@ -584,10 +677,12 @@ function SubCategory() {
                         name="status-field"
                         id="status-field"
                         required=""
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
                       >
-                        <option value="">Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Block">Block</option>
+                        <option >Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                       </select>
                     </div>
                   </div>

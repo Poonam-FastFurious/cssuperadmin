@@ -5,6 +5,18 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 function Listproduct() {
+  function splitProductName(name) {
+    const halfLength = Math.ceil(name.length / 2); // Split roughly in half
+    const firstHalf = name.slice(0, halfLength);
+    const secondHalf = name.slice(halfLength);
+    return (
+      <>
+        {firstHalf}
+        <br />
+        {secondHalf}
+      </>
+    );
+  }
   const [products, setProducts] = useState([]);
   useEffect(() => {
     const fetchProducts = async () => {
@@ -529,7 +541,7 @@ function Listproduct() {
                                         to={`${product._id}`}
                                         className="fw-semibold"
                                       >
-                                        {product.name}
+                                        {splitProductName(product.name)}
                                         <br />
                                         Category :{product.category}
                                       </Link>

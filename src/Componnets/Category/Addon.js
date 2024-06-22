@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { Baseurl } from "../../config";
+import Swal from "sweetalert2";
 
 function Addon() {
   // State to manage form inputs and messages
@@ -40,10 +41,13 @@ function Addon() {
       });
       if (response.ok) {
         toast.success("addon add   successfully!");
-        window.location.reload();
+        const modalElement = document.getElementById("showModal");
+        const modal = window.bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
         setName("");
         setPrice("");
         setStatus("");
+        fetchAddons()
       } else {
         console.log("Failed to add addon. Please try again.");
       }
@@ -51,6 +55,56 @@ function Addon() {
       console.log("Failed to add addon. Please try again.");
     }
   };
+  const handleDelete = async (id) => {
+    // Display confirmation dialog using SweetAlert2
+    const confirmation = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will not be able to recover this addon!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    // If user confirms deletion
+    if (confirmation.isConfirmed) {
+      try {
+        const response = await fetch("http://localhost:3000/api/v1/addons/delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        });
+        if (response.ok) {
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'Addon has been deleted.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+          // Remove the deleted addon from state
+          setAddons(addons.filter(addon => addon._id !== id));
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Failed to delete addon. Please try again.',
+          });
+        }
+      } catch (error) {
+        console.log("Failed to delete addon. Please try again.", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Failed to delete addon. Please try again.',
+        });
+      }
+    }
+  };
+
 
   return (
     <>
@@ -181,7 +235,7 @@ function Addon() {
                                       </button>
                                     </div>
                                     <div className="remove">
-                                      <button className="btn btn-sm btn-danger remove-item-btn">
+                                      <button className="btn btn-sm btn-danger remove-item-btn" onClick={() => handleDelete(addon._id)}>
                                         Remove
                                       </button>
                                     </div>

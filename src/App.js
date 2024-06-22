@@ -41,6 +41,7 @@ import Inquiry from "./Componnets/GenralSetting/Inquiry";
 import ProductDetail from "./Componnets/Product/ProductDetail";
 import Employeerol from "./Componnets/EmployeeManagement/Employeerol";
 import Testimonial from "./Componnets/GenralSetting/Testimonial";
+import Review from "./Componnets/Product/Review";
 function App() {
   return (
     <>
@@ -86,6 +87,7 @@ function App() {
             <Route path="/InquiryList" element={<Inquiry />}></Route>
             <Route path="/Empolyerole" element={<Employeerol />}></Route>
             <Route path="/Testimonial" element={<Testimonial />}></Route>
+            <Route path="/review" element={<Review />}></Route>
             <Route
               path="/pages-term-conditions"
               element={<Termsandcondition />}

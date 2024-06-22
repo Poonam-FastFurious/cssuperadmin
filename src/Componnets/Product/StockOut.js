@@ -1,30 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Baseurl } from "../../config";
+import axios from "axios";
 
 function StockOut() {
   const [products, setProducts] = useState([]);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(Baseurl + "/api/v1/Product/products");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await axios.get(Baseurl + '/api/v1/Product/products');
+        if (response.data.success) {
+          setProducts(response.data.products);
+        } else {
+          console.error('Failed to fetch products');
         }
-        const data = await response.json();
-        const stockOutProducts = data.products.filter(
-          (product) => product.stock.quantity < 4
-        );
-
-        setProducts(stockOutProducts);
-      } catch (err) {
-        console.error("Error fetching data:", err);
+      } catch (error) {
+        console.error('Error fetching products:', error);
       }
     };
 
     fetchProducts();
   }, []);
-  console.log(products);
+  const filteredProducts = products.filter(product => product.stock.quantity === 10);
   return (
     <>
       <div className="main-content">
@@ -84,7 +81,7 @@ function StockOut() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product, index) => (
+                    {filteredProducts.map((product, index) => (
                       <tr key={index}>
                         <td>
                           <div className="form-check">
@@ -102,34 +99,33 @@ function StockOut() {
                         </td>
                         <td>
                           <Link to="#" className="fw-semibold">
-                            {product.productTitle}
+                            {product.name}
                             <br />
                             Category : {product.category}
                           </Link>
                         </td>
                         <td>
                           <img
-                            src={product.image}
+                            src={product.thumbnail}
                             alt=""
                             style={{ width: "100px" }}
                           />
                         </td>
-                        <td> Rs {product.oneTimePrice}</td>
-                        <td>{product.status}</td>
+                        <td> Rs {product.price}</td>
+                        <td>{product.visibility}</td>
                         <td>{product.rating}</td>
                         <td>
                           <span className="badge bg-success">
-                            {product.stock}
+
+                            <p> {product.stock.quantity}</p>
                           </span>
                         </td>
                         <td>
-                          <div className="hstack gap-3 flex-wrap">
-                            <Link to="#" className="link-success fs-15">
+                          <div className="hstack gap-3 flex-wrap ">
+                            <Link to="#" className="link-success fs-15 m-2">
                               <i className="ri-edit-2-line"></i>
                             </Link>
-                            <Link to="#" className="link-danger fs-15">
-                              <i className="ri-delete-bin-line"></i>
-                            </Link>
+
                           </div>
                         </td>
                       </tr>
