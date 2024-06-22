@@ -111,7 +111,7 @@ function AddProduct() {
     }
   };
   useEffect(() => {
-    fetch(Baseurl + "api/v1/category/allcategory")
+    fetch(Baseurl + "/api/v1/category/allcategory")
       .then((response) => response.json())
       .then((jsonData) => setCategory(jsonData.data))
       .catch((error) => console.error("Error fetching data:", error));
