@@ -3,21 +3,12 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import axios from "axios";
+import Swal from "sweetalert2";
+import { Baseurl } from "../../config";
 
 function Listproduct() {
-  function splitProductName(name) {
-    const halfLength = Math.ceil(name.length / 2); // Split roughly in half
-    const firstHalf = name.slice(0, halfLength);
-    const secondHalf = name.slice(halfLength);
-    return (
-      <>
-        {firstHalf}
-        <br />
-        {secondHalf}
-      </>
-    );
-  }
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -32,10 +23,59 @@ function Listproduct() {
 
     fetchProducts();
   }, []);
+  useEffect(() => {
+    const fetchCategory = async () => {
+      try {
+        const response = await fetch(Baseurl + "/api/v1/category/allcategory");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCategories(data.data.slice(0, 5));
+      } catch (err) {
+        throw (new Error("data not fetch "), err);
+      }
+    };
 
-  // Fetch data on component mount (using useEffect)
+    fetchCategory();
+  }, []);
+  const deleteProduct = async (id) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      });
 
-  console.log(products); // Empty dependency array means this effect runs only once
+      if (result.isConfirmed) {
+        const response = await fetch(
+          `http://localhost:3000/api/v1/Product/delete`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // Update state after successful deletion
+        setProducts(products.filter((product) => product._id !== id));
+        Swal.fire("Deleted!", "Your product has been deleted.", "success");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      Swal.fire("Error!", "Failed to delete the product.", "error");
+    }
+  };
 
   return (
     <>
@@ -93,34 +133,23 @@ function Listproduct() {
                     <div className="card-body border-bottom">
                       <div>
                         <p className="text-muted text-uppercase fs-12 fw-medium mb-2">
-                          Products
+                          Category
                         </p>
                         <ul className="list-unstyled mb-0 filter-list">
-                          <li>
-                            <Link
-                              to="#"
-                              className="d-flex py-1 align-items-center"
-                            >
-                              <div class="flex-grow-1">
-                                <h5 class="fs-13 mb-0 listname">
-                                  Home & kitchen Ro
-                                </h5>
-                              </div>
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              to="#"
-                              className="d-flex py-1 align-items-center"
-                            >
-                              <div class="flex-grow-1">
-                                <h5 class="fs-13 mb-0 listname">Domestic RO</h5>
-                              </div>
-                              <div class="flex-shrink-0 ms-2">
-                                <span class="badge bg-light text-muted">5</span>
-                              </div>
-                            </Link>
-                          </li>
+                          {categories.map((category, index) => (
+                            <li key={index}>
+                              <Link
+                                to="#"
+                                className="d-flex py-1 align-items-center"
+                              >
+                                <div className="flex-grow-1">
+                                  <h5 className="fs-13 mb-0 listname">
+                                    {category.categoriesTitle}
+                                  </h5>
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     </div>
@@ -541,7 +570,7 @@ function Listproduct() {
                                         to={`${product._id}`}
                                         className="fw-semibold"
                                       >
-                                        {splitProductName(product.name)}
+                                        {product.name}
                                         <br />
                                         Category :{product.category}
                                       </Link>
@@ -566,6 +595,9 @@ function Listproduct() {
                                         <Link
                                           to="#;"
                                           className="link-danger fs-15"
+                                          onClick={() =>
+                                            deleteProduct(product._id)
+                                          }
                                         >
                                           <i className="ri-delete-bin-line"></i>
                                         </Link>
@@ -611,55 +643,62 @@ function Listproduct() {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        value=""
-                                        id="cardtableCheck04"
-                                      />
-                                      <label
-                                        className="form-check-label"
-                                        htmlFor="cardtableCheck04"
-                                      ></label>
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <Link to="#" className="fw-semibold">
-                                      Proven® Zinc Copper Alkaline Hydrogen RO
-                                      Water Purifier
-                                      <br />
-                                      Category : Domestic Ro
-                                    </Link>
-                                  </td>
-                                  <td>50</td>
-                                  <td> Rs215.00</td>
-                                  <td>48</td>
-                                  <td>4.2</td>
-                                  <td>
-                                    <span className="badge bg-success">
-                                      12 Oct, 202110:05 AM
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <div className="hstack gap-3 flex-wrap">
+                                {products.map((product, index) => (
+                                  <tr key={index}>
+                                    <td>
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          value=""
+                                          id="cardtableCheck04"
+                                        />
+                                        <label
+                                          className="form-check-label"
+                                          htmlFor="cardtableCheck04"
+                                        ></label>
+                                      </div>
+                                    </td>
+                                    <td>
                                       <Link
-                                        to="#;"
-                                        className="link-success fs-15"
+                                        to={`${product._id}`}
+                                        className="fw-semibold"
                                       >
-                                        <i className="ri-edit-2-line"></i>
+                                        {product.name}
+                                        <br />
+                                        Category :{product.category}
                                       </Link>
-                                      <Link
-                                        to="#;"
-                                        className="link-danger fs-15"
-                                      >
-                                        <i className="ri-delete-bin-line"></i>
-                                      </Link>
-                                    </div>
-                                  </td>
-                                </tr>
+                                    </td>
+                                    <td>{product.stock.quantity}</td>
+                                    <td> Rs{product.price}</td>
+
+                                    <td>{product.rating}</td>
+                                    <td>
+                                      <span className="badge bg-success">
+                                        {product.visibility}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <div className="hstack gap-3 flex-wrap">
+                                        <Link
+                                          to="#;"
+                                          className="link-success fs-15"
+                                        >
+                                          <i className="ri-edit-2-line"></i>
+                                        </Link>
+                                        <Link
+                                          to="#;"
+                                          className="link-danger fs-15"
+                                          onClick={() =>
+                                            deleteProduct(product._id)
+                                          }
+                                        >
+                                          <i className="ri-delete-bin-line"></i>
+                                        </Link>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
                           </div>

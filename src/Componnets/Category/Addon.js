@@ -11,6 +11,12 @@ function Addon() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [status, setStatus] = useState("");
+
+  const [editAddon, setEditAddon] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+
   useEffect(() => {
     fetchAddons();
   }, []);
@@ -47,7 +53,7 @@ function Addon() {
         setName("");
         setPrice("");
         setStatus("");
-        fetchAddons()
+        fetchAddons();
       } else {
         console.log("Failed to add addon. Please try again.");
       }
@@ -58,54 +64,98 @@ function Addon() {
   const handleDelete = async (id) => {
     // Display confirmation dialog using SweetAlert2
     const confirmation = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will not be able to recover this addon!',
-      icon: 'warning',
+      title: "Are you sure?",
+      text: "You will not be able to recover this addon!",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
     });
 
     // If user confirms deletion
     if (confirmation.isConfirmed) {
       try {
-        const response = await fetch("http://localhost:3000/api/v1/addons/delete", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id }),
-        });
+        const response = await fetch(
+          "http://localhost:3000/api/v1/addons/delete",
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          }
+        );
         if (response.ok) {
           Swal.fire({
-            title: 'Deleted!',
-            text: 'Addon has been deleted.',
-            icon: 'success',
+            title: "Deleted!",
+            text: "Addon has been deleted.",
+            icon: "success",
             timer: 1500,
-            showConfirmButton: false
+            showConfirmButton: false,
           });
           // Remove the deleted addon from state
-          setAddons(addons.filter(addon => addon._id !== id));
+          setAddons(addons.filter((addon) => addon._id !== id));
         } else {
           Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Failed to delete addon. Please try again.',
+            icon: "error",
+            title: "Oops...",
+            text: "Failed to delete addon. Please try again.",
           });
         }
       } catch (error) {
         console.log("Failed to delete addon. Please try again.", error);
         Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'Failed to delete addon. Please try again.',
+          icon: "error",
+          title: "Oops...",
+          text: "Failed to delete addon. Please try again.",
         });
       }
     }
   };
 
+  const handleEdit = (addon) => {
+    setEditAddon(addon);
+    setEditName(addon.name);
+    setEditPrice(addon.price);
+    setEditStatus(addon.status);
+    // Open the edit modal
+    const modalElement = document.getElementById("editModal");
+    const modal = window.bootstrap.Modal.getInstance(modalElement);
+    modal.show();
+  };
 
+  const handleUpdateAddon = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/v1/addons/update",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: editAddon._id,
+            name: editName,
+            price: editPrice,
+            status: editStatus,
+          }),
+        }
+      );
+      if (response.ok) {
+        toast.success("Addon updated successfully!");
+        const modalElement = document.getElementById("editModal");
+        const modal = window.bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
+        fetchAddons();
+      } else {
+        console.log("Failed to update addon. Please try again.");
+      }
+    } catch (error) {
+      console.log("Failed to update addon. Please try again.", error);
+    }
+  };
   return (
     <>
       <ToastContainer autoClose={1000} />
@@ -230,12 +280,16 @@ function Addon() {
                                         className="btn btn-sm btn-success edit-item-btn"
                                         data-bs-toggle="modal"
                                         data-bs-target="#editModal"
+                                        onClick={() => handleEdit(addon)}
                                       >
                                         Edit
                                       </button>
                                     </div>
                                     <div className="remove">
-                                      <button className="btn btn-sm btn-danger remove-item-btn" onClick={() => handleDelete(addon._id)}>
+                                      <button
+                                        className="btn btn-sm btn-danger remove-item-btn"
+                                        onClick={() => handleDelete(addon._id)}
+                                      >
                                         Remove
                                       </button>
                                     </div>
@@ -396,103 +450,99 @@ function Addon() {
               </div>
             </div>
           </div>
+
           <div
-            class="modal fade"
+            className="modal fade"
             id="editModal"
-            tabindex="-1"
+            tabIndex="-1"
             aria-labelledby="exampleModalLabel"
             aria-hidden="true"
           >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header bg-light p-3">
-                  <h5 class="modal-title" id="exampleModalLabel">
-                    Upadte Addons
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-light p-3">
+                  <h5 className="modal-title" id="exampleModalLabel">
+                    Update Addon
                   </h5>
                   <button
                     type="button"
-                    class="btn-close"
+                    className="btn-close"
                     data-bs-dismiss="modal"
                     aria-label="Close"
-                    id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off">
-                  <div class="modal-body">
-                    <div class="mb-3" id="modal-id">
-                      <label for="id-field" class="form-label">
-                        ID
-                      </label>
-                      <input
-                        type="text"
-                        id="id-field"
-                        class="form-control"
-                        placeholder="ID"
-                        readonly=""
-                      />
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="customername-field" class="form-label">
+                <form className="tablelist-form" onSubmit={handleUpdateAddon}>
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label
+                        htmlFor="customername-field"
+                        className="form-label"
+                      >
                         Name
                       </label>
                       <input
                         type="text"
                         id="customername-field"
-                        class="form-control"
+                        className="form-control"
                         placeholder="Enter Title"
-                        required=""
+                        required
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
                       />
-                      <div class="invalid-feedback">Please enter a Title</div>
+                      <div className="invalid-feedback">
+                        Please enter a Title
+                      </div>
                     </div>
 
-                    <div class="mb-3">
-                      <label for="email-field" class="form-label">
+                    <div className="mb-3">
+                      <label htmlFor="email-field" className="form-label">
                         Price
                       </label>
                       <input
-                        type="email"
+                        type="number"
                         id="email-field"
-                        class="form-control"
+                        className="form-control"
                         placeholder="Enter Link"
-                        required=""
+                        required
+                        value={editPrice}
+                        onChange={(e) => setEditPrice(e.target.value)}
                       />
-                      <div class="invalid-feedback">Please enter an Link.</div>
+                      <div className="invalid-feedback">
+                        Please enter a Link.
+                      </div>
                     </div>
 
-                    <div>
-                      <label for="status-field" class="form-label">
+                    <div className="mb-3">
+                      <label htmlFor="status-field" className="form-label">
                         Status
                       </label>
                       <select
-                        class="form-control"
-                        data-trigger=""
-                        name="status-field"
+                        className="form-control"
                         id="status-field"
-                        required=""
+                        required
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
                       >
                         <option value="">Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Block">Block</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                       </select>
+                      <div className="invalid-feedback">
+                        Please select a Status.
+                      </div>
                     </div>
                   </div>
-                  <div class="modal-footer">
-                    <div class="hstack gap-2 justify-content-end">
+                  <div className="modal-footer">
+                    <div className="hstack gap-2 justify-content-end">
                       <button
                         type="button"
-                        class="btn btn-light"
+                        className="btn btn-light"
                         data-bs-dismiss="modal"
                       >
                         Close
                       </button>
-
-                      <button
-                        type="button"
-                        class="btn btn-success"
-                        id="edit-btn"
-                      >
-                        Update
+                      <button type="submit" className="btn btn-success">
+                        Update Addon
                       </button>
                     </div>
                   </div>

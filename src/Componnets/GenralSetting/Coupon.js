@@ -1,18 +1,192 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import { Baseurl } from "../../config";
 
 function Coupon() {
-  const [modalVisible, setModalVisible] = useState(false);
+  const [allcoupon, setAllcoupon] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editmodal, setEditmodal] = useState(false);
+  const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
+  const [numberOfTimes, setNumberOfTimes] = useState("");
+  const [discount, setDiscount] = useState("");
+  const [status, setStatus] = useState("");
+  const [coupontoEdit, setCoupontoEdit] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(Baseurl + "/api/v1/coupon/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: title,
+          code: code,
+          numberOfTimes: numberOfTimes,
+          discount: discount,
+          status: status,
+        }),
+      });
 
-  const handleAddClick = () => {
-    setModalVisible(true);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add tax");
+      }
+      toast.success("Coupon added successfully", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        onClose: () => {
+          // Clear the form
+          setTitle("");
+          setCode("");
+          setStatus("active");
+          setNumberOfTimes("");
+          setDiscount("");
+          setShowModal(false);
+        },
+      });
+
+      // Refetch the tax list
+      fetchcoupon();
+    } catch (error) {
+      console.log("Error fetching taxes: " + error.message);
+    }
   };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
+  const deletecoupon = (taxId) => {
+    Swal.fire({
+      title: "Delete Coupon?",
+      text: "Are you sure you want to Delete Coupon?!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Delete!",
+      position: "top",
+      customClass: {
+        popup: "w-[30%] h-auto",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(Baseurl + "/api/v1/coupon/delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: taxId }), // Send the tax ID in the request body
+        })
+          .then((response) => {
+            if (response.ok) {
+              toast.success("Coupon delete successfully", {
+                position: "top-right",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                onClose: () => {
+                  window.location.reload();
+                },
+              });
+            } else {
+              throw new Error("Delete request failed");
+            }
+          })
+          .catch((error) => {
+            console.error("Error deleting tax:", error);
+            // Handle error, show notification, etc.
+          });
+      }
+    });
   };
+  const fetchcoupon = async () => {
+    try {
+      setFetching(true);
+      const response = await fetch(Baseurl + "/api/v1/coupon/coupons");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setAllcoupon(data.data);
+    } catch (err) {
+      console.log("Error fetching : ", "err.message");
+    } finally {
+      setFetching(false);
+    }
+  };
+  useEffect(() => {
+    fetchcoupon();
+  }, []);
+  const handleEdit = (couponId) => {
+    const couponToEdit = allcoupon.find((coupon) => coupon._id === couponId);
+    if (couponToEdit) {
+      setCoupontoEdit(couponToEdit);
+      setEditmodal(true);
+    } else {
+      // Handle error if tax not found
+      console.error("coupon  not found");
+      toast.error("coupon not found");
+    }
+  };
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      // Make the API call to update tax
+      const response = await fetch(Baseurl + "/api/v1/coupon/update", {
+        method: "PATCH", // Use PUT method for update
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: coupontoEdit._id, // Pass the ID of the tax being edited
+          title: coupontoEdit.title,
+          code: coupontoEdit.code,
+          status: coupontoEdit.status,
+          discount: coupontoEdit.discount,
+          numberOfTimes: coupontoEdit.numberOfTimes,
+        }),
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update tax");
+      }
+      toast.success("Coupon updated successfully", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        onClose: () => {
+          const modalElement = document.getElementById("editModal");
+          const modal = window.bootstrap.Modal.getInstance(modalElement);
+          modal.hide();
+        },
+      });
+      setEditmodal(false); // Close the edit modal after successful update
+
+      // Refetch the tax list
+      fetchcoupon();
+    } catch (error) {
+      toast.error("Error updating coupon: ");
+      console.log("Error updating tax: " + error.message);
+    }
+  };
   return (
     <>
       <div className="main-content">
@@ -26,7 +200,7 @@ function Coupon() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="">Proven Ro</Link>
+                        <Link to="#">Proven Ro</Link>
                       </li>
                       <li className="breadcrumb-item active">Coupon</li>
                     </ol>
@@ -46,10 +220,11 @@ function Coupon() {
                         </div>
                       </div>
                       <div className="col-sm-auto">
-                        <div className="d-flex flex-wrap align-items-start gap-2">
+                        <div className="d-flex flex-wrap align-items-start gap-2 ">
                           <button
+                            style={{ visibility: "hidden" }}
                             className="btn btn-soft-danger"
-                            id="remove-actions"
+                            id="remove-actions "
                           >
                             <i className="ri-delete-bin-2-line"></i>
                           </button>
@@ -57,14 +232,10 @@ function Coupon() {
                             type="button"
                             className="btn btn-success add-btn"
                             id="create-btn"
-                            onClick={handleAddClick}
+                            onClick={() => setShowModal(true)}
                           >
                             <i className="ri-add-line align-bottom me-1"></i>
                             Add Coupon
-                          </button>
-                          <button type="button" className="btn btn-info">
-                            <i className="ri-file-download-line align-bottom me-1"></i>
-                            Import
                           </button>
                         </div>
                       </div>
@@ -78,7 +249,7 @@ function Coupon() {
                             <input
                               type="text"
                               className="form-control search"
-                              placeholder="Search for customer, email, phone, status or something..."
+                              placeholder="Search  something..."
                             />
                             <i className="ri-search-line search-icon"></i>
                           </div>
@@ -94,21 +265,6 @@ function Coupon() {
                                   id="datepicker-range"
                                   placeholder="Select date"
                                 />
-                              </div>
-                            </div>
-
-                            <div className="col-sm-4">
-                              <div>
-                                <select
-                                  className="form-control"
-                                  name="choices-single-default"
-                                  id="idStatus"
-                                >
-                                  <option>Status</option>
-                                  <option>All</option>
-                                  <option>Active</option>
-                                  <option>Block</option>
-                                </select>
                               </div>
                             </div>
 
@@ -143,11 +299,11 @@ function Coupon() {
                                     className="form-check-input"
                                     type="checkbox"
                                     id="checkAll"
+                                    value="option"
                                   />
                                 </div>
                               </th>
-
-                              <th className="sort"> Title</th>
+                              <th className="sort">Title</th>
                               <th className="sort">Code</th>
                               <th className="sort">No. Of Times</th>
                               <th className="sort">Discount</th>
@@ -156,68 +312,73 @@ function Coupon() {
                             </tr>
                           </thead>
                           <tbody className="list form-check-all">
-                            <tr>
-                              <th scope="row">
-                                <div className="form-check">
-                                  <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                  />
-                                </div>
-                              </th>
-                              <td className="customer_name">Title</td>
-                              <td className="email">Code</td>
-                              <td className="phone">5</td>
-                              <td className="phone">10%</td>
-                              <td className="phone">Active</td>
+                            {allcoupon.map((cou, index) => (
+                              <tr key={index}>
+                                <th scope="row">
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      name="chk_child"
+                                      value="option1"
+                                    />
+                                  </div>
+                                </th>
+                                <td className="customer_name">{cou.title}</td>
+                                <td className="email">{cou.code}</td>
+                                <td className="phone">{cou.numberOfTimes}</td>
+                                <td className="phone">{cou.discount} %</td>
+                                <td className="phone">{cou.status}</td>
 
-                              <td>
-                                <ul className="list-inline hstack gap-2 mb-0">
-                                  <li
-                                    className="list-inline-item edit"
-                                    title="Edit"
-                                  >
-                                    <Link
-                                      to="#showModal"
-                                      className="text-primary d-inline-block edit-item-btn"
+                                <td>
+                                  <ul className="list-inline hstack gap-2 mb-0">
+                                    <li
+                                      className="list-inline-item edit"
+                                      title="Edit"
+                                      onClick={() => handleEdit(cou._id)}
                                     >
-                                      <i className="ri-pencil-fill fs-16"></i>
-                                    </Link>
-                                  </li>
-                                  <li
-                                    className="list-inline-item"
-                                    title="Remove"
-                                  >
-                                    <Link
-                                      className="text-danger d-inline-block remove-item-btn"
-                                      to="#deleteRecordModal"
-
+                                      <Link
+                                        to="#showModal"
+                                        className="text-primary d-inline-block edit-item-btn"
+                                      >
+                                        <i className="ri-pencil-fill fs-16"></i>
+                                      </Link>
+                                    </li>
+                                    <li
+                                      className="list-inline-item"
+                                      title="Remove"
+                                      onClick={() => deletecoupon(cou._id)}
                                     >
-                                      <i className="ri-delete-bin-5-fill fs-16"></i>
-                                    </Link>
-                                  </li>
-                                </ul>
-                              </td>
-                            </tr>
+                                      <Link
+                                        className="text-danger d-inline-block remove-item-btn"
+                                        to="#"
+                                      >
+                                        <i className="ri-delete-bin-5-fill fs-16"></i>
+                                      </Link>
+                                    </li>
+                                  </ul>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
-
-                        <div className="noresult">
-                          <div className="text-center">
-                            <lord-icon
-                              src="../../../msoeawqm.json"
-                              trigger="loop"
-                              colors="primary:#121331,secondary:#08a88a"
-                              style={{ width: "75px", height: "75px" }}
-                            ></lord-icon>
-                            <h5 className="mt-2">Sorry! No Result Found</h5>
-                            <p className="text-muted mb-0">
-                              We've searched more than 150+ customers. We did
-                              not find any customer for your search.
-                            </p>
+                        {allcoupon.length === 0 && !fetching && (
+                          <div className="noresult">
+                            <div className="text-center">
+                              <lord-icon
+                                src="../../../msoeawqm.json"
+                                trigger="loop"
+                                colors="primary:#121331,secondary:#08a88a"
+                                style={{ width: "75px", height: "75px" }}
+                              ></lord-icon>
+                              <h5 className="mt-2">Sorry! No Result Found</h5>
+                              <p className="text-muted mb-0">
+                                We've searched more than 150+ customers. We did
+                                not find any customer for your search.
+                              </p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                       <div className="d-flex justify-content-end">
                         <div className="pagination-wrap hstack gap-2">
@@ -234,37 +395,58 @@ function Coupon() {
                         </div>
                       </div>
                     </div>
-
-                    {modalVisible && (
+                    {showModal && (
                       <div
                         className="modal fade show"
                         style={{
                           display: "block",
                           backgroundColor: "rgba(0, 0, 0, 0.5)",
                         }}
-                        tabIndex="-1"
                         aria-labelledby="exampleModalLabel"
+                        tabIndex="-1"
                         aria-hidden="true"
                       >
-                        <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
                           <div className="modal-content">
                             <div className="modal-header bg-light p-3">
                               <h5
                                 className="modal-title"
                                 id="exampleModalLabel"
                               >
-                                Add Coupon
+                                add coupon
                               </h5>
                               <button
                                 type="button"
                                 className="btn-close"
-                                aria-label="Close"
-                                onClick={handleCloseModal}
+                                id="close-modal"
+                                onClick={() => setShowModal(false)}
                               ></button>
                             </div>
-                            <form className="tablelist-form">
+                            <form
+                              className="tablelist-form"
+                              onSubmit={handleSubmit}
+                            >
                               <div className="modal-body">
                                 <input type="hidden" id="id-field" />
+                                <div
+                                  className="mb-3"
+                                  id="modal-id"
+                                  style={{ display: "none" }}
+                                >
+                                  <label
+                                    htmlFor="id-field1"
+                                    className="form-label"
+                                  >
+                                    ID
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="id-field1"
+                                    className="form-control"
+                                    placeholder="ID"
+                                    readOnly=""
+                                  />
+                                </div>
                                 <div className="mb-3">
                                   <label
                                     htmlFor="customername-field"
@@ -278,9 +460,11 @@ function Coupon() {
                                     className="form-control"
                                     placeholder="Enter Title"
                                     required=""
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
                                   />
                                   <div className="invalid-feedback">
-                                    Please enter a coupon name.
+                                    Please enter a customer name.
                                   </div>
                                 </div>
                                 <div className="mb-3">
@@ -291,14 +475,16 @@ function Coupon() {
                                     Code
                                   </label>
                                   <input
-                                    type="number"
+                                    type="text"
                                     id="email-field"
                                     className="form-control"
-                                    placeholder="Enter code"
+                                    placeholder="Enter Code"
                                     required=""
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
                                   />
                                   <div className="invalid-feedback">
-                                    Please enter a tax.
+                                    Please enter an email.
                                   </div>
                                 </div>
                                 <div className="mb-3">
@@ -309,16 +495,20 @@ function Coupon() {
                                     Number of times
                                   </label>
                                   <input
-                                    type="number"
+                                    type="text"
                                     id="email-field"
                                     className="form-control"
-                                    placeholder="Enter NOT"
+                                    placeholder="Enter Number Of Times"
                                     required=""
+                                    value={numberOfTimes}
+                                    onChange={(e) =>
+                                      setNumberOfTimes(e.target.value)
+                                    }
                                   />
                                   <div className="invalid-feedback">
-                                    Please enter a coupon.
+                                    Please enter an email.
                                   </div>
-                                </div>{" "}
+                                </div>
                                 <div className="mb-3">
                                   <label
                                     htmlFor="email-field"
@@ -327,14 +517,18 @@ function Coupon() {
                                     Discount
                                   </label>
                                   <input
-                                    type="number"
+                                    type="text"
                                     id="email-field"
                                     className="form-control"
                                     placeholder="Enter Discount"
                                     required=""
+                                    value={discount}
+                                    onChange={(e) =>
+                                      setDiscount(e.target.value)
+                                    }
                                   />
                                   <div className="invalid-feedback">
-                                    Please enter a tax.
+                                    Please enter an email.
                                   </div>
                                 </div>
                                 <div>
@@ -349,9 +543,12 @@ function Coupon() {
                                     name="status-field"
                                     id="status-field"
                                     required=""
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
                                   >
+                                    <option value="">Status</option>
                                     <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
+                                    <option value="expired">Expired</option>
                                   </select>
                                 </div>
                               </div>
@@ -360,15 +557,229 @@ function Coupon() {
                                   <button
                                     type="button"
                                     className="btn btn-light"
-                                    onClick={handleCloseModal}
+                                    onClick={() => setShowModal(false)}
                                   >
                                     Close
                                   </button>
                                   <button
                                     type="submit"
                                     className="btn btn-success"
+                                    id="add-btn"
                                   >
                                     Add Coupon
+                                  </button>
+                                  {/* <button
+                                    type="button"
+                                    className="btn btn-success"
+                                    id="edit-btn"
+                                  >
+                                    Update
+                                  </button> */}
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {editmodal && (
+                      <div
+                        className="modal fade show"
+                        style={{
+                          display: "block",
+                          backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        }}
+                        aria-labelledby="exampleModalLabel"
+                        tabIndex="-1"
+                        aria-hidden="true"
+                      >
+                        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                          <div className="modal-content">
+                            <div className="modal-header bg-light p-3">
+                              <h5
+                                className="modal-title"
+                                id="exampleModalLabel"
+                              >
+                                edit coupon
+                              </h5>
+                              <button
+                                type="button"
+                                className="btn-close"
+                                id="close-modal"
+                                onClick={() => setEditmodal(false)}
+                              ></button>
+                            </div>
+                            <form
+                              className="tablelist-form"
+                              onSubmit={handleUpdate}
+                            >
+                              <div className="modal-body">
+                                <input type="hidden" id="id-field" />
+                                <div
+                                  className="mb-3"
+                                  id="modal-id"
+                                  style={{ display: "none" }}
+                                >
+                                  <label
+                                    htmlFor="id-field1"
+                                    className="form-label"
+                                  >
+                                    ID
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="id-field1"
+                                    className="form-control"
+                                    placeholder="ID"
+                                    readOnly=""
+                                  />
+                                </div>
+                                <div className="mb-3">
+                                  <label
+                                    htmlFor="customername-field"
+                                    className="form-label"
+                                  >
+                                    Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="customername-field"
+                                    className="form-control"
+                                    placeholder="Enter Title"
+                                    required=""
+                                    value={coupontoEdit.title}
+                                    onChange={(e) =>
+                                      setCoupontoEdit({
+                                        ...coupontoEdit,
+                                        title: e.target.value,
+                                      })
+                                    }
+                                  />
+                                  <div className="invalid-feedback">
+                                    Please enter a customer name.
+                                  </div>
+                                </div>
+                                <div className="mb-3">
+                                  <label
+                                    htmlFor="email-field"
+                                    className="form-label"
+                                  >
+                                    Code
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="email-field"
+                                    className="form-control"
+                                    placeholder="Enter Code"
+                                    required=""
+                                    value={coupontoEdit.code}
+                                    onChange={(e) =>
+                                      setCoupontoEdit({
+                                        ...coupontoEdit,
+                                        code: e.target.value,
+                                      })
+                                    }
+                                  />
+                                  <div className="invalid-feedback">
+                                    Please enter an email.
+                                  </div>
+                                </div>
+                                <div className="mb-3">
+                                  <label
+                                    htmlFor="email-field"
+                                    className="form-label"
+                                  >
+                                    Number of times
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="email-field"
+                                    className="form-control"
+                                    placeholder="Enter Number Of Times"
+                                    required=""
+                                    value={coupontoEdit.numberOfTimes}
+                                    onChange={(e) =>
+                                      setCoupontoEdit({
+                                        ...coupontoEdit,
+                                        numberOfTimes: e.target.value,
+                                      })
+                                    }
+                                  />
+                                  <div className="invalid-feedback">
+                                    Please enter an email.
+                                  </div>
+                                </div>{" "}
+                                <div className="mb-3">
+                                  <label
+                                    htmlFor="email-field"
+                                    className="form-label"
+                                  >
+                                    Discount
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="email-field"
+                                    className="form-control"
+                                    placeholder="Enter Discount"
+                                    required=""
+                                    value={coupontoEdit.discount}
+                                    onChange={(e) =>
+                                      setCoupontoEdit({
+                                        ...coupontoEdit,
+                                        discount: e.target.value,
+                                      })
+                                    }
+                                  />
+                                  <div className="invalid-feedback">
+                                    Please enter an email.
+                                  </div>
+                                </div>
+                                <div>
+                                  <label
+                                    htmlFor="status-field"
+                                    className="form-label"
+                                  >
+                                    Status
+                                  </label>
+                                  <select
+                                    className="form-control"
+                                    id="status-field"
+                                    required=""
+                                    value={coupontoEdit.status}
+                                    onChange={(e) =>
+                                      setCoupontoEdit({
+                                        ...coupontoEdit,
+                                        status: e.target.value,
+                                      })
+                                    }
+                                  >
+                                    <option value="Active">Active</option>
+                                    <option value="Block">Block</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="modal-footer">
+                                <div className="hstack gap-2 justify-content-end">
+                                  <button
+                                    type="button"
+                                    className="btn btn-light"
+                                    onClick={() => setEditmodal(false)}
+                                  >
+                                    Close
+                                  </button>
+                                  {/* <button
+                                    type="submit"
+                                    className="btn btn-success"
+                                    id="add-btn"
+                                  >
+                                    Add Coupon
+                                  </button> */}
+                                  <button
+                                    type="submit"
+                                    className="btn btn-success"
+                                    id="edit-btn"
+                                  >
+                                    Update
                                   </button>
                                 </div>
                               </div>
@@ -377,7 +788,6 @@ function Coupon() {
                         </div>
                       </div>
                     )}
-
                   </div>
                 </div>
               </div>

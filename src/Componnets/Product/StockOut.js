@@ -8,20 +8,22 @@ function StockOut() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(Baseurl + '/api/v1/Product/products');
+        const response = await axios.get(Baseurl + "/api/v1/Product/products");
         if (response.data.success) {
           setProducts(response.data.products);
         } else {
-          console.error('Failed to fetch products');
+          console.error("Failed to fetch products");
         }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       }
     };
 
     fetchProducts();
   }, []);
-  const filteredProducts = products.filter(product => product.stock.quantity === 10);
+  const filteredProducts = products.filter(
+    (product) => product.stock.status === "out_of_stock"
+  );
   return (
     <>
       <div className="main-content">
@@ -116,7 +118,6 @@ function StockOut() {
                         <td>{product.rating}</td>
                         <td>
                           <span className="badge bg-success">
-
                             <p> {product.stock.quantity}</p>
                           </span>
                         </td>
@@ -125,7 +126,6 @@ function StockOut() {
                             <Link to="#" className="link-success fs-15 m-2">
                               <i className="ri-edit-2-line"></i>
                             </Link>
-
                           </div>
                         </td>
                       </tr>

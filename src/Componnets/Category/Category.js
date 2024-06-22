@@ -77,7 +77,6 @@ function Category() {
             const modalElement = document.getElementById("editModal");
             const modal = window.bootstrap.Modal.getInstance(modalElement);
             modal.hide();
-
           },
         });
       } else {
@@ -568,7 +567,11 @@ function Category() {
                     id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off" onSubmit={handleEditSubmit}>
+                <form
+                  class="tablelist-form"
+                  autocomplete="off"
+                  onSubmit={handleEditSubmit}
+                >
                   <div class="modal-body">
                     <div class="mb-3" id="modal-id">
                       <label for="id-field" class="form-label">
@@ -595,9 +598,7 @@ function Category() {
                         placeholder="Enter Title"
                         required=""
                         value={editCategoriesTitle}
-                        onChange={(e) =>
-                          setEditCategoriesTitle(e.target.value)
-                        }
+                        onChange={(e) => setEditCategoriesTitle(e.target.value)}
                       />
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
@@ -646,7 +647,7 @@ function Category() {
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value)}
                       >
-                        <option >Status</option>
+                        <option>Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                       </select>

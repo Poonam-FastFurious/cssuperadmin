@@ -1,8 +1,53 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Baseurl } from "../config";
 
 function Dashboard() {
+  const [orders, setOrders] = useState([]);
+  const [ordersCount, setOrdersCount] = useState(0);
+  const [user, setUser] = useState([]);
+  const [usercount, setusercount] = useState(0);
+  const [fetching, setFetching] = useState(false);
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    // Fetch the products from the API
+    fetch(Baseurl + "/api/v1/Product/products")
+      .then((responce) => responce.json())
+      .then((data) => setProducts(data.data));
+  }, []);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setFetching(true);
+
+        //order fetch
+        const response = await fetch(
+          "https://ssagriculturebackend.onrender.com/api/v1/order/allorder"
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setOrders(data.data);
+        setOrdersCount(data.data.length);
+        //userfetch
+        const responseuser = await fetch(Baseurl + "/api/v1/user/alluser");
+        if (!responseuser.ok) {
+          throw new Error(`HTTP error! status: ${responseuser.status}`);
+        }
+        const user = await responseuser.json();
+        setUser(user.data);
+        setusercount(user.data.length);
+      } catch (err) {
+        throw (new Error("data not fetch "), err);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
   return (
     <>
       <div className="main-content">
@@ -119,7 +164,7 @@ function Dashboard() {
                                   className="counter-value"
                                   data-target="36894"
                                 >
-                                  0
+                                  {ordersCount}
                                 </span>
                               </h4>
                               <Link to="" className="text-decoration-underline">
@@ -159,7 +204,7 @@ function Dashboard() {
                                   className="counter-value"
                                   data-target="183.35"
                                 >
-                                  0
+                                  {usercount}
                                 </span>
                                 M
                               </h4>
@@ -252,6 +297,71 @@ function Dashboard() {
                           </div>
                         </div>
 
+                        <div className="card-header p-0 border-0 bg-light-subtle">
+                          <div className="row g-0 text-center">
+                            <div className="col-6 col-sm-3">
+                              <div className="p-3 border border-dashed border-start-0">
+                                <h5 className="mb-1">
+                                  <span
+                                    className="counter-value"
+                                    data-target="7585"
+                                  >
+                                    0
+                                  </span>
+                                </h5>
+                                <p className="text-muted mb-0">Orders</p>
+                              </div>
+                            </div>
+
+                            <div className="col-6 col-sm-3">
+                              <div className="p-3 border border-dashed border-start-0">
+                                <h5 className="mb-1">
+                                  $
+                                  <span
+                                    className="counter-value"
+                                    data-target="22.89"
+                                  >
+                                    0
+                                  </span>
+                                  k
+                                </h5>
+                                <p className="text-muted mb-0">Earnings</p>
+                              </div>
+                            </div>
+
+                            <div className="col-6 col-sm-3">
+                              <div className="p-3 border border-dashed border-start-0">
+                                <h5 className="mb-1">
+                                  <span
+                                    className="counter-value"
+                                    data-target="367"
+                                  >
+                                    0
+                                  </span>
+                                </h5>
+                                <p className="text-muted mb-0">Refunds</p>
+                              </div>
+                            </div>
+
+                            <div className="col-6 col-sm-3">
+                              <div className="p-3 border border-dashed border-start-0 border-end-0">
+                                <h5 className="mb-1 text-success">
+                                  <span
+                                    className="counter-value"
+                                    data-target="18.92"
+                                  >
+                                    0
+                                  </span>
+                                  %
+                                </h5>
+                                <p className="text-muted mb-0">
+                                  Conversation Ratio
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="card-body">
                           <div className="table-responsive table-card">
                             <table className="table table-borderless table-centered align-middle table-nowrap mb-0">
@@ -267,314 +377,57 @@ function Dashboard() {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2112
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-1.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
+                                {orders.slice(0, 6).map((order) => (
+                                  <tr key={order.id}>
+                                    <td>
+                                      <Link
+                                        to="/apps-ecommerce-order-details"
+                                        className="fw-medium link-primary"
+                                      >
+                                        #{order.orderID}
+                                      </Link>
+                                    </td>
+                                    <td>
+                                      <div className="d-flex align-items-center">
+                                        <div className="flex-shrink-0 me-2">
+                                          <img
+                                            src=""
+                                            alt=""
+                                            className="avatar-xs rounded-circle"
+                                          />
+                                        </div>
+                                        <div className="flex-grow-1">name</div>
                                       </div>
-                                      <div className="flex-grow-1">
-                                        Alex Smith
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Clothes</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $109.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-success-subtle text-success">
-                                      Paid
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      5.0
-                                      <span className="text-muted fs-11 ms-1">
-                                        (61 votes)
+                                    </td>
+                                    <td>{order.products[0].product}</td>
+                                    <td>
+                                      <span className="text-success">
+                                        Rs{order.totalAmount}
                                       </span>
-                                    </h5>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2111
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-2.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        Jansh Brown
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Kitchen Storage</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $149.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-warning-subtle text-warning">
-                                      Pending
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      4.5
-                                      <span className="text-muted fs-11 ms-1">
-                                        (61 votes)
+                                    </td>
+                                    <td>
+                                      <span
+                                        className={`badge ${
+                                          order.paymentStatus === "Paid"
+                                            ? "bg-success-subtle text-success"
+                                            : order.paymentStatus === "Pending"
+                                            ? "bg-warning-subtle text-warning"
+                                            : "bg-danger-subtle text-danger"
+                                        }`}
+                                      >
+                                        {order.status}
                                       </span>
-                                    </h5>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2109
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-3.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        Ayaan Bowen
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Bike Accessories</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $215.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-success-subtle text-success">
-                                      Paid
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      4.9
-                                      <span className="text-muted fs-11 ms-1">
-                                        (89 votes)
-                                      </span>
-                                    </h5>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2108
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-4.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        Prezy Mark
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Furniture</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $199.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-danger-subtle text-danger">
-                                      Unpaid
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      4.3
-                                      <span className="text-muted fs-11 ms-1">
-                                        (47 votes)
-                                      </span>
-                                    </h5>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2107
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-6.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        Vihan Hudda
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Bags and Wallets</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $330.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-success-subtle text-success">
-                                      Paid
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      4.7
-                                      <span className="text-muted fs-11 ms-1">
-                                        (161 votes)
-                                      </span>
-                                    </h5>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2107
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-6.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        Vihan Hudda
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Bags and Wallets</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $330.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-success-subtle text-success">
-                                      Paid
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      4.7
-                                      <span className="text-muted fs-11 ms-1">
-                                        (161 votes)
-                                      </span>
-                                    </h5>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <Link
-                                      to="apps-ecommerce-order-details"
-                                      className="fw-medium link-primary"
-                                    >
-                                      #VZ2107
-                                    </Link>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center">
-                                      <div className="flex-shrink-0 me-2">
-                                        <img
-                                          src="https://themesbrand.com/velzon/html/master/assets/images/users/avatar-6.jpg"
-                                          alt=""
-                                          className="avatar-xs rounded-circle"
-                                        />
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        Vihan Hudda
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>Bags and Wallets</td>
-                                  <td>
-                                    <span className="text-success">
-                                      $330.00
-                                    </span>
-                                  </td>
-
-                                  <td>
-                                    <span className="badge bg-success-subtle text-success">
-                                      Paid
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <h5 className="fs-14 fw-medium mb-0">
-                                      4.7
-                                      <span className="text-muted fs-11 ms-1">
-                                        (161 votes)
-                                      </span>
-                                    </h5>
-                                  </td>
-                                </tr>
+                                    </td>
+                                    <td>
+                                      <h5 className="fs-14 fw-medium mb-0">
+                                        {order.rating}
+                                        <span className="text-muted fs-11 ms-1">
+                                          ({order.votes} votes)
+                                        </span>
+                                      </h5>
+                                    </td>
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
                           </div>
@@ -586,15 +439,13 @@ function Dashboard() {
                       <div className="card card-height-100">
                         <div className="card-header align-items-center d-flex">
                           <h4 className="card-title mb-0 flex-grow-1">
-                            Sales by Products
+                            Sales by Product
                           </h4>
                           <div className="flex-shrink-0">
                             <button
                               type="button"
                               className="btn btn-soft-primary btn-sm"
-                            >
-                              Export Report
-                            </button>
+                            ></button>
                           </div>
                         </div>
 
@@ -608,7 +459,7 @@ function Dashboard() {
 
                           <div className="px-2 py-2 mt-1">
                             <p className="mb-1">
-                              Home & Kitchen
+                              best category name{" "}
                               <span className="float-end">75%</span>
                             </p>
                             <div
@@ -626,7 +477,7 @@ function Dashboard() {
                             </div>
 
                             <p className="mt-3 mb-1">
-                              Domestic Ro <span className="float-end">47%</span>
+                              Greenland <span className="float-end">47%</span>
                             </p>
                             <div
                               className="progress mt-2"
@@ -643,7 +494,7 @@ function Dashboard() {
                             </div>
 
                             <p className="mt-3 mb-1">
-                              Commercial<span className="float-end">82%</span>
+                              Russia <span className="float-end">82%</span>
                             </p>
                             <div
                               className="progress mt-2"

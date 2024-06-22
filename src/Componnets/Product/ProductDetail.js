@@ -62,28 +62,28 @@ function ProductDetail() {
                           >
                             <SwiperSlide>
                               <img
-                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-12.jpg"
+                                src={products.thumbnail}
                                 alt=""
                                 className="img-fluid d-block"
                               />
                             </SwiperSlide>
                             <SwiperSlide>
                               <img
-                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-12.jpg"
+                                src={products.thumbnail}
                                 alt=""
                                 className="img-fluid d-block"
                               />
                             </SwiperSlide>
                             <SwiperSlide>
                               <img
-                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-12.jpg"
+                                src={products.thumbnail}
                                 alt=""
                                 className="img-fluid d-block"
                               />
                             </SwiperSlide>
                             <SwiperSlide>
                               <img
-                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-12.jpg"
+                                src={products.thumbnail}
                                 alt=""
                                 className="img-fluid d-block"
                               />
