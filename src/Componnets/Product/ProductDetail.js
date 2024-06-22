@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
+import { Baseurl } from "../../config";
 
 function ProductDetail() {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,7 @@ function ProductDetail() {
     const fetchProducts = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/v1/Product/product?id=${id}`
+          `${Baseurl}/api/v1/Product/product?id=${id}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import axios from "axios";
+import { Baseurl } from "../../config";
 
 function AddProduct() {
   const [category, setCategory] = useState([]);
@@ -99,7 +100,7 @@ function AddProduct() {
     }
 
     try {
-      await axios.post("http://localhost:3000/api/v1/product/add", formData, {
+      await axios.post(Baseurl + "api/v1/product/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -110,7 +111,7 @@ function AddProduct() {
     }
   };
   useEffect(() => {
-    fetch("http://localhost:3000/api/v1/category/allcategory")
+    fetch(Baseurl + "api/v1/category/allcategory")
       .then((response) => response.json())
       .then((jsonData) => setCategory(jsonData.data))
       .catch((error) => console.error("Error fetching data:", error));

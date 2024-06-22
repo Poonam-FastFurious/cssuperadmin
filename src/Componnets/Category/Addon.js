@@ -76,16 +76,13 @@ function Addon() {
     // If user confirms deletion
     if (confirmation.isConfirmed) {
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/v1/addons/delete",
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id }),
-          }
-        );
+        const response = await fetch(Baseurl + "/api/v1/addons/delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        });
         if (response.ok) {
           Swal.fire({
             title: "Deleted!",
@@ -128,21 +125,18 @@ function Addon() {
   const handleUpdateAddon = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/v1/addons/update",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            id: editAddon._id,
-            name: editName,
-            price: editPrice,
-            status: editStatus,
-          }),
-        }
-      );
+      const response = await fetch(Baseurl + "/api/v1/addons/update", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: editAddon._id,
+          name: editName,
+          price: editPrice,
+          status: editStatus,
+        }),
+      });
       if (response.ok) {
         toast.success("Addon updated successfully!");
         const modalElement = document.getElementById("editModal");

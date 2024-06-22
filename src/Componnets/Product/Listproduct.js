@@ -12,9 +12,7 @@ function Listproduct() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/v1/Product/products"
-        );
+        const response = await axios.get(Baseurl + "api/v1/Product/products");
         setProducts(response.data.products);
       } catch (error) {
         console.error("Error fetching blogs:", error);
@@ -52,16 +50,13 @@ function Listproduct() {
       });
 
       if (result.isConfirmed) {
-        const response = await fetch(
-          `http://localhost:3000/api/v1/Product/delete`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id }),
-          }
-        );
+        const response = await fetch(`${Baseurl}/api/v1/Product/delete`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
