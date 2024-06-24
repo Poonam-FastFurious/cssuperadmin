@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import axios from "axios";
 import Swal from "sweetalert2";
 import { Baseurl } from "../../config";
 
@@ -12,10 +11,14 @@ function Listproduct() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(Baseurl + "api/v1/Product/products");
-        setProducts(response.data.products);
+        const response = await fetch(Baseurl + "/api/v1/Product/products");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setProducts(data.products); // Assuming data.products is correct
       } catch (error) {
-        console.error("Error fetching blogs:", error);
+        console.error("Error fetching products:", error);
       }
     };
 

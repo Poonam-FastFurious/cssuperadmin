@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import axios from "axios";
@@ -7,6 +7,9 @@ import { Baseurl } from "../../config";
 
 function AddProduct() {
   const [category, setCategory] = useState([]);
+
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [productData, setProductData] = useState({
     name: "",
     description: "",
@@ -98,16 +101,18 @@ function AddProduct() {
     for (let pair of formData.entries()) {
       console.log(pair[0] + ": " + pair[1]);
     }
-
+    setLoading(true);
     try {
       await axios.post(Baseurl + "/api/v1/product/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      // Redirect to product list or another appropriate page
+      navigate("/Product");
     } catch (error) {
       console.error("There was an error creating the product!", error);
+    } finally {
+      setLoading(false); // Stop loader
     }
   };
   useEffect(() => {
@@ -213,16 +218,50 @@ function AddProduct() {
                               />
                             </div>
 
-                            <div className="avatar-lg">
-                              <div className="avatar-title bg-light rounded">
-                                <img
-                                  src="#"
-                                  id="proimg"
-                                  className="avatar-md h-auto"
-                                  alt="demo"
-                                />
-                              </div>
-                            </div>
+                            {image && (
+                              <ul
+                                className="list-unstyled mb-0"
+                                id="dropzone-preview"
+                              >
+                                <li className="mt-2" id="dropzone-preview-list">
+                                  <div className="border rounded">
+                                    <div className="d-flex p-2">
+                                      <div className="flex-shrink-0 me-3">
+                                        <div className="avatar-sm bg-light rounded">
+                                          <img
+                                            src={URL.createObjectURL(image)}
+                                            alt="Selected"
+                                            style={{
+                                              width: "300px",
+                                              height: "auto",
+                                            }}
+                                            className="img-fluid rounded d-block"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex-grow-1">
+                                        <div className="pt-1">
+                                          <h5
+                                            className="fs-14 mb-1"
+                                            data-dz-name=""
+                                          >
+                                            &nbsp;
+                                          </h5>
+                                          <p
+                                            className="fs-13 text-muted mb-0"
+                                            data-dz-size=""
+                                          ></p>
+                                          <strong
+                                            className="error text-danger"
+                                            data-dz-errormessage=""
+                                          ></strong>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </li>
+                              </ul>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -254,16 +293,50 @@ function AddProduct() {
                               />
                             </div>
 
-                            <div className="avatar-lg">
-                              <div className="avatar-title bg-light rounded">
-                                <img
-                                  src=""
-                                  id="product-img"
-                                  className="avatar-md h-auto"
-                                  alt="#"
-                                />
-                              </div>
-                            </div>
+                            {image && (
+                              <ul
+                                className="list-unstyled mb-0"
+                                id="dropzone-preview"
+                              >
+                                <li className="mt-2" id="dropzone-preview-list">
+                                  <div className="border rounded">
+                                    <div className="d-flex p-2">
+                                      <div className="flex-shrink-0 me-3">
+                                        <div className="avatar-sm bg-light rounded">
+                                          <img
+                                            src={URL.createObjectURL(image)}
+                                            alt="Selected"
+                                            style={{
+                                              width: "300px",
+                                              height: "auto",
+                                            }}
+                                            className="img-fluid rounded d-block"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex-grow-1">
+                                        <div className="pt-1">
+                                          <h5
+                                            className="fs-14 mb-1"
+                                            data-dz-name=""
+                                          >
+                                            &nbsp;
+                                          </h5>
+                                          <p
+                                            className="fs-13 text-muted mb-0"
+                                            data-dz-size=""
+                                          ></p>
+                                          <strong
+                                            className="error text-danger"
+                                            data-dz-errormessage=""
+                                          ></strong>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </li>
+                              </ul>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -501,7 +574,10 @@ function AddProduct() {
 
                   <div className="text-end mb-3">
                     <button type="submit" className="btn btn-success w-sm">
-                      Submit
+                      {loading && (
+                        <span className="spinner-border spinner-border-sm me-1"></span>
+                      )}
+                      {loading ? "Loading..." : "Submit"}
                     </button>
                   </div>
                 </div>
@@ -528,6 +604,7 @@ function AddProduct() {
                           data-choices=""
                           data-choices-search-false=""
                         >
+                          <option>select </option>
                           <option value="in_stock">in_stock</option>
                           <option value="out_of_stock">out_of_stock</option>
                         </select>
@@ -540,6 +617,7 @@ function AddProduct() {
                         >
                           Visibility
                         </label>
+
                         <select
                           className="form-select"
                           id="choices-publish-visibility-input"
@@ -547,6 +625,7 @@ function AddProduct() {
                           value={productData.visibility}
                           onChange={handleInputChange}
                         >
+                          <option>select </option>
                           <option value="active">active</option>
                           <option value="inactive">inactive</option>
                         </select>
@@ -569,6 +648,7 @@ function AddProduct() {
                         data-choices=""
                         data-choices-search-false=""
                       >
+                        <option>select </option>
                         {category.map((cat) => (
                           <option key={cat._id} value={cat.categoriesTitle}>
                             {cat.categoriesTitle}
