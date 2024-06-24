@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Baseurl } from "../../config";
 
 /* eslint-disable react/no-unescaped-entities */
 function Order() {
@@ -26,9 +27,7 @@ function Order() {
     const fetchProducts = async () => {
       try {
         setFetching(true);
-        const response = await fetch(
-          "https://ssagricultureapi.brandbell.in/api/v1/order/allorder"
-        );
+        const response = await fetch(Baseurl + "/api/v1/order/allorder");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -64,19 +63,16 @@ function Order() {
   const handleUpdateStatus = async () => {
     if (!selectedOrder) return;
     try {
-      const response = await fetch(
-        "https://ssagricultureapi.brandbell.in/api/v1/order/updateorder",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            orderID: selectedOrder.orderID, // assuming _id is the unique identifier for the order
-            status: newStatus,
-          }),
-        }
-      );
+      const response = await fetch(Baseurl + "/api/v1/order/updateorder", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderID: selectedOrder.orderID, // assuming _id is the unique identifier for the order
+          status: newStatus,
+        }),
+      });
       if (!response.ok) {
         console.log("error");
       }
@@ -166,7 +162,6 @@ function Order() {
                           <span className="counter-value" data-target="559.25">
                             {orders.length}
                           </span>
-
                         </h4>
                         <Link
                           to=""
@@ -249,7 +244,6 @@ function Order() {
                           <span className="counter-value" data-target="183.35">
                             {delivered.length}
                           </span>
-
                         </h4>
                         <Link
                           to=""
@@ -285,11 +279,9 @@ function Order() {
                     <div className="d-flex align-items-end justify-content-between mt-4">
                       <div>
                         <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-
                           <span className="counter-value" data-target="165.89">
                             {canceledOrders.length}
                           </span>
-
                         </h4>
                         <Link
                           to=""

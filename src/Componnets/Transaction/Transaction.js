@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Baseurl } from "../../config";
 
 function Transaction() {
   const [transactions, setTransactions] = useState([]);
@@ -9,9 +10,7 @@ function Transaction() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch(
-          "https://ssagricultureapi.brandbell.in/api/v1/payments/"
-        );
+        const response = await fetch(Baseurl + "/api/v1/payments/");
         const data = await response.json();
         if (data.success) {
           setTransactions(data.data);
@@ -196,8 +195,9 @@ function Transaction() {
                     <nav className="mt-3">
                       <ul className="pagination">
                         <li
-                          className={`page-item ${currentPage === 1 ? "disabled" : ""
-                            }`}
+                          className={`page-item ${
+                            currentPage === 1 ? "disabled" : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -215,8 +215,9 @@ function Transaction() {
                           (_, index) => (
                             <li
                               key={index}
-                              className={`page-item ${currentPage === index + 1 ? "active" : ""
-                                }`}
+                              className={`page-item ${
+                                currentPage === index + 1 ? "active" : ""
+                              }`}
                             >
                               <button
                                 className="page-link"
@@ -228,11 +229,12 @@ function Transaction() {
                           )
                         )}
                         <li
-                          className={`page-item ${currentPage ===
+                          className={`page-item ${
+                            currentPage ===
                             Math.ceil(transactions.length / itemsPerPage)
-                            ? "disabled"
-                            : ""
-                            }`}
+                              ? "disabled"
+                              : ""
+                          }`}
                         >
                           <button
                             className="page-link"
