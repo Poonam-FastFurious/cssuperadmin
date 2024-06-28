@@ -66,7 +66,7 @@ function App() {
             <Route path="/SubCategory" element={<SubCategory />}></Route>
             <Route path="/AddOns" element={<Addon />}></Route>
             <Route path="/Order" element={<OrderList />}></Route>
-            <Route path="/orderdetail" element={<OrderDetail />}></Route>
+            <Route path="/order/:id" element={<OrderDetail />}></Route>
             <Route path="/transaction" element={<Transaction />}></Route>
             <Route path="/customer" element={<Customer />}></Route>
             <Route path="/banner" element={<Banner />}></Route>
