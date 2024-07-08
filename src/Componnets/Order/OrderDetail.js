@@ -31,11 +31,8 @@ function OrderDetail() {
                     <div class="d-flex align-items-center">
                       <h5 class="card-title flex-grow-1 mb-0">Order #VL2667</h5>
                       <div class="flex-shrink-0">
-                        <Link
-                          to="apps-invoices-details"
-                          class="btn btn-success btn-sm"
-                        >
-                          <i class="ri-download-2-fill align-middle me-1"></i>{" "}
+                        <Link to="#" class="btn btn-success btn-sm">
+                          <i class="ri-download-2-fill align-middle me-1"></i>
                           Invoice
                         </Link>
                       </div>
@@ -68,10 +65,7 @@ function OrderDetail() {
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                   <h5 class="fs-15">
-                                    <Link
-                                      to="apps-ecommerce-product-details"
-                                      class="link-primary"
-                                    >
+                                    <Link to="#" class="link-primary">
                                       Domestic Ro
                                     </Link>
                                   </h5>
@@ -109,10 +103,7 @@ function OrderDetail() {
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                   <h5 class="fs-15">
-                                    <Link
-                                      to="apps-ecommerce-product-details"
-                                      class="link-primary"
-                                    >
+                                    <Link to="#" class="link-primary">
                                       Domestic Ro
                                     </Link>
                                   </h5>
@@ -137,7 +128,7 @@ function OrderDetail() {
                               </div>
                             </td>
                             <td class="fw-medium text-end">Rs239.98</td>
-                          </tr>{" "}
+                          </tr>
                           <tr>
                             <td>
                               <div class="d-flex">
@@ -150,10 +141,7 @@ function OrderDetail() {
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                   <h5 class="fs-15">
-                                    <Link
-                                      to="apps-ecommerce-product-details"
-                                      class="link-primary"
-                                    >
+                                    <Link to="#" class="link-primary">
                                       Domestic Ro
                                     </Link>
                                   </h5>
@@ -222,22 +210,7 @@ function OrderDetail() {
                   <div class="card-header">
                     <div class="d-sm-flex align-items-center">
                       <h5 class="card-title flex-grow-1 mb-0">Order Status</h5>
-                      <div class="flex-shrink-0 mt-2 mt-sm-0">
-                        <Link
-                          to="#;"
-                          class="btn btn-soft-info btn-sm mt-2 mt-sm-0"
-                        >
-                          <i class="ri-map-pin-line align-middle me-1"></i>{" "}
-                          Change Address
-                        </Link>
-                        <Link
-                          to="#;"
-                          class="btn btn-soft-danger btn-sm mt-2 mt-sm-0"
-                        >
-                          <i class="mdi mdi-archive-remove-outline align-middle me-1"></i>{" "}
-                          Cancel Order
-                        </Link>
-                      </div>
+                      <div class="flex-shrink-0 mt-2 mt-sm-0"></div>
                     </div>
                   </div>
                   <div class="card-body">
@@ -265,7 +238,7 @@ function OrderDetail() {
                                   <h6 class="fs-15 mb-0 fw-semibold">
                                     Order Placed -{" "}
                                     <span class="fw-normal">
-                                      Wed, 15 Dec 2021
+                                      Wed, 15 Dec 2024
                                     </span>
                                   </h6>
                                 </div>
@@ -281,14 +254,14 @@ function OrderDetail() {
                             <div class="accordion-body ms-2 ps-5 pt-0">
                               <h6 class="mb-1">An order has been placed.</h6>
                               <p class="text-muted">
-                                Wed, 15 Dec 2021 - 05:34PM
+                                Wed, 15 Dec 2024 - 05:34PM
                               </p>
 
                               <h6 class="mb-1">
                                 Seller has processed your order.
                               </h6>
                               <p class="text-muted mb-0">
-                                Thu, 16 Dec 2021 - 5:48AM
+                                Thu, 16 Dec 2024 - 5:48AM
                               </p>
                             </div>
                           </div>
@@ -312,7 +285,7 @@ function OrderDetail() {
                                   <h6 class="fs-15 mb-1 fw-semibold">
                                     Packed -{" "}
                                     <span class="fw-normal">
-                                      Thu, 16 Dec 2021
+                                      Thu, 16 Dec 2024
                                     </span>
                                   </h6>
                                 </div>
@@ -330,7 +303,7 @@ function OrderDetail() {
                                 Your Item has been picked up by courier partner
                               </h6>
                               <p class="text-muted mb-0">
-                                Fri, 17 Dec 2021 - 9:45AM
+                                Fri, 17 Dec 2024 - 9:45AM
                               </p>
                             </div>
                           </div>
@@ -354,7 +327,7 @@ function OrderDetail() {
                                   <h6 class="fs-15 mb-1 fw-semibold">
                                     Shipping -{" "}
                                     <span class="fw-normal">
-                                      Thu, 16 Dec 2021
+                                      Thu, 16 Dec 2024
                                     </span>
                                   </h6>
                                 </div>
@@ -373,7 +346,7 @@ function OrderDetail() {
                               </h6>
                               <h6 class="mb-1">Your item has been shipped.</h6>
                               <p class="text-muted mb-0">
-                                Sat, 18 Dec 2021 - 4.54PM
+                                Sat, 18 Dec 2024 - 4.54PM
                               </p>
                             </div>
                           </div>

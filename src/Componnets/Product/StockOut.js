@@ -37,7 +37,7 @@ function StockOut() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">SSAgriculture</Link>
+                        <Link to="#">Proven Ro</Link>
                       </li>
                       <li className="breadcrumb-item active">
                         StockOut Product

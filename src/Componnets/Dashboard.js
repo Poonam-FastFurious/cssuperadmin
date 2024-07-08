@@ -22,9 +22,7 @@ function Dashboard() {
         setFetching(true);
 
         //order fetch
-        const response = await fetch(
-          "https://ssagriculturebackend.onrender.com/api/v1/order/allorder"
-        );
+        const response = await fetch(Baseurl + "/api/v1/order/allorder");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -247,7 +245,11 @@ function Dashboard() {
                                 </span>
                                 k
                               </h4>
-                              <Link to="" className="text-decoration-underline">
+                              <Link
+                                to=""
+                                className="text-decoration-underline  "
+                                style={{ visibility: "hidden" }}
+                              >
                                 Withdraw money
                               </Link>
                             </div>
@@ -381,7 +383,7 @@ function Dashboard() {
                                   <tr key={order.id}>
                                     <td>
                                       <Link
-                                        to="/apps-ecommerce-order-details"
+                                        to="#"
                                         className="fw-medium link-primary"
                                       >
                                         #{order.orderID}
@@ -459,7 +461,7 @@ function Dashboard() {
 
                           <div className="px-2 py-2 mt-1">
                             <p className="mb-1">
-                              best category name{" "}
+                              best category name
                               <span className="float-end">75%</span>
                             </p>
                             <div
@@ -579,22 +581,19 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1">
-                                          <Link
-                                            to="apps-ecommerce-product-details"
-                                            className="text-reset"
-                                          >
-                                            Branded T-Shirts
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          24 Apr 2021
+                                          Proven Category
                                         </span>
                                       </div>
                                     </div>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $29.00
+                                      Rs29.00
                                     </h5>
                                     <span className="text-muted">Price</span>
                                   </td>
@@ -610,7 +609,7 @@ function Dashboard() {
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $1,798
+                                      Rs1,798
                                     </h5>
                                     <span className="text-muted">Amount</span>
                                   </td>
@@ -627,40 +626,35 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1">
-                                          <Link
-                                            to="apps-ecommerce-product-details"
-                                            className="text-reset"
-                                          >
-                                            Bentwood Chair
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          19 Mar 2021
+                                          Proven Category
                                         </span>
                                       </div>
                                     </div>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $85.20
+                                      Rs29.00
                                     </h5>
                                     <span className="text-muted">Price</span>
                                   </td>
                                   <td>
-                                    <h5 className="fs-14 my-1 fw-normal">35</h5>
+                                    <h5 className="fs-14 my-1 fw-normal">62</h5>
                                     <span className="text-muted">Orders</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      <span className="badge bg-danger-subtle text-danger">
-                                        Out of stock
-                                      </span>
+                                      510
                                     </h5>
                                     <span className="text-muted">Stock</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $2982
+                                      Rs1,798
                                     </h5>
                                     <span className="text-muted">Amount</span>
                                   </td>
@@ -677,40 +671,35 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1">
-                                          <Link
-                                            to="apps-ecommerce-product-details"
-                                            className="text-reset"
-                                          >
-                                            Bentwood Chair
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          19 Mar 2021
+                                          Proven Category
                                         </span>
                                       </div>
                                     </div>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $85.20
+                                      Rs29.00
                                     </h5>
                                     <span className="text-muted">Price</span>
                                   </td>
                                   <td>
-                                    <h5 className="fs-14 my-1 fw-normal">35</h5>
+                                    <h5 className="fs-14 my-1 fw-normal">62</h5>
                                     <span className="text-muted">Orders</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      <span className="badge bg-danger-subtle text-danger">
-                                        Out of stock
-                                      </span>
+                                      510
                                     </h5>
                                     <span className="text-muted">Stock</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $2982
+                                      Rs1,798
                                     </h5>
                                     <span className="text-muted">Amount</span>
                                   </td>
@@ -727,38 +716,35 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1">
-                                          <Link
-                                            to="apps-ecommerce-product-details"
-                                            className="text-reset"
-                                          >
-                                            Borosil Paper Cup
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          01 Mar 2021
+                                          Proven Category
                                         </span>
                                       </div>
                                     </div>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $14.00
+                                      Rs29.00
                                     </h5>
                                     <span className="text-muted">Price</span>
                                   </td>
                                   <td>
-                                    <h5 className="fs-14 my-1 fw-normal">80</h5>
+                                    <h5 className="fs-14 my-1 fw-normal">62</h5>
                                     <span className="text-muted">Orders</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      749
+                                      510
                                     </h5>
                                     <span className="text-muted">Stock</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $1120
+                                      Rs1,798
                                     </h5>
                                     <span className="text-muted">Amount</span>
                                   </td>
@@ -775,40 +761,35 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1">
-                                          <Link
-                                            to="apps-ecommerce-product-details"
-                                            className="text-reset"
-                                          >
-                                            One Seater Sofa
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          11 Feb 2021
+                                          Proven Category
                                         </span>
                                       </div>
                                     </div>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $127.50
+                                      Rs29.00
                                     </h5>
                                     <span className="text-muted">Price</span>
                                   </td>
                                   <td>
-                                    <h5 className="fs-14 my-1 fw-normal">56</h5>
+                                    <h5 className="fs-14 my-1 fw-normal">62</h5>
                                     <span className="text-muted">Orders</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      <span className="badge bg-danger-subtle text-danger">
-                                        Out of stock
-                                      </span>
+                                      510
                                     </h5>
                                     <span className="text-muted">Stock</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $7140
+                                      Rs1,798
                                     </h5>
                                     <span className="text-muted">Amount</span>
                                   </td>
@@ -825,38 +806,80 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1">
-                                          <Link
-                                            to="apps-ecommerce-product-details"
-                                            className="text-reset"
-                                          >
-                                            Stillbird Helmet
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          17 Jan 2021
+                                          Proven Category
                                         </span>
                                       </div>
                                     </div>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $54
+                                      Rs29.00
                                     </h5>
                                     <span className="text-muted">Price</span>
                                   </td>
                                   <td>
-                                    <h5 className="fs-14 my-1 fw-normal">74</h5>
+                                    <h5 className="fs-14 my-1 fw-normal">62</h5>
                                     <span className="text-muted">Orders</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      805
+                                      510
                                     </h5>
                                     <span className="text-muted">Stock</span>
                                   </td>
                                   <td>
                                     <h5 className="fs-14 my-1 fw-normal">
-                                      $3996
+                                      Rs1,798
+                                    </h5>
+                                    <span className="text-muted">Amount</span>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <div className="d-flex align-items-center">
+                                      <div className="avatar-sm bg-light rounded p-1 me-2">
+                                        <img
+                                          src="https://provenonline.in/wp-content/uploads/2023/01/610r5cGRijL._SL1500_.jpg"
+                                          alt=""
+                                          className="img-fluid d-block"
+                                        />
+                                      </div>
+                                      <div>
+                                        <h5 className="fs-14 my-1">
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
+                                          </Link>
+                                        </h5>
+                                        <span className="text-muted">
+                                          Proven Category
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <h5 className="fs-14 my-1 fw-normal">
+                                      Rs29.00
+                                    </h5>
+                                    <span className="text-muted">Price</span>
+                                  </td>
+                                  <td>
+                                    <h5 className="fs-14 my-1 fw-normal">62</h5>
+                                    <span className="text-muted">Orders</span>
+                                  </td>
+                                  <td>
+                                    <h5 className="fs-14 my-1 fw-normal">
+                                      510
+                                    </h5>
+                                    <span className="text-muted">Stock</span>
+                                  </td>
+                                  <td>
+                                    <h5 className="fs-14 my-1 fw-normal">
+                                      Rs1,798
                                     </h5>
                                     <span className="text-muted">Amount</span>
                                   </td>
@@ -892,15 +915,12 @@ function Dashboard() {
                                       </div>
                                       <div>
                                         <h5 className="fs-14 my-1 fw-medium">
-                                          <Link
-                                            to="apps-ecommerce-seller-details"
-                                            className="text-reset"
-                                          >
-                                            iTest Factory
+                                          <Link to="#" className="text-reset">
+                                            Proven Ro
                                           </Link>
                                         </h5>
                                         <span className="text-muted">
-                                          Oliver Tyler
+                                          Category
                                         </span>
                                       </div>
                                     </div>
@@ -925,7 +945,7 @@ function Dashboard() {
                                   </td>
                                 </tr>
 
-                                <tr>
+                                {/* <tr>
                                   <td>
                                     <div className="d-flex align-items-center">
                                       <div className="flex-shrink-0 me-2">
@@ -937,10 +957,7 @@ function Dashboard() {
                                       </div>
                                       <div className="flex-grow-1">
                                         <h5 className="fs-14 my-1 fw-medium">
-                                          <Link
-                                            to="apps-ecommerce-seller-details"
-                                            className="text-reset"
-                                          >
+                                          <Link to="#" className="text-reset">
                                             Digitech Galaxy
                                           </Link>
                                         </h5>
@@ -980,10 +997,7 @@ function Dashboard() {
                                       </div>
                                       <div className="flex-gow-1">
                                         <h5 className="fs-14 my-1 fw-medium">
-                                          <Link
-                                            to="apps-ecommerce-seller-details"
-                                            className="text-reset"
-                                          >
+                                          <Link to="#" className="text-reset">
                                             Nesta Technologies
                                           </Link>
                                         </h5>
@@ -1025,10 +1039,7 @@ function Dashboard() {
                                       </div>
                                       <div className="flex-grow-1">
                                         <h5 className="fs-14 my-1 fw-medium">
-                                          <Link
-                                            to="apps-ecommerce-seller-details"
-                                            className="text-reset"
-                                          >
+                                          <Link to="#" className="text-reset">
                                             Zoetic Fashion
                                           </Link>
                                         </h5>
@@ -1068,10 +1079,7 @@ function Dashboard() {
                                       </div>
                                       <div className="flex-grow-1">
                                         <h5 className="fs-14 my-1 fw-medium">
-                                          <Link
-                                            to="apps-ecommerce-seller-details"
-                                            className="text-reset"
-                                          >
+                                          <Link to="#" className="text-reset">
                                             Meta4Systems
                                           </Link>
                                         </h5>
@@ -1099,7 +1107,7 @@ function Dashboard() {
                                       <i className="ri-bar-chart-fill text-success fs-16 align-middle ms-2"></i>
                                     </h5>
                                   </td>
-                                </tr>
+                                </tr> */}
                               </tbody>
                             </table>
                           </div>
@@ -1154,7 +1162,7 @@ function Dashboard() {
                                 <tr>
                                   <td>
                                     <Link
-                                      to="apps-ecommerce-order-details"
+                                      to="#"
                                       className="fw-medium link-primary"
                                     >
                                       #VZ2112
@@ -1199,7 +1207,7 @@ function Dashboard() {
                                 <tr>
                                   <td>
                                     <Link
-                                      to="apps-ecommerce-order-details"
+                                      to="#"
                                       className="fw-medium link-primary"
                                     >
                                       #VZ2111
@@ -1244,7 +1252,7 @@ function Dashboard() {
                                 <tr>
                                   <td>
                                     <Link
-                                      to="apps-ecommerce-order-details"
+                                      to="#"
                                       className="fw-medium link-primary"
                                     >
                                       #VZ2109
@@ -1289,7 +1297,7 @@ function Dashboard() {
                                 <tr>
                                   <td>
                                     <Link
-                                      to="apps-ecommerce-order-details"
+                                      to="#"
                                       className="fw-medium link-primary"
                                     >
                                       #VZ2108
@@ -1334,7 +1342,7 @@ function Dashboard() {
                                 <tr>
                                   <td>
                                     <Link
-                                      to="apps-ecommerce-order-details"
+                                      to="#"
                                       className="fw-medium link-primary"
                                     >
                                       #VZ2107

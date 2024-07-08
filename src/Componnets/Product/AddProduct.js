@@ -30,7 +30,7 @@ function AddProduct() {
     { attributeName: "", attributeValue: "" },
   ]);
   const [image, setImage] = useState(null);
-  const [thumbnail, setThumbnail] = useState(null);
+  const [thumbnail, setThumbnail] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,13 +47,12 @@ function AddProduct() {
     });
   };
 
-  const handleFileChange = (e) => {
-    const { id, files } = e.target;
-    if (id === "product-image-input") {
-      setImage(files[0]);
-    } else if (id === "product-thumbnail-input") {
-      setThumbnail(files[0]);
-    }
+  const handelimagechange = (e) => {
+    setImage(e.target.files[0]);
+  };
+
+  const handleThumbnailChange = (e) => {
+    setThumbnail([...e.target.files]);
   };
 
   const handleCKEditorChange = (event, editor) => {
@@ -214,7 +213,7 @@ function AddProduct() {
                                 id="product-image-input"
                                 type="file"
                                 accept="image/png, image/gif, image/jpeg"
-                                onChange={handleFileChange}
+                                onChange={handelimagechange}
                               />
                             </div>
 
@@ -288,53 +287,58 @@ function AddProduct() {
                                 className="form-control d-none"
                                 id="product-thumbnail-input"
                                 type="file"
-                                accept="image/png, image/gif, image/jpeg"
-                                onChange={handleFileChange}
+                                onChange={handleThumbnailChange}
                               />
                             </div>
 
-                            {image && (
+                            {thumbnail.length > 0 && (
                               <ul
                                 className="list-unstyled mb-0"
-                                id="dropzone-preview"
+                                id="gallery-preview"
                               >
-                                <li className="mt-2" id="dropzone-preview-list">
-                                  <div className="border rounded">
-                                    <div className="d-flex p-2">
-                                      <div className="flex-shrink-0 me-3">
-                                        <div className="avatar-sm bg-light rounded">
-                                          <img
-                                            src={URL.createObjectURL(image)}
-                                            alt="Selected"
-                                            style={{
-                                              width: "300px",
-                                              height: "auto",
-                                            }}
-                                            className="img-fluid rounded d-block"
-                                          />
+                                {thumbnail.map((image, index) => (
+                                  <li
+                                    key={index}
+                                    className="mt-2"
+                                    id="gallery-preview-list"
+                                  >
+                                    <div className="border rounded">
+                                      <div className="d-flex p-2">
+                                        <div className="flex-shrink-0 me-3">
+                                          <div className="avatar-sm bg-light rounded">
+                                            <img
+                                              src={URL.createObjectURL(image)}
+                                              alt="Selected"
+                                              style={{
+                                                width: "300px",
+                                                height: "auto",
+                                              }}
+                                              className="img-fluid rounded d-block"
+                                            />
+                                          </div>
                                         </div>
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        <div className="pt-1">
-                                          <h5
-                                            className="fs-14 mb-1"
-                                            data-dz-name=""
-                                          >
-                                            &nbsp;
-                                          </h5>
-                                          <p
-                                            className="fs-13 text-muted mb-0"
-                                            data-dz-size=""
-                                          ></p>
-                                          <strong
-                                            className="error text-danger"
-                                            data-dz-errormessage=""
-                                          ></strong>
+                                        <div className="flex-grow-1">
+                                          <div className="pt-1">
+                                            <h5
+                                              className="fs-14 mb-1"
+                                              data-dz-name=""
+                                            >
+                                              &nbsp;
+                                            </h5>
+                                            <p
+                                              className="fs-13 text-muted mb-0"
+                                              data-dz-size=""
+                                            ></p>
+                                            <strong
+                                              className="error text-danger"
+                                              data-dz-errormessage=""
+                                            ></strong>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </li>
+                                  </li>
+                                ))}
                               </ul>
                             )}
                           </div>
