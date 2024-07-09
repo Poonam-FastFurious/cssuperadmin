@@ -7,7 +7,12 @@ import { Baseurl } from "../../config";
 
 function Listproduct() {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [activeProducts, setActiveProducts] = useState([]);
+  const [inactiveProducts, setInactiveProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -16,7 +21,20 @@ function Listproduct() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        setProducts(data.products); // Assuming data.products is correct
+        // Set all products
+        setProducts(data.products);
+
+        // Filter products based on their status
+        const activeProducts = data.products.filter(
+          (product) => product.visibility === "active"
+        );
+        const inactiveProducts = data.products.filter(
+          (product) => product.visibility === "inactive"
+        );
+
+        // Set the state for active and inactive products
+        setActiveProducts(activeProducts);
+        setInactiveProducts(inactiveProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -24,22 +42,16 @@ function Listproduct() {
 
     fetchProducts();
   }, []);
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await fetch(Baseurl + "/api/v1/category/allcategory");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setCategories(data.data.slice(0, 5));
-      } catch (err) {
-        throw (new Error("data not fetch "), err);
-      }
-    };
+  const handleSearch = (event) => {
+    const searchTerm = event.target.value.toLowerCase();
+    setSearchTerm(searchTerm);
 
-    fetchCategory();
-  }, []);
+    const filteredProducts = products.filter((product) =>
+      product.name.toLowerCase().includes(searchTerm)
+    );
+    setFilteredProducts(filteredProducts);
+  };
+
   const deleteProduct = async (id) => {
     try {
       const result = await Swal.fire({
@@ -74,6 +86,17 @@ function Listproduct() {
       Swal.fire("Error!", "Failed to delete the product.", "error");
     }
   };
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = (searchTerm ? filteredProducts : products).slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+  const totalPages = Math.ceil(
+    (searchTerm ? filteredProducts.length : products.length) / productsPerPage
+  );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
@@ -98,320 +121,7 @@ function Listproduct() {
             </div>
 
             <div className="row">
-              <div className="col-xl-3 col-lg-4">
-                <div className="card">
-                  <div className="card-header">
-                    <div className="d-flex mb-3">
-                      <div className="flex-grow-1">
-                        <h5 className="fs-16">Filters</h5>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <Link
-                          to="#"
-                          className="text-decoration-underline"
-                          id="clearall"
-                        >
-                          Clear All
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="filter-choices-input">
-                      <input
-                        className="form-control"
-                        data-choices=""
-                        data-choices-removeitem=""
-                        type="text"
-                        id="filter-choices-input"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="accordion accordion-flush filter-accordion">
-                    <div className="card-body border-bottom">
-                      <div>
-                        <p className="text-muted text-uppercase fs-12 fw-medium mb-2">
-                          Category
-                        </p>
-                        <ul className="list-unstyled mb-0 filter-list">
-                          {categories.map((category, index) => (
-                            <li key={index}>
-                              <Link
-                                to="#"
-                                className="d-flex py-1 align-items-center"
-                              >
-                                <div className="flex-grow-1">
-                                  <h5 className="fs-13 mb-0 listname">
-                                    {category.categoriesTitle}
-                                  </h5>
-                                </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="card-body border-bottom">
-                      <p className="text-muted text-uppercase fs-12 fw-medium mb-4">
-                        Price
-                      </p>
-
-                      <input
-                        type="range"
-                        style={{ width: "100%", color: "#0AB39C" }}
-                      ></input>
-                      <div className="formCost d-flex gap-2 align-items-center mt-3">
-                        <input
-                          className="form-control form-control-sm"
-                          type="text"
-                          id="minCost"
-                          value="0"
-                        />
-                        <span className="fw-semibold text-muted">to</span>{" "}
-                        <input
-                          className="form-control form-control-sm"
-                          type="text"
-                          id="maxCost"
-                          value="1000"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="accordion-item">
-                      <h2
-                        className="accordion-header"
-                        id="flush-headingDiscount"
-                      >
-                        <button
-                          className="accordion-button bg-transparent shadow-none collapsed"
-                          type="button"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#flush-collapseDiscount"
-                          aria-expanded="true"
-                          aria-controls="flush-collapseDiscount"
-                        >
-                          <span className="text-muted text-uppercase fs-12 fw-medium">
-                            Discount
-                          </span>
-                          <span className="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
-                        </button>
-                      </h2>
-                      <div
-                        id="flush-collapseDiscount"
-                        className="accordion-collapse collapse show"
-                        aria-labelledby="flush-headingDiscount"
-                      >
-                        <div className="accordion-body text-body pt-1">
-                          <div className="d-flex flex-column gap-2 filter-check">
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="50% or more"
-                                id="productdiscountRadio6"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productdiscountRadio6"
-                              >
-                                50% or more
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="40% or more"
-                                id="productdiscountRadio5"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productdiscountRadio5"
-                              >
-                                40% or more
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="30% or more"
-                                id="productdiscountRadio4"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productdiscountRadio4"
-                              >
-                                30% or more
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="20% or more"
-                                id="productdiscountRadio3"
-                                checked=""
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productdiscountRadio3"
-                              >
-                                20% or more
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="10% or more"
-                                id="productdiscountRadio2"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productdiscountRadio2"
-                              >
-                                10% or more
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="Less than 10%"
-                                id="productdiscountRadio1"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productdiscountRadio1"
-                              >
-                                Less than 10%
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="accordion-item">
-                      <h2 className="accordion-header" id="flush-headingRating">
-                        <button
-                          className="accordion-button bg-transparent shadow-none collapsed "
-                          type="button"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#flush-collapseRating"
-                          aria-expanded="false"
-                          aria-controls="flush-collapseRating"
-                        >
-                          <span className="text-muted text-uppercase fs-12 fw-medium">
-                            Rating
-                          </span>{" "}
-                          <span className="badge bg-success rounded-pill align-middle ms-1 filter-badge"></span>
-                        </button>
-                      </h2>
-
-                      <div
-                        id="flush-collapseRating"
-                        className="accordion-collapse collapse show "
-                        aria-labelledby="flush-headingRating"
-                      >
-                        <div className="accordion-body text-body">
-                          <div className="d-flex flex-column gap-2 filter-check">
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="4 & Above Star"
-                                id="productratingRadio4"
-                                checked=""
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productratingRadio4"
-                              >
-                                <span className="text-muted">
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star"></i>
-                                </span>{" "}
-                                4 & Above
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="3 & Above Star"
-                                id="productratingRadio3"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productratingRadio3"
-                              >
-                                <span className="text-muted">
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star"></i>
-                                  <i className="mdi mdi-star"></i>
-                                </span>{" "}
-                                3 & Above
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="2 & Above Star"
-                                id="productratingRadio2"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productratingRadio2"
-                              >
-                                <span className="text-muted">
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star"></i>
-                                  <i className="mdi mdi-star"></i>
-                                  <i className="mdi mdi-star"></i>
-                                </span>{" "}
-                                2 & Above
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                value="1 Star"
-                                id="productratingRadio1"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="productratingRadio1"
-                              >
-                                <span className="text-muted">
-                                  <i className="mdi mdi-star text-warning"></i>
-                                  <i className="mdi mdi-star"></i>
-                                  <i className="mdi mdi-star"></i>
-                                  <i className="mdi mdi-star"></i>
-                                  <i className="mdi mdi-star"></i>
-                                </span>{" "}
-                                1
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-xl-9 col-lg-8">
+              <div className="col-xl-12 col-lg-8">
                 <div>
                   <div className="card">
                     <div className="card-header border-0">
@@ -436,6 +146,8 @@ function Listproduct() {
                                 className="form-control"
                                 id="searchProductList"
                                 placeholder="Search Products..."
+                                value={searchTerm}
+                                onChange={handleSearch}
                               />
                               <i className="ri-search-line search-icon"></i>
                             </div>
@@ -460,7 +172,7 @@ function Listproduct() {
                               >
                                 All
                                 <span className="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1">
-                                  12
+                                  {products.length}
                                 </span>
                               </Link>
                             </li>
@@ -473,7 +185,7 @@ function Listproduct() {
                               >
                                 Active
                                 <span className="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1">
-                                  5
+                                  {activeProducts.length}
                                 </span>
                               </Link>
                             </li>
@@ -485,6 +197,9 @@ function Listproduct() {
                                 role="tab"
                               >
                                 InActive
+                                <span className="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1">
+                                  {inactiveProducts.length}
+                                </span>
                               </Link>
                             </li>
                           </ul>
@@ -537,7 +252,9 @@ function Listproduct() {
                                       ></label>
                                     </div>
                                   </th>
-                                  <th scope="col">Product</th>
+                                  <th scope="col">Image</th>
+                                  <th scope="col">Product Name</th>
+                                  <th scope="col">Category</th>
                                   <th scope="col">Stock</th>
                                   <th scope="col">Price</th>
 
@@ -547,7 +264,7 @@ function Listproduct() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {products.map((product, index) => (
+                                {currentProducts.map((product, index) => (
                                   <tr key={index}>
                                     <td>
                                       <div className="form-check">
@@ -564,17 +281,27 @@ function Listproduct() {
                                       </div>
                                     </td>
                                     <td>
+                                      <div className="d-flex align-items-center">
+                                        <div className="flex-shrink-0 me-2">
+                                          <img
+                                            src={product.image}
+                                            alt=""
+                                            className="avatar-xs rounded-circle"
+                                          />
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td>
                                       <Link
                                         to={`${product._id}`}
                                         className="fw-semibold"
                                       >
                                         {product.name}
-                                        <br />
-                                        Category :{product.category}
                                       </Link>
                                     </td>
+                                    <td>{product.category}</td>
                                     <td>{product.stock.quantity}</td>
-                                    <td> Rs{product.price}</td>
+                                    <td> ₹{product.price}</td>
 
                                     <td>{product.rating}</td>
                                     <td>
@@ -585,7 +312,7 @@ function Listproduct() {
                                     <td>
                                       <div className="hstack gap-3 flex-wrap">
                                         <Link
-                                          to="#;"
+                                          to={`/EditProduct/${product._id}`}
                                           className="link-success fs-15"
                                         >
                                           <i className="ri-edit-2-line"></i>
@@ -606,6 +333,27 @@ function Listproduct() {
                               </tbody>
                             </table>
                           </div>
+                          <nav className="mt-4">
+                            <ul className="pagination ">
+                              {Array.from({ length: totalPages }).map(
+                                (_, index) => (
+                                  <li
+                                    key={index}
+                                    className={`page-item ${
+                                      currentPage === index + 1 ? "active" : ""
+                                    }`}
+                                  >
+                                    <button
+                                      className="page-link"
+                                      onClick={() => paginate(index + 1)}
+                                    >
+                                      {index + 1}
+                                    </button>
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </nav>
                         </div>
 
                         <div
@@ -631,17 +379,19 @@ function Listproduct() {
                                       ></label>
                                     </div>
                                   </th>
-                                  <th scope="col">Product</th>
+                                  <th scope="col">Image</th>
+                                  <th scope="col">Product Name</th>
+                                  <th scope="col">Category</th>
                                   <th scope="col">Stock</th>
                                   <th scope="col">Price</th>
-                                  <th scope="col">Orders</th>
+
                                   <th scope="col">Rating</th>
-                                  <th scope="col">Publish</th>
+                                  <th scope="col">Status</th>
                                   <th scope="col">Action</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {products.map((product, index) => (
+                                {activeProducts.map((product, index) => (
                                   <tr key={index}>
                                     <td>
                                       <div className="form-check">
@@ -658,17 +408,27 @@ function Listproduct() {
                                       </div>
                                     </td>
                                     <td>
+                                      <div className="d-flex align-items-center">
+                                        <div className="flex-shrink-0 me-2">
+                                          <img
+                                            src={product.image}
+                                            alt=""
+                                            className="avatar-xs rounded-circle"
+                                          />
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td>
                                       <Link
                                         to={`${product._id}`}
                                         className="fw-semibold"
                                       >
                                         {product.name}
-                                        <br />
-                                        Category :{product.category}
                                       </Link>
                                     </td>
+                                    <td>{product.category}</td>
                                     <td>{product.stock.quantity}</td>
-                                    <td> Rs{product.price}</td>
+                                    <td> ₹{product.price}</td>
 
                                     <td>{product.rating}</td>
                                     <td>
@@ -679,7 +439,7 @@ function Listproduct() {
                                     <td>
                                       <div className="hstack gap-3 flex-wrap">
                                         <Link
-                                          to="#;"
+                                          to={`/EditProduct/${product._id}`}
                                           className="link-success fs-15"
                                         >
                                           <i className="ri-edit-2-line"></i>
@@ -707,14 +467,104 @@ function Listproduct() {
                           id="productnav-draft"
                           role="tabpanel"
                         >
-                          <div className="py-4 text-center">
-                            <lord-icon
-                              src="../../../msoeawqm.json"
-                              trigger="loop"
-                              colors="primary:#405189,secondary:#0ab39c"
-                              style={{ width: "72px" }}
-                            ></lord-icon>
-                            <h5 className="mt-4">Sorry! No Result Found</h5>
+                          <div className="table-responsive table-card">
+                            <table className="table table-nowrap table-striped-columns mb-0">
+                              <thead className="table-light">
+                                <tr>
+                                  <th scope="col">
+                                    <div className="form-check">
+                                      <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        value=""
+                                        id="cardtableCheck"
+                                      />
+                                      <label
+                                        className="form-check-label"
+                                        htmlFor="cardtableCheck"
+                                      ></label>
+                                    </div>
+                                  </th>
+                                  <th scope="col">Image</th>
+                                  <th scope="col">Product Name</th>
+                                  <th scope="col">Category</th>
+                                  <th scope="col">Stock</th>
+                                  <th scope="col">Price</th>
+
+                                  <th scope="col">Rating</th>
+                                  <th scope="col">Status</th>
+                                  <th scope="col">Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {inactiveProducts.map((product, index) => (
+                                  <tr key={index}>
+                                    <td>
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          value=""
+                                          id="cardtableCheck04"
+                                        />
+                                        <label
+                                          className="form-check-label"
+                                          htmlFor="cardtableCheck04"
+                                        ></label>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <div className="d-flex align-items-center">
+                                        <div className="flex-shrink-0 me-2">
+                                          <img
+                                            src={product.image}
+                                            alt=""
+                                            className="avatar-xs rounded-circle"
+                                          />
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <Link
+                                        to={`${product._id}`}
+                                        className="fw-semibold"
+                                      >
+                                        {product.name}
+                                      </Link>
+                                    </td>
+                                    <td>{product.category}</td>
+                                    <td>{product.stock.quantity}</td>
+                                    <td> ₹{product.price}</td>
+
+                                    <td>{product.rating}</td>
+                                    <td>
+                                      <span className="badge bg-success">
+                                        {product.visibility}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <div className="hstack gap-3 flex-wrap">
+                                        <Link
+                                          to={`/EditProduct/${product._id}`}
+                                          className="link-success fs-15"
+                                        >
+                                          <i className="ri-edit-2-line"></i>
+                                        </Link>
+                                        <Link
+                                          to="#;"
+                                          className="link-danger fs-15"
+                                          onClick={() =>
+                                            deleteProduct(product._id)
+                                          }
+                                        >
+                                          <i className="ri-delete-bin-line"></i>
+                                        </Link>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>

@@ -1,8 +1,99 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Baseurl } from "../../../config";
 
 function Section2() {
+  const [formData, setFormData] = useState({
+    title: "",
+    details: "",
+    link: "",
+    status: "", // Assuming you need to add a field for status
+    type: "2", // Assuming you need to add a field for type
+    image: null,
+  });
+  const [banners, setBanners] = useState([]);
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: files ? files[0] : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formPayload = new FormData();
+    formPayload.append("title", formData.title);
+    formPayload.append("details", formData.details);
+    formPayload.append("link", formData.link);
+    formPayload.append("status", formData.status);
+    formPayload.append("type", formData.type);
+    formPayload.append("image", formData.image);
+
+    const requestOptions = {
+      method: "POST",
+      body: formPayload,
+    };
+
+    try {
+      const response = await fetch(
+        Baseurl + "/api/v1/Banner/add",
+        requestOptions
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      // Handle success scenario
+
+      setFormData({
+        title: "",
+        details: "",
+        link: "",
+        status: "",
+        type: "",
+        image: null,
+      });
+      // Close modal
+      const modalElement = document.getElementById("showModal");
+      const modal = window.bootstrap.Modal.getInstance(modalElement);
+      modal.hide();
+      toast.success("🦄 banner Added succsessfull!", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } catch (error) {
+      console.error("Error adding banner:", error);
+      alert("Failed to add banner. Please try again.");
+    }
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          Baseurl + "/api/v1/Banner/allabnner?type=2"
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setBanners(data.data); // Assuming data is an array of banner objects
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <>
       <div class="main-content">
@@ -11,7 +102,7 @@ function Section2() {
             <div class="row">
               <div class="col-12">
                 <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                  <h4 class="mb-sm-0">Add Banner</h4>
+                  <h4 class="mb-sm-0">Add Banner Section 2</h4>
 
                   <div class="page-title-right">
                     <ol class="breadcrumb m-0">
@@ -88,6 +179,9 @@ function Section2() {
                                 Title
                               </th>
                               <th class="sort" data-sort="phone">
+                                Details
+                              </th>
+                              <th class="sort" data-sort="phone">
                                 Place
                               </th>
                               <th class="sort" data-sort="date">
@@ -102,198 +196,58 @@ function Section2() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
+                            {banners.map((item, index) => (
+                              <tr key={index}>
+                                <th scope="row">
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      name="chk_child"
+                                      value="option1"
+                                    />
+                                  </div>
+                                </th>
+                                <td class="id" style={{ display: "none;" }}>
+                                  <img
+                                    src={item.image}
+                                    alt=""
+                                    className="avatar-xs rounded-circle"
                                   />
-                                </div>
-                              </th>
-                              <td class="id" style={{ display: "none;" }}>
-                                <Link to="#" class="fw-medium link-primary">
-                                  #VZ2101
-                                </Link>
-                              </td>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#showModal"
-                                    >
-                                      Edit
-                                    </button>
+                                </td>
+                                <td class="email">{item.title}</td>
+                                <td class="email">{item.details}</td>
+                                <td class="phone">Section 1</td>
+                                <td class="date">{item.link}</td>
+                                <td class="status">
+                                  <span class="badge bg-success-subtle text-success text-uppercase">
+                                    {item.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div class="d-flex gap-2">
+                                    <div class="edit">
+                                      <button
+                                        class="btn btn-sm btn-success edit-item-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#showModal"
+                                      >
+                                        Edit
+                                      </button>
+                                    </div>
+                                    <div class="remove">
+                                      <button
+                                        class="btn btn-sm btn-danger remove-item-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteRecordModal"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>{" "}
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-                              <td class="id" style={{ display: "none;" }}>
-                                <Link to="#" class="fw-medium link-primary">
-                                  #VZ2101
-                                </Link>
-                              </td>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#showModal"
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>{" "}
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-                              <td class="id" style={{ display: "none;" }}>
-                                <Link to="#" class="fw-medium link-primary">
-                                  #VZ2101
-                                </Link>
-                              </td>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#showModal"
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>{" "}
-                            <tr>
-                              <th scope="row">
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="chk_child"
-                                    value="option1"
-                                  />
-                                </div>
-                              </th>
-                              <td class="id" style={{ display: "none;" }}>
-                                <Link to="#" class="fw-medium link-primary">
-                                  #VZ2101
-                                </Link>
-                              </td>
-
-                              <td class="email">marycousar@velzon.com</td>
-                              <td class="phone">580-464-4694</td>
-                              <td class="date">06 Apr, 2021</td>
-                              <td class="status">
-                                <span class="badge bg-success-subtle text-success text-uppercase">
-                                  Active
-                                </span>
-                              </td>
-                              <td>
-                                <div class="d-flex gap-2">
-                                  <div class="edit">
-                                    <button
-                                      class="btn btn-sm btn-success edit-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#showModal"
-                                    >
-                                      Edit
-                                    </button>
-                                  </div>
-                                  <div class="remove">
-                                    <button
-                                      class="btn btn-sm btn-danger remove-item-btn"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#deleteRecordModal"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                         <div class="noresult" style={{ display: "none" }}>
@@ -381,141 +335,159 @@ function Section2() {
             </div>
           </div>
           <div
-            class="modal fade"
+            className="modal fade"
             id="showModal"
-            tabindex="-1"
+            tabIndex="-1"
             aria-labelledby="exampleModalLabel"
             aria-hidden="true"
           >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header bg-light p-3">
-                  <h5 class="modal-title" id="exampleModalLabel">
-                    Add category
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-light p-3">
+                  <h5 className="modal-title" id="exampleModalLabel">
+                    Add BANNER
                   </h5>
                   <button
                     type="button"
-                    class="btn-close"
+                    className="btn-close"
                     data-bs-dismiss="modal"
                     aria-label="Close"
                     id="close-modal"
                   ></button>
                 </div>
-                <form class="tablelist-form" autocomplete="off">
-                  <div class="modal-body">
-                    <div class="mb-3" id="modal-id" style={{ display: "none" }}>
-                      <label for="id-field" class="form-label">
-                        ID
-                      </label>
-                      <input
-                        type="text"
-                        id="id-field"
-                        class="form-control"
-                        placeholder="ID"
-                        readonly=""
-                      />
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="customername-field" class="form-label">
+                <form
+                  className="tablelist-form"
+                  autoComplete="off"
+                  onSubmit={handleSubmit}
+                >
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label htmlFor="title-field" className="form-label">
                         Banner Title
                       </label>
                       <input
                         type="text"
-                        id="customername-field"
-                        class="form-control"
+                        id="title-field"
+                        className="form-control"
                         placeholder="Enter Title"
-                        required=""
+                        required
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
                       />
-                      <div class="invalid-feedback">Please enter a Title</div>
+                      <div className="invalid-feedback">
+                        Please enter a Title
+                      </div>
                     </div>
-
-                    <div class="mb-3">
-                      <label for="email-field" class="form-label">
+                    <div className="mb-3">
+                      <label htmlFor="details-field" className="form-label">
+                        Details
+                      </label>
+                      <input
+                        type="text"
+                        id="details-field"
+                        className="form-control"
+                        placeholder="Enter Details"
+                        required
+                        name="details"
+                        value={formData.details}
+                        onChange={handleChange}
+                      />
+                      <div className="invalid-feedback">
+                        Please enter Details
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="link-field" className="form-label">
                         Link
                       </label>
                       <input
-                        type="email"
-                        id="email-field"
-                        class="form-control"
+                        type="text"
+                        id="link-field"
+                        className="form-control"
                         placeholder="Enter Link"
-                        required=""
+                        required
+                        name="link"
+                        value={formData.link}
+                        onChange={handleChange}
                       />
-                      <div class="invalid-feedback">Please enter an Link.</div>
+                      <div className="invalid-feedback">
+                        Please enter a Link
+                      </div>
                     </div>
-
-                    <div class="mb-3">
-                      <label for="phone-field" class="form-label">
+                    <div className="mb-3">
+                      <label htmlFor="status-field" className="form-label">
+                        Status
+                      </label>
+                      <select
+                        className="form-control"
+                        name="status"
+                        id=""
+                        required
+                        value={formData.status}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Block">Block</option>
+                      </select>
+                      <div className="invalid-feedback">
+                        Please select a Status
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="type-field" className="form-label">
+                        Place
+                      </label>
+                      <select
+                        className="form-control"
+                        name="type"
+                        id="type"
+                        required
+                        value={formData.type}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select place</option>
+                        <option value="2">Section 2</option>
+                        {/* Add more options as needed */}
+                      </select>
+                      <div className="invalid-feedback">
+                        Please select a Type
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="image-field" className="form-label">
                         Image
                       </label>
                       <input
                         type="file"
-                        id="phone-field"
-                        class="form-control"
-                        placeholder="Enter Phone no."
-                        required=""
+                        id="image-field"
+                        className="form-control"
+                        required
+                        name="image"
+                        onChange={handleChange}
                       />
-                      <div class="invalid-feedback">Please enter a phone.</div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="date-field" class="form-label">
-                        Place
-                      </label>
-                      <select
-                        class="form-control"
-                        data-trigger=""
-                        name="status-field"
-                        id="status-field"
-                        required=""
-                      >
-                        <option value="">Home </option>
-                        <option value="Active">Offer</option>
-                        <option value="Block">Block</option>
-                      </select>
-                      <div class="invalid-feedback">Please select a date.</div>
-                    </div>
-
-                    <div>
-                      <label for="status-field" class="form-label">
-                        Status
-                      </label>
-                      <select
-                        class="form-control"
-                        data-trigger=""
-                        name="status-field"
-                        id="status-field"
-                        required=""
-                      >
-                        <option value="">Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Block">Block</option>
-                      </select>
+                      <div className="invalid-feedback">
+                        Please select an Image
+                      </div>
                     </div>
                   </div>
-                  <div class="modal-footer">
-                    <div class="hstack gap-2 justify-content-end">
+                  <div className="modal-footer">
+                    <div className="hstack gap-2 justify-content-end">
                       <button
                         type="button"
-                        class="btn btn-light"
+                        className="btn btn-light"
                         data-bs-dismiss="modal"
                       >
                         Close
                       </button>
                       <button
                         type="submit"
-                        class="btn btn-success"
+                        className="btn btn-success"
                         id="add-btn"
                       >
                         Add Banner
                       </button>
-                      {/* <button
-                        type="button"
-                        class="btn btn-success"
-                        id="edit-btn"
-                      >
-                        Update
-                      </button> */}
                     </div>
                   </div>
                 </form>

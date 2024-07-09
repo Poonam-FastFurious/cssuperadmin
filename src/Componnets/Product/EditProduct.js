@@ -1,15 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { useState } from "react";
 
-import { Baseurl } from "../../config";
+function EditProduct() {
+  const { id } = useParams();
+  const [attributes, setAttributes] = useState([
+    { attributeName: "", attributeValue: "" },
+  ]);
 
-function AddProduct() {
-  const [category, setCategory] = useState([]);
+  console.log("ID from useParams:", id);
+  const handleAttributeChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedAttributes = attributes.map((attribute, i) =>
+      i === index ? { ...attribute, [name]: value } : attribute
+    );
+    setAttributes(updatedAttributes);
+  };
 
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const addAttributeField = () => {
+    setAttributes([...attributes, { attributeName: "", attributeValue: "" }]);
+  };
+
   const [productData, setProductData] = useState({
     name: "",
     description: "",
@@ -26,19 +38,6 @@ function AddProduct() {
     stockStatus: "",
     categoryName: "",
   });
-  const [attributes, setAttributes] = useState([
-    { attributeName: "", attributeValue: "" },
-  ]);
-  const [image, setImage] = useState(null);
-  const [thumbnail, setThumbnail] = useState([]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProductData({
-      ...productData,
-      [name]: value,
-    });
-  };
 
   const handleCheckboxChange = (event) => {
     setProductData({
@@ -47,89 +46,6 @@ function AddProduct() {
     });
   };
 
-  const handelimagechange = (e) => {
-    setImage(e.target.files[0]);
-  };
-
-  const handleThumbnailChange = (e) => {
-    setThumbnail([...e.target.files]);
-  };
-
-  const handleCKEditorChange = (event, editor) => {
-    const data = editor.getData();
-    setProductData({
-      ...productData,
-      description: data,
-    });
-  };
-
-  const handleAttributeChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedAttributes = attributes.map((attribute, i) =>
-      i === index ? { ...attribute, [name]: value } : attribute
-    );
-    setAttributes(updatedAttributes);
-  };
-
-  const addAttributeField = () => {
-    setAttributes([...attributes, { attributeName: "", attributeValue: "" }]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", productData.name);
-    formData.append("description", productData.description);
-    formData.append("price", productData.price);
-    formData.append("discount", productData.discount);
-    formData.append("rating", productData.rating);
-    formData.append("shortDescription", productData.shortDescription);
-    formData.append("visibility", productData.visibility);
-    formData.append("tags", JSON.stringify(productData.tags.split(",")));
-    formData.append("tax", productData.tax);
-    formData.append("hasAttributes", productData.hasAttributes);
-    formData.append("attributes", JSON.stringify(attributes));
-    formData.append("stockQuantity", productData.stockQuantity);
-    formData.append("stockStatus", productData.stockStatus);
-    formData.append("categoryName", productData.categoryName);
-
-    if (image) formData.append("image", image);
-
-    thumbnail.forEach((file) => {
-      formData.append("thumbnail", file);
-    });
-
-    setLoading(true);
-    try {
-      const response = await fetch(Baseurl + "/api/v1/product/add", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        navigate("/Product");
-      } else {
-        console.error("Network response was not ok");
-        // Handle response errors here
-      }
-    } catch (error) {
-      console.error("There was an error creating the product!", error);
-      // Handle error, show user feedback, etc.
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetch(Baseurl + "/api/v1/category/allcategory")
-      .then((response) => response.json())
-      .then((jsonData) => setCategory(jsonData.data))
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
   return (
     <>
       <div className="main-content">
@@ -158,7 +74,6 @@ function AddProduct() {
               className="needs-validation"
               noValidate=""
               encType="multipart/form-data"
-              onSubmit={handleSubmit}
             >
               <div className="row">
                 <div className="col-lg-8">
@@ -176,8 +91,6 @@ function AddProduct() {
                           className="form-control"
                           id="product-title-input"
                           name="name"
-                          value={productData.name}
-                          onChange={handleInputChange}
                         />
                         <div className="invalid-feedback">
                           Please Enter a product title.
@@ -185,11 +98,7 @@ function AddProduct() {
                       </div>
                       <div>
                         <label>Product Description</label>
-                        <CKEditor
-                          editor={ClassicEditor}
-                          data={productData.description}
-                          onChange={handleCKEditorChange}
-                        />
+                        <CKEditor editor={ClassicEditor} />
                       </div>
                     </div>
                   </div>
@@ -223,11 +132,10 @@ function AddProduct() {
                                 id="product-image-input"
                                 type="file"
                                 accept="image/png, image/gif, image/jpeg"
-                                onChange={handelimagechange}
                               />
                             </div>
 
-                            {image && (
+                            {/* {image && (
                               <ul
                                 className="list-unstyled mb-0"
                                 id="dropzone-preview"
@@ -270,7 +178,7 @@ function AddProduct() {
                                   </div>
                                 </li>
                               </ul>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       </div>
@@ -298,71 +206,8 @@ function AddProduct() {
                                 id="product-thumbnail-input"
                                 type="file"
                                 multiple
-                                onChange={handleThumbnailChange}
                               />
                             </div>
-
-                            {thumbnail.length > 0 && (
-                              <ul
-                                className="list-unstyled mb-0  d-flex"
-                                id="gallery-preview"
-                              >
-                                {thumbnail.map((file, index) => (
-                                  <li
-                                    key={index}
-                                    className="mt-2"
-                                    id="gallery-preview-list"
-                                  >
-                                    <div className="border rounded">
-                                      <div className="d-flex p-2">
-                                        <div className="flex-shrink-0 me-3">
-                                          {file.type.startsWith("image/") ? ( // Check if file is an image
-                                            <div className="avatar-sm bg-light rounded">
-                                              <img
-                                                src={URL.createObjectURL(file)}
-                                                alt="Selected"
-                                                style={{
-                                                  width: "300px",
-                                                  height: "auto",
-                                                }}
-                                                className="img-fluid rounded d-block"
-                                              />
-                                            </div>
-                                          ) : file.type.startsWith("video/") ? ( // Check if file is a video
-                                            <div className="video-container">
-                                              <video
-                                                controls
-                                                className="img-fluid rounded d-block"
-                                                style={{
-                                                  width: "300px",
-                                                  height: "auto",
-                                                }}
-                                              >
-                                                <source
-                                                  src={URL.createObjectURL(
-                                                    file
-                                                  )}
-                                                  type={file.type}
-                                                />
-                                                Your browser does not support
-                                                the video tag.
-                                              </video>
-                                            </div>
-                                          ) : (
-                                            <div className="avatar-sm bg-light rounded">
-                                              <p>
-                                                Unsupported file format:{" "}
-                                                {file.type}
-                                              </p>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -409,8 +254,6 @@ function AddProduct() {
                                   className="form-control"
                                   id="stocks-input"
                                   name="stockQuantity"
-                                  value={productData.stockQuantity}
-                                  onChange={handleInputChange}
                                   required=""
                                 />
                                 <div className="invalid-feedback">
@@ -438,8 +281,6 @@ function AddProduct() {
                                     className="form-control"
                                     id="product-price-input"
                                     name="price"
-                                    value={productData.price}
-                                    onChange={handleInputChange}
                                     placeholder="Enter price"
                                     aria-label="Price"
                                     aria-describedby="product-price-addon"
@@ -471,8 +312,6 @@ function AddProduct() {
                                     className="form-control"
                                     id="product-discount-input"
                                     name="discount"
-                                    value={productData.discount}
-                                    onChange={handleInputChange}
                                     placeholder="Enter discount"
                                     aria-label="discount"
                                     aria-describedby="product-discount-addon"
@@ -493,8 +332,6 @@ function AddProduct() {
                                   className="form-control"
                                   id="orders-input"
                                   name="rating"
-                                  value={productData.rating}
-                                  onChange={handleInputChange}
                                   placeholder="rating"
                                   required=""
                                 />
@@ -600,10 +437,7 @@ function AddProduct() {
 
                   <div className="text-end mb-3">
                     <button type="submit" className="btn btn-success w-sm">
-                      {loading && (
-                        <span className="spinner-border spinner-border-sm me-1"></span>
-                      )}
-                      {loading ? "Loading..." : "Submit"}
+                      submit
                     </button>
                   </div>
                 </div>
@@ -625,8 +459,6 @@ function AddProduct() {
                           className="form-select"
                           id="choices-publish-status-input"
                           name="stockStatus"
-                          value={productData.stockStatus}
-                          onChange={handleInputChange}
                           data-choices=""
                           data-choices-search-false=""
                         >
@@ -648,8 +480,6 @@ function AddProduct() {
                           className="form-select"
                           id="choices-publish-visibility-input"
                           name="visibility"
-                          value={productData.visibility}
-                          onChange={handleInputChange}
                         >
                           <option>select </option>
                           <option value="active">active</option>
@@ -669,17 +499,15 @@ function AddProduct() {
                         className="form-select"
                         id="choices-category-input"
                         name="categoryName"
-                        value={productData.categoryName}
-                        onChange={handleInputChange}
                         data-choices=""
                         data-choices-search-false=""
                       >
                         <option>select </option>
-                        {category.map((cat) => (
+                        {/* {category.map((cat) => (
                           <option key={cat._id} value={cat.categoriesTitle}>
                             {cat.categoriesTitle}
                           </option>
-                        ))}
+                        ))} */}
                       </select>
                     </div>
                   </div>
@@ -698,8 +526,6 @@ function AddProduct() {
                             placeholder="Enter tags"
                             type="text"
                             name="tags"
-                            value={productData.tags}
-                            onChange={handleInputChange}
                           />
                         </div>
                       </div>
@@ -721,8 +547,6 @@ function AddProduct() {
                         placeholder="Must enter minimum of a 100 characters"
                         rows="3"
                         name="shortDescription"
-                        value={productData.shortDescription}
-                        onChange={handleInputChange}
                       ></textarea>
                     </div>
                   </div>
@@ -736,4 +560,4 @@ function AddProduct() {
   );
 }
 
-export default AddProduct;
+export default EditProduct;

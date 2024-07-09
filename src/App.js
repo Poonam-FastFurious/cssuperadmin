@@ -42,6 +42,7 @@ import ProductDetail from "./Componnets/Product/ProductDetail";
 import Employeerol from "./Componnets/EmployeeManagement/Employeerol";
 import Testimonial from "./Componnets/GenralSetting/Testimonial";
 import Review from "./Componnets/Product/Review";
+import EditProduct from "./Componnets/Product/EditProduct";
 function App() {
   return (
     <>
@@ -60,6 +61,7 @@ function App() {
             <Route path="/" element={<Home />}></Route>
             <Route path="/Product" element={<Listproduct />}></Route>
             <Route path="/Product/:id" element={<ProductDetail />} />
+            <Route path="/EditProduct/:id" element={<EditProduct />} />
             <Route path="/AddProduct" element={<AddProduct />}></Route>
             <Route path="/Stockout" element={<StockOut />}></Route>
             <Route path="/Categories" element={<Category />}></Route>
