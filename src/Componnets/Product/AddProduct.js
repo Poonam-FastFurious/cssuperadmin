@@ -25,6 +25,7 @@ function AddProduct() {
     stockQuantity: "",
     stockStatus: "",
     categoryName: "",
+    sku: "",
   });
   const [attributes, setAttributes] = useState([
     { attributeName: "", attributeValue: "" },
@@ -93,6 +94,7 @@ function AddProduct() {
     formData.append("stockQuantity", productData.stockQuantity);
     formData.append("stockStatus", productData.stockStatus);
     formData.append("categoryName", productData.categoryName);
+    formData.append("sku", productData.sku);
 
     if (image) formData.append("image", image);
 
@@ -130,6 +132,12 @@ function AddProduct() {
       .then((jsonData) => setCategory(jsonData.data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
+  const validateSKU = (value) => {
+    // Regular expression to match "PRV" followed by any number of digits
+    const skuRegex = /^PRV\d+$/;
+
+    return skuRegex.test(value);
+  };
   return (
     <>
       <div className="main-content">
@@ -699,6 +707,31 @@ function AddProduct() {
                             type="text"
                             name="tags"
                             value={productData.tags}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card">
+                    <div className="card-header">
+                      <h5 className="card-title mb-0">Product SKU</h5>
+                    </div>
+                    <div className="card-body">
+                      <div className="hstack gap-3 align-items-start">
+                        <div className="flex-grow-1">
+                          <input
+                            className={`form-control ${
+                              validateSKU(productData.sku)
+                                ? "is-valid"
+                                : "is-invalid"
+                            }`}
+                            data-choices=""
+                            data-choices-multiple-remove="true"
+                            placeholder="Enter sku"
+                            type="text"
+                            name="sku"
+                            value={productData.sku}
                             onChange={handleInputChange}
                           />
                         </div>

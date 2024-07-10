@@ -7,6 +7,8 @@ function Transaction() {
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10); // 10 items per page
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchDate, setSearchDate] = useState("");
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -22,15 +24,49 @@ function Transaction() {
 
     fetchTransactions();
   }, []);
+  // Filter transactions based on search criteria
+  const filteredTransactions = transactions.filter((transaction) => {
+    // Filter by email
+    if (
+      searchEmail &&
+      !transaction.user.email.toLowerCase().includes(searchEmail.toLowerCase())
+    ) {
+      return false;
+    }
+    // Filter by date
+    if (searchDate) {
+      const transactionDate = new Date(transaction.createdAt);
+      const formattedSearchDate = new Date(searchDate);
+      // Compare dates (considering only date part, not time)
+      if (
+        transactionDate.getFullYear() !== formattedSearchDate.getFullYear() ||
+        transactionDate.getMonth() !== formattedSearchDate.getMonth() ||
+        transactionDate.getDate() !== formattedSearchDate.getDate()
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransactions = transactions.slice(
+  const currentTransactions = filteredTransactions.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Handle search input changes
+  const handleEmailChange = (event) => {
+    setSearchEmail(event.target.value);
+  };
+
+  const handleDateChange = (event) => {
+    setSearchDate(event.target.value);
+  };
   return (
     <>
       <div className="main-content">
@@ -63,10 +99,6 @@ function Transaction() {
                       </div>
                       <div className="col-sm-auto">
                         <div className="d-flex gap-1 flex-wrap">
-                          <button type="button" className="btn btn-info">
-                            <i className="ri-file-download-line align-bottom me-1"></i>
-                            Import
-                          </button>
                           <button
                             className="btn btn-soft-danger"
                             id="remove-actions"
@@ -85,7 +117,9 @@ function Transaction() {
                             <input
                               type="text"
                               className="form-control search"
-                              placeholder="Search for order ID, customer, order status or something..."
+                              placeholder="Search by email..."
+                              value={searchEmail}
+                              onChange={handleEmailChange}
                             />
                             <i className="ri-search-line search-icon"></i>
                           </div>
@@ -102,51 +136,9 @@ function Transaction() {
                               data-range-date="true"
                               id="demo-datepicker"
                               placeholder="Select date"
+                              value={searchDate}
+                              onChange={handleDateChange}
                             />
-                          </div>
-                        </div>
-
-                        <div className="col-xxl-2 col-sm-4">
-                          <div>
-                            <select
-                              className="form-control"
-                              data-choices=""
-                              data-choices-search-false=""
-                              name="choices-single-default"
-                              id="idStatus"
-                            >
-                              <option value="">Status</option>
-                              <option value="all" selected="">
-                                All
-                              </option>
-                              <option value="Pending">Pending</option>
-                              <option value="Inprogress">Inprogress</option>
-                              <option value="Cancelled">Cancelled</option>
-                              <option value="Pickups">Pickups</option>
-                              <option value="Returns">Returns</option>
-                              <option value="Delivered">Delivered</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="col-xxl-2 col-sm-4">
-                          <div>
-                            <select
-                              className="form-control"
-                              data-choices=""
-                              data-choices-search-false=""
-                              name="choices-single-default"
-                              id="idPayment"
-                            >
-                              <option value="">Select Payment</option>
-                              <option value="all" selected="">
-                                All
-                              </option>
-                              <option value="Mastercard">Mastercard</option>
-                              <option value="Paypal">Paypal</option>
-                              <option value="Visa">Visa</option>
-                              <option value="COD">COD</option>
-                            </select>
                           </div>
                         </div>
 
@@ -173,9 +165,11 @@ function Transaction() {
                         <tr>
                           <th scope="col">Id</th>
                           <th scope="col">Customer Email</th>
+                          <th scope="col">Customer Name</th>
                           <th scope="col">Transaction ID</th>
                           <th scope="col">Order Status</th>
                           <th scope="col">Payment Status</th>
+                          <th scope="col">Payment date</th>
                           <th scope="col">Total Amount</th>
                         </tr>
                       </thead>
@@ -183,16 +177,22 @@ function Transaction() {
                         {currentTransactions.map((transaction, index) => (
                           <tr key={index}>
                             <th scope="row">{indexOfFirstItem + index + 1}</th>
-                            <td>user@gmail.com</td>
+                            <td>{transaction.user.email}</td>
+                            <td>{transaction.user.fullName}</td>
                             <td>{transaction.paymentID}</td>
                             <td>Pending</td>
+                            <td>
+                              {new Date(
+                                transaction.createdAt
+                              ).toLocaleDateString()}
+                            </td>
                             <td>{transaction.status}</td>
                             <td>{transaction.amount}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    <nav className="mt-3">
+                    <nav className="my-4 mx-2">
                       <ul className="pagination">
                         <li
                           className={`page-item ${

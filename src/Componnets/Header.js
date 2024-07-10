@@ -512,7 +512,7 @@ function Header() {
                           </Link>
                         </li>
 
-                        <li className="nav-item">
+                        {/* <li className="nav-item">
                           <Link
                             to="/Stockout"
                             className="nav-link"
@@ -520,7 +520,7 @@ function Header() {
                           >
                             Stock Out Products
                           </Link>
-                        </li>
+                        </li> */}
                         <li className="nav-item">
                           <Link
                             to="/review"

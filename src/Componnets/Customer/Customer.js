@@ -242,7 +242,11 @@ function Customer() {
                                 </td>
                                 <td className="email">{user.email}</td>
                                 <td className="phone">{user.phone}</td>
-                                <td className="date">{user.createdAt}</td>
+                                <td className="date">
+                                  {new Date(
+                                    user.createdAt
+                                  ).toLocaleDateString()}
+                                </td>
                                 <td className="status">
                                   <span className="badge bg-success-subtle text-success text-uppercase">
                                     active

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { Baseurl } from "../../config";
 
 /* eslint-disable react/no-unescaped-entities */
@@ -13,8 +13,8 @@ function Order() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newStatus, setNewStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const itemsPerPage = 20;
+  const [newShippingLink, setNewShippingLink] = useState("");
+  const itemsPerPage = 10;
 
   // Calculate indexes for slicing current page items
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -61,7 +61,8 @@ function Order() {
   };
 
   const handleUpdateStatus = async () => {
-    if (!selectedOrder) return;
+    if (!selectedOrder) return; // Ensure there's a selected order
+
     try {
       const response = await fetch(Baseurl + "/api/v1/order/updateorder", {
         method: "PATCH",
@@ -69,38 +70,61 @@ function Order() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          orderID: selectedOrder.orderID, // assuming _id is the unique identifier for the order
-          status: newStatus,
+          orderID: selectedOrder.orderID, // Assuming orderID is the unique identifier for the order
+          status: newStatus, // Assuming newStatus is the updated status value
+          shippingLink: newShippingLink, // Assuming newShippingLink is the updated shipping link value
         }),
       });
+
       if (!response.ok) {
-        console.log("error");
+        console.log("Error updating status");
+        return;
       }
-      // Update the local state to reflect the status change
+
+      // Update local state to reflect the status change
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order._id === selectedOrder._id
-            ? { ...order, status: newStatus }
+            ? {
+                ...order,
+                status: newStatus,
+                shippingInfo: {
+                  ...order.shippingInfo,
+                  shippingLink: newShippingLink,
+                },
+              }
             : order
         )
       );
+
       setCanceledOrders((prevOrders) =>
         prevOrders.map((order) =>
           order._id === selectedOrder._id
-            ? { ...order, status: newStatus }
+            ? {
+                ...order,
+                status: newStatus,
+                shippingInfo: {
+                  ...order.shippingInfo,
+                  shippingLink: newShippingLink,
+                },
+              }
             : order
         )
       );
+
       setSelectedOrder(null); // Close the modal
-      toast.success("Status updated successfully!", {
+
+      // Show success toast message
+      toast.success("Status and shipping link updated successfully!", {
         position: "top-right",
-        autoClose: 1000,
+        autoClose: 1000, // Auto close after 1 second
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
         onClose: () => {
+          // Close the modal using Bootstrap Modal API
           const modalElement = document.getElementById("showModal");
           const modal = window.bootstrap.Modal.getInstance(modalElement);
           if (modal) {
@@ -108,11 +132,12 @@ function Order() {
           }
         },
       });
-      // Hide the modal programmatically
     } catch (err) {
       console.error("Failed to update order status", err);
+      // Handle error condition if required
     }
   };
+
   const pageNumbers = [];
   for (let i = 1; i <= Math.ceil(orders.length / itemsPerPage); i++) {
     pageNumbers.push(i);
@@ -120,6 +145,7 @@ function Order() {
 
   return (
     <>
+      <ToastContainer autoClose={1000} />
       <div className="main-content">
         <div className="page-content">
           <div className="container-fluid">
@@ -503,9 +529,6 @@ function Order() {
                                   >
                                     Customer
                                   </th>
-                                  <th className="sort" data-sort="product_name">
-                                    Product
-                                  </th>
                                   <th className="sort" data-sort="date">
                                     Order Date
                                   </th>
@@ -545,11 +568,9 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer}
+                                      {order.customer.fullName}
                                     </td>
-                                    <td className="product_name">
-                                      {order.products.length}
-                                    </td>
+
                                     <td className="date">
                                       {new Date(
                                         order.createdAt
@@ -582,42 +603,33 @@ function Order() {
                                             <i className="ri-eye-fill fs-16"></i>
                                           </Link>
                                         </li>
-                                        <li
-                                          className="list-inline-item edit"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-trigger="hover"
-                                          data-bs-placement="top"
-                                          title="Edit"
-                                        >
-                                          <Link
-                                            to="#showModal"
-                                            data-bs-toggle="modal"
-                                            className="text-primary d-inline-block edit-item-btn"
-                                            onClick={() =>
-                                              handleEditClick(order)
-                                            }
+                                        {order.status !== "Delivered" && (
+                                          <li
+                                            className="list-inline-item edit"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-trigger="hover"
+                                            data-bs-placement="top"
+                                            title="Edit"
                                           >
-                                            <i className="ri-pencil-fill fs-16"></i>
-                                          </Link>
-                                        </li>
+                                            <Link
+                                              to="#showModal"
+                                              data-bs-toggle="modal"
+                                              className="text-primary d-inline-block edit-item-btn"
+                                              onClick={() =>
+                                                handleEditClick(order)
+                                              }
+                                            >
+                                              <i className="ri-pencil-fill fs-16"></i>
+                                            </Link>
+                                          </li>
+                                        )}
                                       </ul>
                                     </td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
-                            <ul className="pagination justify-content-end">
-                              {pageNumbers.map((number) => (
-                                <li key={number} className="page-item">
-                                  <button
-                                    onClick={() => paginate(number)}
-                                    className="page-link"
-                                  >
-                                    {number}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
+
                             {orders.length === 0 && !fetching && (
                               <div className="noresult">
                                 <div className="text-center">
@@ -637,6 +649,61 @@ function Order() {
                                 </div>
                               </div>
                             )}
+                            <div className="d-flex justify-content-end mt-3">
+                              <nav>
+                                <ul className="pagination">
+                                  <li
+                                    className={`page-item ${
+                                      currentPage === 1 && "disabled"
+                                    }`}
+                                  >
+                                    <button
+                                      className="page-link"
+                                      onClick={() => paginate(currentPage - 1)}
+                                    >
+                                      Previous
+                                    </button>
+                                  </li>
+                                  {Array.from(
+                                    {
+                                      length: Math.ceil(
+                                        orders.length / itemsPerPage
+                                      ),
+                                    },
+                                    (_, i) => (
+                                      <li
+                                        key={i}
+                                        className={`page-item ${
+                                          currentPage === i + 1 && "active"
+                                        }`}
+                                      >
+                                        <button
+                                          className="page-link"
+                                          onClick={() => paginate(i + 1)}
+                                        >
+                                          {i + 1}
+                                        </button>
+                                      </li>
+                                    )
+                                  )}
+                                  <li
+                                    className={`page-item ${
+                                      currentPage ===
+                                        Math.ceil(
+                                          orders.length / itemsPerPage
+                                        ) && "disabled"
+                                    }`}
+                                  >
+                                    <button
+                                      className="page-link"
+                                      onClick={() => paginate(currentPage + 1)}
+                                    >
+                                      Next
+                                    </button>
+                                  </li>
+                                </ul>
+                              </nav>
+                            </div>
                           </div>
                         </div>
                         <div
@@ -709,7 +776,7 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer}
+                                      {order.customer.fullName}
                                     </td>
                                     <td className="product_name">
                                       {order.products.length}
@@ -862,7 +929,7 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer}
+                                      {order.customer.fullName}
                                     </td>
                                     <td className="product_name">
                                       {order.products.length}
@@ -1015,7 +1082,7 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer}
+                                      {order.customer.fullName}
                                     </td>
                                     <td className="product_name">
                                       {order.products.length}
@@ -1148,6 +1215,28 @@ function Order() {
                                   <option value="Delivered">Delivered</option>
                                   <option value="Cancelled">Cancelled</option>
                                 </select>
+                              </div>
+                              <div class="mt-4">
+                                <label
+                                  for="customername-field"
+                                  class="form-label"
+                                >
+                                  Shiping By
+                                </label>
+                                <input
+                                  type="text"
+                                  id="customername-field"
+                                  class="form-control"
+                                  placeholder="Enter your shipping partner  details"
+                                  required
+                                  value={newShippingLink}
+                                  onChange={(e) =>
+                                    setNewShippingLink(e.target.value)
+                                  }
+                                />
+                                <div class="invalid-feedback">
+                                  Please enter a Title
+                                </div>
                               </div>
                             </div>
                             <div className="modal-footer">

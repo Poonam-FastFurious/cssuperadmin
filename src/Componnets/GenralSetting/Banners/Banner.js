@@ -19,6 +19,14 @@ function Banner() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+
+  const [editingBannerId, setEditingBannerId] = useState(null);
+  const [edittitle, setEdittitle] = useState("");
+  const [editdetails, setDetails] = useState("");
+  const [editlink, setEditlink] = useState("");
+  const [editstatus, setEditstatus] = useState("");
+  const [edittype, setEdittype] = useState("");
+  const [editimage, setEditImage] = useState("");
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData((prevState) => ({
@@ -128,12 +136,13 @@ function Banner() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await fetch(
-            Baseurl + `/api/v1/Banner/delete/${id}`,
-            {
-              method: "DELETE",
-            }
-          );
+          const response = await fetch(Baseurl + `/api/v1/Banner/delete`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          });
           if (!response.ok) {
             throw new Error("Failed to delete banner");
           }
@@ -380,6 +389,167 @@ function Banner() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="modal fade"
+            id="showModal"
+            tabIndex="-1"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-light p-3">
+                  <h5 className="modal-title" id="exampleModalLabel">
+                    Add BANNER
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                    id="close-modal"
+                  ></button>
+                </div>
+                <form
+                  className="tablelist-form"
+                  autoComplete="off"
+                  onSubmit={handleSubmit}
+                >
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label htmlFor="title-field" className="form-label">
+                        Banner Title
+                      </label>
+                      <input
+                        type="text"
+                        id="title-field"
+                        className="form-control"
+                        placeholder="Enter Title"
+                        required
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                      />
+                      <div className="invalid-feedback">
+                        Please enter a Title
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="details-field" className="form-label">
+                        Details
+                      </label>
+                      <input
+                        type="text"
+                        id="details-field"
+                        className="form-control"
+                        placeholder="Enter Details"
+                        required
+                        name="details"
+                        value={formData.details}
+                        onChange={handleChange}
+                      />
+                      <div className="invalid-feedback">
+                        Please enter Details
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="link-field" className="form-label">
+                        Link
+                      </label>
+                      <input
+                        type="text"
+                        id="link-field"
+                        className="form-control"
+                        placeholder="Enter Link"
+                        required
+                        name="link"
+                        value={formData.link}
+                        onChange={handleChange}
+                      />
+                      <div className="invalid-feedback">
+                        Please enter a Link
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="status-field" className="form-label">
+                        Status
+                      </label>
+                      <select
+                        className="form-control"
+                        name="status"
+                        id=""
+                        required
+                        value={formData.status}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Block">Block</option>
+                      </select>
+                      <div className="invalid-feedback">
+                        Please select a Status
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="type-field" className="form-label">
+                        Place
+                      </label>
+                      <select
+                        className="form-control"
+                        name="type"
+                        id="type"
+                        required
+                        value={formData.type}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select place</option>
+                        <option value="1">Section 1</option>
+                        {/* Add more options as needed */}
+                      </select>
+                      <div className="invalid-feedback">
+                        Please select a Type
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="image-field" className="form-label">
+                        Image
+                      </label>
+                      <input
+                        type="file"
+                        id="image-field"
+                        className="form-control"
+                        required
+                        name="image"
+                        onChange={handleChange}
+                      />
+                      <div className="invalid-feedback">
+                        Please select an Image
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <div className="hstack gap-2 justify-content-end">
+                      <button
+                        type="button"
+                        className="btn btn-light"
+                        data-bs-dismiss="modal"
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn btn-success"
+                        id="add-btn"
+                      >
+                        Add Banner
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
