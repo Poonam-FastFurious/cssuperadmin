@@ -19,14 +19,6 @@ function Banner() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
-
-  const [editingBannerId, setEditingBannerId] = useState(null);
-  const [edittitle, setEdittitle] = useState("");
-  const [editdetails, setDetails] = useState("");
-  const [editlink, setEditlink] = useState("");
-  const [editstatus, setEditstatus] = useState("");
-  const [edittype, setEdittype] = useState("");
-  const [editimage, setEditImage] = useState("");
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData((prevState) => ({

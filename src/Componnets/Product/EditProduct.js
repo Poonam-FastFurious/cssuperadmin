@@ -1,51 +1,108 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Baseurl } from "../../config";
+import { toast } from "react-toastify";
 
 function EditProduct() {
   const { id } = useParams();
-  const [attributes, setAttributes] = useState([
-    { attributeName: "", attributeValue: "" },
-  ]);
+  const navigate = useNavigate();
+  const [category, setCategory] = useState([]);
+  const [productData, setProductData] = useState(null);
+  const [attributes, setAttributes] = useState([]);
+  const [description, setDescription] = useState("");
+  useEffect(() => {
+    fetch(Baseurl + "/api/v1/category/allcategory")
+      .then((response) => response.json())
+      .then((jsonData) => setCategory(jsonData.data))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+  useEffect(() => {
+    // Fetch product data
+    axios
+      .get(`${Baseurl}/api/v1/Product/product?id=${id}`)
+      .then((response) => {
+        if (response.data.success) {
+          setProductData(response.data.data);
+          setAttributes(response.data.data.attributes || []);
+          setDescription(response.data.data.description || "");
+        }
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the product data!", error);
+      });
+  }, [id]);
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
 
-  console.log("ID from useParams:", id);
-  const handleAttributeChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedAttributes = attributes.map((attribute, i) =>
-      i === index ? { ...attribute, [name]: value } : attribute
-    );
-    setAttributes(updatedAttributes);
+    const formData = new FormData();
+    formData.append("id", productData._id);
+    formData.append("name", event.target.name.value);
+    formData.append("description", description);
+    formData.append("stockQuantity", event.target.stockQuantity.value);
+    formData.append("price", event.target.price.value);
+    formData.append("discount", event.target.discount.value);
+    formData.append("rating", event.target.rating.value); // Corrected from event.target.discount.rating
+    formData.append("hasAttributes", event.target.hasAttributes.checked);
+    formData.append("status", event.target.status.value);
+    formData.append("visibility", event.target.visibility.value);
+    formData.append("category", event.target.category.value);
+
+    // Append attributes if hasAttributes is true
+    if (event.target.hasAttributes.checked) {
+      attributes.forEach((attribute, index) => {
+        formData.append(
+          `attributes[${index}].attributeName`,
+          event.target[`attributeName-${index}`].value
+        );
+        formData.append(
+          `attributes[${index}].attributeValue`,
+          event.target[`attributeValue-${index}`].value
+        );
+      });
+    }
+
+    // Append images
+    const imageInput = document.getElementById("product-image-input");
+    if (imageInput.files.length > 0) {
+      formData.append("image", imageInput.files[0]);
+    }
+    const thumbnailInput = document.getElementById("product-thumbnail-input");
+    for (let i = 0; i < thumbnailInput.files.length; i++) {
+      formData.append("thumbnail", thumbnailInput.files[i]);
+    }
+
+    axios
+      .patch(Baseurl + "/api/v1/Product/update", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((response) => {
+        if (response.data.success) {
+          toast.success("Product Update  successfully ", {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            onClose: () => {
+              navigate("/Product");
+            },
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("There was an error updating the product!", error);
+      });
   };
 
-  const addAttributeField = () => {
-    setAttributes([...attributes, { attributeName: "", attributeValue: "" }]);
-  };
-
-  const [productData, setProductData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    discount: "",
-    rating: "",
-    shortDescription: "",
-    visibility: "",
-    tags: [],
-    tax: "",
-    hasAttributes: false,
-    attributes: [],
-    stockQuantity: "",
-    stockStatus: "",
-    categoryName: "",
-  });
-
-  const handleCheckboxChange = (event) => {
-    setProductData({
-      ...productData,
-      hasAttributes: event.target.checked,
-    });
-  };
-
+  if (!productData) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
       <div className="main-content">
@@ -54,14 +111,14 @@ function EditProduct() {
             <div className="row">
               <div className="col-12">
                 <div className="page-title-box d-sm-flex align-items-center justify-content-between">
-                  <h4 className="mb-sm-0">Create Product</h4>
+                  <h4 className="mb-sm-0">Edit Product</h4>
 
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
                         <Link to="#">Proven Ro</Link>
                       </li>
-                      <li className="breadcrumb-item active">Create Product</li>
+                      <li className="breadcrumb-item active">Edit Product</li>
                     </ol>
                   </div>
                 </div>
@@ -74,11 +131,31 @@ function EditProduct() {
               className="needs-validation"
               noValidate=""
               encType="multipart/form-data"
+              onSubmit={handleFormSubmit}
             >
               <div className="row">
                 <div className="col-lg-8">
                   <div className="card">
                     <div className="card-body">
+                      <div className="mb-3">
+                        <label
+                          className="form-label"
+                          htmlFor="product-title-input"
+                        >
+                          Product ID
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="product-title-input"
+                          name="id"
+                          value={id}
+                          readOnly
+                        />
+                        <div className="invalid-feedback">
+                          Please Enter a product title.
+                        </div>
+                      </div>
                       <div className="mb-3">
                         <label
                           className="form-label"
@@ -91,6 +168,7 @@ function EditProduct() {
                           className="form-control"
                           id="product-title-input"
                           name="name"
+                          defaultValue={productData.name}
                         />
                         <div className="invalid-feedback">
                           Please Enter a product title.
@@ -98,7 +176,14 @@ function EditProduct() {
                       </div>
                       <div>
                         <label>Product Description</label>
-                        <CKEditor editor={ClassicEditor} />
+                        <CKEditor
+                          editor={ClassicEditor}
+                          data={productData.description}
+                          onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setDescription(data);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -134,8 +219,7 @@ function EditProduct() {
                                 accept="image/png, image/gif, image/jpeg"
                               />
                             </div>
-
-                            {/* {image && (
+                            {productData.image && (
                               <ul
                                 className="list-unstyled mb-0"
                                 id="dropzone-preview"
@@ -146,7 +230,7 @@ function EditProduct() {
                                       <div className="flex-shrink-0 me-3">
                                         <div className="avatar-sm bg-light rounded">
                                           <img
-                                            src={URL.createObjectURL(image)}
+                                            src={productData.image}
                                             alt="Selected"
                                             style={{
                                               width: "300px",
@@ -178,7 +262,7 @@ function EditProduct() {
                                   </div>
                                 </li>
                               </ul>
-                            )} */}
+                            )}
                           </div>
                         </div>
                       </div>
@@ -202,7 +286,7 @@ function EditProduct() {
                                 </div>
                               </label>
                               <input
-                                className="form-control d-none"
+                                className="form-control  d-flex"
                                 id="product-thumbnail-input"
                                 type="file"
                                 multiple
@@ -210,6 +294,33 @@ function EditProduct() {
                             </div>
                           </div>
                         </div>
+                        {productData.thumbnail.length > 0 && (
+                          <ul
+                            className="list-unstyled mb-0  d-flex"
+                            id="gallery-preview"
+                          >
+                            {productData.thumbnail.map((file, index) => (
+                              <li
+                                key={index}
+                                className="mt-2"
+                                id="gallery-preview-list"
+                              >
+                                <div className="border rounded">
+                                  <div className="d-flex p-2">
+                                    <img
+                                      src={file}
+                                      alt={`Thumbnail ${index}`}
+                                      style={{
+                                        width: "100px",
+                                        height: "auto",
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -254,6 +365,7 @@ function EditProduct() {
                                   className="form-control"
                                   id="stocks-input"
                                   name="stockQuantity"
+                                  defaultValue={productData.stock.quantity}
                                   required=""
                                 />
                                 <div className="invalid-feedback">
@@ -282,6 +394,7 @@ function EditProduct() {
                                     id="product-price-input"
                                     name="price"
                                     placeholder="Enter price"
+                                    defaultValue={productData.price}
                                     aria-label="Price"
                                     aria-describedby="product-price-addon"
                                     required=""
@@ -312,9 +425,11 @@ function EditProduct() {
                                     className="form-control"
                                     id="product-discount-input"
                                     name="discount"
+                                    defaultValue={productData.discount}
                                     placeholder="Enter discount"
                                     aria-label="discount"
                                     aria-describedby="product-discount-addon"
+                                    required=""
                                   />
                                 </div>
                               </div>
@@ -328,11 +443,14 @@ function EditProduct() {
                                   Rating
                                 </label>
                                 <input
-                                  type="number"
+                                  type="text"
                                   className="form-control"
-                                  id="orders-input"
+                                  id="product-discount-input"
                                   name="rating"
-                                  placeholder="rating"
+                                  defaultValue={productData.rating}
+                                  placeholder="Enter discount"
+                                  aria-label="rating"
+                                  aria-describedby="product-discount-addon"
                                   required=""
                                 />
                                 <div className="invalid-feedback">
@@ -353,11 +471,11 @@ function EditProduct() {
                                   style={{ paddingTop: "10px" }}
                                 >
                                   <input
-                                    className="form-check-input"
                                     type="checkbox"
-                                    id="formCheck6"
-                                    checked={productData.hasAttributes}
-                                    onChange={handleCheckboxChange}
+                                    className="form-check-input"
+                                    id="product-has-attributes-input"
+                                    name="hasAttributes"
+                                    defaultChecked={productData.hasAttributes}
                                   />
                                   <label
                                     className="form-check-label mb-90"
@@ -372,61 +490,41 @@ function EditProduct() {
                               </div>
                             </div>
                             <div className="col-lg-6 col-sm-6">
-                              {productData.hasAttributes &&
-                                attributes.map((attribute, index) => (
-                                  <div className="d-flex gap-4 w" key={index}>
-                                    <div className="mb-3">
-                                      <label
-                                        className="form-label"
-                                        htmlFor={`attribute-input-${index}`}
-                                      >
-                                        Attribute
-                                      </label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        id={`attribute-input-${index}`}
-                                        name="attributeName"
-                                        value={attribute.attributeName}
-                                        onChange={(e) =>
-                                          handleAttributeChange(index, e)
-                                        }
-                                        placeholder="Enter additional attribute"
-                                      />
-                                    </div>
-                                    <div className="row">
-                                      <div className="col">
-                                        <div className="mb-3">
-                                          <label
-                                            className="form-label"
-                                            htmlFor={`variation-input-${index}`}
-                                          >
-                                            Variation
-                                          </label>
+                              {productData.hasAttributes && (
+                                <div className="mb-3">
+                                  <label className="form-label">
+                                    Attributes
+                                  </label>
+                                  {attributes.map((attribute, index) => (
+                                    <div key={index} className="mb-3">
+                                      <div className="row">
+                                        <div className="col-6">
                                           <input
                                             type="text"
                                             className="form-control"
-                                            id={`variation-input-${index}`}
-                                            name="attributeValue"
-                                            value={attribute.attributeValue}
-                                            onChange={(e) =>
-                                              handleAttributeChange(index, e)
+                                            name={`attributeName-${index}`}
+                                            defaultValue={
+                                              attribute.attributeName
                                             }
-                                            placeholder="Enter variation"
+                                            placeholder="Attribute Name"
+                                          />
+                                        </div>
+
+                                        <div className="col-6">
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            name={`attributeValue-${index}`}
+                                            defaultValue={
+                                              attribute.attributeValue
+                                            }
+                                            placeholder="Attribute Value"
                                           />
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
-                                ))}
-                              {productData.hasAttributes && (
-                                <button
-                                  type="button"
-                                  className="btn btn-primary"
-                                  onClick={addAttributeField}
-                                >
-                                  Add Attribute
-                                </button>
+                                  ))}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -453,14 +551,13 @@ function EditProduct() {
                           htmlFor="choices-publish-status-input"
                           className="form-label"
                         >
-                          Stock
+                          Stock Status
                         </label>
                         <select
                           className="form-select"
                           id="choices-publish-status-input"
-                          name="stockStatus"
-                          data-choices=""
-                          data-choices-search-false=""
+                          name="status"
+                          defaultValue={productData.status}
                         >
                           <option>select </option>
                           <option value="in_stock">in_stock</option>
@@ -480,6 +577,7 @@ function EditProduct() {
                           className="form-select"
                           id="choices-publish-visibility-input"
                           name="visibility"
+                          defaultValue={productData.visibility}
                         >
                           <option>select </option>
                           <option value="active">active</option>
@@ -498,16 +596,15 @@ function EditProduct() {
                       <select
                         className="form-select"
                         id="choices-category-input"
-                        name="categoryName"
-                        data-choices=""
-                        data-choices-search-false=""
+                        name="category"
+                        defaultValue={productData.category}
                       >
                         <option>select </option>
-                        {/* {category.map((cat) => (
+                        {category.map((cat) => (
                           <option key={cat._id} value={cat.categoriesTitle}>
                             {cat.categoriesTitle}
                           </option>
-                        ))} */}
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -520,12 +617,11 @@ function EditProduct() {
                       <div className="hstack gap-3 align-items-start">
                         <div className="flex-grow-1">
                           <input
-                            className="form-control"
-                            data-choices=""
-                            data-choices-multiple-remove="true"
-                            placeholder="Enter tags"
                             type="text"
-                            name="tags"
+                            className="form-control"
+                            id="product-tags-input"
+                            placeholder="Enter tags"
+                            defaultValue={productData.tags.join(", ")}
                           />
                         </div>
                       </div>
@@ -547,6 +643,7 @@ function EditProduct() {
                         placeholder="Must enter minimum of a 100 characters"
                         rows="3"
                         name="shortDescription"
+                        defaultValue={productData.shortDescription}
                       ></textarea>
                     </div>
                   </div>

@@ -63,7 +63,7 @@ function App() {
             <Route path="/Product/:id" element={<ProductDetail />} />
             <Route path="/EditProduct/:id" element={<EditProduct />} />
             <Route path="/AddProduct" element={<AddProduct />}></Route>
-            {/* <Route path="/Stockout" element={<StockOut />}></Route> */}
+
             <Route path="/Categories" element={<Category />}></Route>
             <Route path="/SubCategory" element={<SubCategory />}></Route>
             <Route path="/AddOns" element={<Addon />}></Route>

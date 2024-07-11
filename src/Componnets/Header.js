@@ -512,15 +512,6 @@ function Header() {
                           </Link>
                         </li>
 
-                        {/* <li className="nav-item">
-                          <Link
-                            to="/Stockout"
-                            className="nav-link"
-                            data-key="t-chat"
-                          >
-                            Stock Out Products
-                          </Link>
-                        </li> */}
                         <li className="nav-item">
                           <Link
                             to="/review"
@@ -615,7 +606,7 @@ function Header() {
                       </li>
                       <li className="nav-item">
                         <Link
-                          to="/bannersection2"
+                          to="/bannersection4"
                           className="nav-link"
                           data-key="t-nft-landing"
                         >
@@ -737,15 +728,7 @@ function Header() {
                           Profile
                         </Link>
                       </li>
-                      <li className="nav-item">
-                        <Link
-                          to="#"
-                          className="nav-link"
-                          data-key="t-sweet-alerts"
-                        >
-                          Mentainens
-                        </Link>
-                      </li>
+
                       <li className="nav-item">
                         <Link
                           to="/InquiryList"
@@ -763,15 +746,9 @@ function Header() {
                   <span data-key="t-pages">EMPLOYEE MANAGEMENT</span>
                 </li>
                 <li className="nav-item">
-                  <Link to="/Order" className="nav-link menu-link">
+                  <Link to="/Empolyerole" className="nav-link menu-link">
                     <i className="ri-layout-3-line"></i>
                     <span>Employee Role</span>
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link to="/transaction" className="nav-link menu-link">
-                    <i className="ri-layout-3-line"></i>
-                    <span>Employee</span>
                   </Link>
                 </li>
               </ul>
