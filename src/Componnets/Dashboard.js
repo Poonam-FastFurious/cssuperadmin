@@ -99,9 +99,7 @@ function Dashboard() {
                                 Total Sales
                               </p>
                             </div>
-                            <div className="flex-shrink-0">
-                              <h5 className="text-success fs-14 mb-0"></h5>
-                            </div>
+                            <div className="flex-shrink-0"></div>
                           </div>
                           <div className="d-flex align-items-end justify-content-between mt-4">
                             <div>
@@ -141,9 +139,7 @@ function Dashboard() {
                                 Orders
                               </p>
                             </div>
-                            <div className="flex-shrink-0">
-                              <h5 className="text-danger fs-14 mb-0"></h5>
-                            </div>
+                            <div className="flex-shrink-0"></div>
                           </div>
                           <div className="d-flex align-items-end justify-content-between mt-4">
                             <div>
@@ -182,9 +178,7 @@ function Dashboard() {
                                 Customers
                               </p>
                             </div>
-                            <div className="flex-shrink-0">
-                              <h5 className="text-success fs-14 mb-0"></h5>
-                            </div>
+                            <div className="flex-shrink-0"></div>
                           </div>
                           <div className="d-flex align-items-end justify-content-between mt-4">
                             <div>
