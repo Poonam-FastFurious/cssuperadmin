@@ -2,116 +2,162 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-
+import axios from "axios";
 import { Baseurl } from "../../config";
 
 function AddProduct() {
-  const [category, setCategory] = useState([]);
-
-  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [productData, setProductData] = useState({
-    name: "",
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    title: "",
     description: "",
     price: "",
     discount: "",
-    rating: "",
-    shortDescription: "",
-    visibility: "",
-    tags: [],
-    tax: "",
-    hasAttributes: false,
-    attributes: [],
-    stockQuantity: "",
-    stockStatus: "",
-    categoryName: "",
+    cutPrice: "",
+    categories: "",
+    tags: "",
     sku: "",
+    shortDescription: "",
+    stocks: "",
+    youtubeVideoLink: "",
+    image: null,
+    thumbnail: [],
   });
-  const [attributes, setAttributes] = useState([
-    { attributeName: "", attributeValue: "" },
-  ]);
-  const [image, setImage] = useState(null);
-  const [thumbnail, setThumbnail] = useState([]);
+  const [errors, setErrors] = useState({});
+  useEffect(() => {
+    // Fetch categories for the dropdown
+    async function fetchCategories() {
+      try {
+        const response = await axios.get(
+          Baseurl + "/api/v1/category/allcategory"
+        );
+        setCategories(response.data.data);
+      } catch (error) {
+        console.error("Error fetching categories", error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setProductData({
-      ...productData,
+    setFormData({
+      ...formData,
       [name]: value,
     });
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
   };
 
-  const handleCheckboxChange = (event) => {
-    setProductData({
-      ...productData,
-      hasAttributes: event.target.checked,
-    });
-  };
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const img = new Image();
+      const reader = new FileReader();
 
-  const handelimagechange = (e) => {
-    setImage(e.target.files[0]);
-  };
+      reader.onload = (event) => {
+        img.src = event.target.result;
 
-  const handleThumbnailChange = (e) => {
-    setThumbnail([...e.target.files]);
+        img.onload = () => {
+          const width = img.width;
+          const height = img.height;
+
+          if (width === 1280 && height === 1280) {
+            setFormData({
+              ...formData,
+              [name]: name === "thumbnail" ? Array.from(files) : file,
+            });
+            if (errors[name]) {
+              setErrors({
+                ...errors,
+                [name]: "",
+              });
+            }
+          } else {
+            setErrors({
+              ...errors,
+              [name]: "Image dimensions should be 1280x1280 pixels.",
+            });
+          }
+        };
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleCKEditorChange = (event, editor) => {
     const data = editor.getData();
-    setProductData({
-      ...productData,
+    setFormData({
+      ...formData,
       description: data,
     });
+    if (errors.description) {
+      setErrors({
+        ...errors,
+        description: "",
+      });
+    }
   };
+  const validateForm = () => {
+    const newErrors = {};
 
-  const handleAttributeChange = (index, e) => {
-    const { name, value } = e.target;
-    const updatedAttributes = attributes.map((attribute, i) =>
-      i === index ? { ...attribute, [name]: value } : attribute
-    );
-    setAttributes(updatedAttributes);
+    if (!formData.title) newErrors.title = "Title is required";
+    if (!formData.description)
+      newErrors.description = "Description is required";
+    if (!formData.price) newErrors.price = "Price is required";
+    if (!formData.discount) newErrors.discount = "Discount is required";
+    if (!formData.cutPrice) newErrors.cutPrice = "Cut price is required";
+    if (!formData.categories) newErrors.categories = "Category is required";
+    if (!formData.tags) newErrors.tags = "Tags are required";
+    if (!formData.sku) newErrors.sku = "SKU is required";
+    if (!formData.shortDescription)
+      newErrors.shortDescription = "Short description is required";
+    if (!formData.stocks) newErrors.stocks = "Stock is required";
+    if (!formData.youtubeVideoLink)
+      newErrors.youtubeVideoLink = "YouTube video link is required";
+    if (!formData.image) newErrors.image = "Image is required";
+    if (!formData.thumbnail || formData.thumbnail.length === 0)
+      newErrors.thumbnail = "At least one thumbnail is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-
-  const addAttributeField = () => {
-    setAttributes([...attributes, { attributeName: "", attributeValue: "" }]);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", productData.name);
-    formData.append("description", productData.description);
-    formData.append("price", productData.price);
-    formData.append("discount", productData.discount);
-    formData.append("rating", productData.rating);
-    formData.append("shortDescription", productData.shortDescription);
-    formData.append("visibility", productData.visibility);
-    formData.append("tags", JSON.stringify(productData.tags.split(",")));
-    formData.append("tax", productData.tax);
-    formData.append("hasAttributes", productData.hasAttributes);
-    formData.append("attributes", JSON.stringify(attributes));
-    formData.append("stockQuantity", productData.stockQuantity);
-    formData.append("stockStatus", productData.stockStatus);
-    formData.append("categoryName", productData.categoryName);
-    formData.append("sku", productData.sku);
-
-    if (image) formData.append("image", image);
-
-    thumbnail.forEach((file) => {
-      formData.append("thumbnail", file);
-    });
-
     setLoading(true);
-    try {
-      const response = await fetch(Baseurl + "/api/v1/product/add", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
+    if (!validateForm()) return;
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("price", formData.price);
+    data.append("discount", formData.discount);
+    data.append("cutPrice", formData.cutPrice);
+    data.append("categories", formData.categories);
+    data.append("tags", formData.tags);
+    data.append("sku", formData.sku);
+    data.append("shortDescription", formData.shortDescription);
+    data.append("stocks", formData.stocks);
+    data.append("youtubeVideoLink", formData.youtubeVideoLink);
+    data.append("image", formData.image);
+    if (formData.thumbnail && formData.thumbnail.length > 0) {
+      formData.thumbnail.forEach((thumbnail) => {
+        data.append("thumbnail", thumbnail);
       });
+    }
 
+    try {
+      const response = await fetch(Baseurl + "/api/v1/Product/add", {
+        method: "POST",
+        body: data,
+      });
+      const result = await response.json();
+      console.log(result);
       if (response.ok) {
         navigate("/Product");
       } else {
@@ -119,24 +165,10 @@ function AddProduct() {
         // Handle response errors here
       }
     } catch (error) {
-      console.error("There was an error creating the product!", error);
-      // Handle error, show user feedback, etc.
+      console.error("Error adding product", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetch(Baseurl + "/api/v1/category/allcategory")
-      .then((response) => response.json())
-      .then((jsonData) => setCategory(jsonData.data))
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
-  const validateSKU = (value) => {
-    // Regular expression to match "PRV" followed by any number of digits
-    const skuRegex = /^PRV\d+$/;
-
-    return skuRegex.test(value);
   };
   return (
     <>
@@ -147,7 +179,6 @@ function AddProduct() {
               <div className="col-12">
                 <div className="page-title-box d-sm-flex align-items-center justify-content-between">
                   <h4 className="mb-sm-0">Create Product</h4>
-
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
@@ -169,7 +200,7 @@ function AddProduct() {
               onSubmit={handleSubmit}
             >
               <div className="row">
-                <div className="col-lg-8">
+                <div className="col-lg-12">
                   <div className="card">
                     <div className="card-body">
                       <div className="mb-3">
@@ -181,23 +212,30 @@ function AddProduct() {
                         </label>
                         <input
                           type="text"
-                          className="form-control"
+                          className={`form-control ${
+                            errors.title ? "is-invalid" : ""
+                          }`}
                           id="product-title-input"
-                          name="name"
-                          value={productData.name}
-                          onChange={handleInputChange}
-                        />
-                        <div className="invalid-feedback">
-                          Please Enter a product title.
-                        </div>
+                          name="title"
+                          value={formData.title}
+                          onChange={handleChange}
+                        />{" "}
+                        {errors.title && (
+                          <div className="invalid-feedback">{errors.title}</div>
+                        )}
                       </div>
                       <div>
                         <label>Product Description</label>
                         <CKEditor
                           editor={ClassicEditor}
-                          data={productData.description}
+                          data={formData.description}
                           onChange={handleCKEditorChange}
                         />
+                        {errors.description && (
+                          <div className="invalid-feedback">
+                            {errors.description}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -212,74 +250,82 @@ function AddProduct() {
                         <p className="text-muted">Add Product main Image.</p>
                         <div className="text-center">
                           <div className="position-relative d-inline-block">
-                            <div className="position-absolute top-100 start-100 translate-middle">
-                              <label
-                                htmlFor="product-image-input"
-                                className="mb-0"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="right"
-                                title="Select Image"
-                              >
-                                <div className="avatar-xs">
-                                  <div className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
-                                    <i className="ri-image-fill"></i>
-                                  </div>
+                            <label
+                              htmlFor="product-image-input"
+                              className="mb-0"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="right"
+                              title="Select Image"
+                            >
+                              <div className="avatar-xs">
+                                <div className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
+                                  <i className="ri-image-fill"></i>
                                 </div>
-                              </label>
-                              <input
-                                className="form-control d-none"
-                                id="product-image-input"
-                                type="file"
-                                accept="image/png, image/gif, image/jpeg"
-                                onChange={handelimagechange}
-                              />
-                            </div>
-
-                            {image && (
-                              <ul
-                                className="list-unstyled mb-0"
-                                id="dropzone-preview"
-                              >
-                                <li className="mt-2" id="dropzone-preview-list">
-                                  <div className="border rounded">
-                                    <div className="d-flex p-2">
-                                      <div className="flex-shrink-0 me-3">
-                                        <div className="avatar-sm bg-light rounded">
-                                          <img
-                                            src={URL.createObjectURL(image)}
-                                            alt="Selected"
-                                            style={{
-                                              width: "300px",
-                                              height: "auto",
-                                            }}
-                                            className="img-fluid rounded d-block"
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        <div className="pt-1">
-                                          <h5
-                                            className="fs-14 mb-1"
-                                            data-dz-name=""
-                                          >
-                                            &nbsp;
-                                          </h5>
-                                          <p
-                                            className="fs-13 text-muted mb-0"
-                                            data-dz-size=""
-                                          ></p>
-                                          <strong
-                                            className="error text-danger"
-                                            data-dz-errormessage=""
-                                          ></strong>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </li>
-                              </ul>
+                              </div>
+                            </label>
+                            <input
+                              className={`form-control d-none ${
+                                errors.image ? "is-invalid" : ""
+                              }`}
+                              id="product-image-input"
+                              type="file"
+                              accept="image/png, image/gif, image/jpeg"
+                              name="image"
+                              onChange={handleFileChange}
+                            />
+                            {errors.image && (
+                              <div className="invalid-feedback">
+                                {errors.image}
+                              </div>
                             )}
                           </div>
+
+                          <ul
+                            className="list-unstyled mb-0"
+                            id="dropzone-preview"
+                          >
+                            <li className="mt-2" id="dropzone-preview-list">
+                              <div className="border rounded">
+                                <div className="d-flex p-2">
+                                  <div className="flex-shrink-0 me-3">
+                                    <div className="avatar-sm bg-light rounded">
+                                      {formData.image && (
+                                        <img
+                                          src={URL.createObjectURL(
+                                            formData.image
+                                          )}
+                                          alt="Selected"
+                                          style={{
+                                            width: "300px",
+                                            height: "auto",
+                                          }}
+                                          className="img-fluid rounded d-block"
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex-grow-1">
+                                    <div className="pt-1">
+                                      <h5
+                                        className="fs-14 mb-1"
+                                        data-dz-name=""
+                                      >
+                                        &nbsp;
+                                      </h5>
+                                      <p
+                                        className="fs-13 text-muted mb-0"
+                                        data-dz-size=""
+                                      ></p>
+                                      <strong
+                                        className="error text-danger"
+                                        data-dz-errormessage=""
+                                      ></strong>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                          </ul>
                         </div>
                       </div>
                       <div className="mb-4">
@@ -287,96 +333,92 @@ function AddProduct() {
                         <p className="text-muted">Add Product thumbnail.</p>
                         <div className="text-center">
                           <div className="position-relative d-inline-block">
-                            <div className="position-absolute top-100 start-100 translate-middle">
-                              <label
-                                htmlFor="product-thumbnail-input"
-                                className="mb-0"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="right"
-                                title="Select Image"
-                              >
-                                <div className="avatar-xs">
-                                  <div className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
-                                    <i className="ri-image-fill"></i>
-                                  </div>
+                            <label
+                              htmlFor="product-thumbnail-input"
+                              className="mb-0"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="right"
+                              title="Select Image"
+                            >
+                              <div className="avatar-xs">
+                                <div className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
+                                  <i className="ri-image-fill"></i>
                                 </div>
-                              </label>
-                              <input
-                                className="form-control d-none"
-                                id="product-thumbnail-input"
-                                type="file"
-                                multiple
-                                onChange={handleThumbnailChange}
-                              />
-                            </div>
-
-                            {thumbnail.length > 0 && (
-                              <ul
-                                className="list-unstyled mb-0  d-flex"
-                                id="gallery-preview"
-                              >
-                                {thumbnail.map((file, index) => (
-                                  <li
-                                    key={index}
-                                    className="mt-2"
-                                    id="gallery-preview-list"
-                                  >
-                                    <div className="border rounded">
-                                      <div className="d-flex p-2">
-                                        <div className="flex-shrink-0 me-3">
-                                          {file.type.startsWith("image/") ? ( // Check if file is an image
-                                            <div className="avatar-sm bg-light rounded">
-                                              <img
-                                                src={URL.createObjectURL(file)}
-                                                alt="Selected"
-                                                style={{
-                                                  width: "300px",
-                                                  height: "auto",
-                                                }}
-                                                className="img-fluid rounded d-block"
-                                              />
-                                            </div>
-                                          ) : file.type.startsWith("video/") ? ( // Check if file is a video
-                                            <div className="video-container">
-                                              <video
-                                                controls
-                                                className="img-fluid rounded d-block"
-                                                style={{
-                                                  width: "300px",
-                                                  height: "auto",
-                                                }}
-                                              >
-                                                <source
-                                                  src={URL.createObjectURL(
-                                                    file
-                                                  )}
-                                                  type={file.type}
-                                                />
-                                                Your browser does not support
-                                                the video tag.
-                                              </video>
-                                            </div>
-                                          ) : (
-                                            <div className="avatar-sm bg-light rounded">
-                                              <p>
-                                                Unsupported file format:{" "}
-                                                {file.type}
-                                              </p>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
+                              </div>
+                            </label>
+                            <input
+                              className={`form-control d-none ${
+                                errors.thumbnail ? "is-invalid" : ""
+                              }`}
+                              id="product-thumbnail-input"
+                              type="file"
+                              multiple
+                              name="thumbnail"
+                              onChange={handleFileChange}
+                            />
+                            {errors.thumbnail && (
+                              <div className="invalid-feedback">
+                                {errors.thumbnail}
+                              </div>
                             )}
                           </div>
+                        </div>
+                        {formData.thumbnail.length > 0 && (
+                          <ul
+                            className="list-unstyled mb-0  d-flex"
+                            id="gallery-preview"
+                          >
+                            {formData.thumbnail.map((file, index) => (
+                              <li
+                                key={index}
+                                className="mt-2"
+                                id="gallery-preview-list"
+                              >
+                                <div className="border rounded">
+                                  <div className="d-flex p-2">
+                                    <img
+                                      src={file}
+                                      alt={`Thumbnail ${index}`}
+                                      style={{
+                                        width: "100px",
+                                        height: "auto",
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card">
+                    <div className="card-header">
+                      <h5 className="card-title mb-0">Product VideoUrl</h5>
+                    </div>
+                    <div className="card-body">
+                      <div className="hstack gap-3 align-items-start">
+                        <div className="flex-grow-1">
+                          <input
+                            className={`form-control ${
+                              errors.youtubeVideoLink ? "is-invalid" : ""
+                            }`}
+                            placeholder="Enter Url"
+                            type="text"
+                            name="youtubeVideoLink"
+                            value={formData.youtubeVideoLink}
+                            onChange={handleChange}
+                          />
+                          {errors.youtubeVideoLink && (
+                            <div className="invalid-feedback">
+                              {errors.youtubeVideoLink}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
-
                   <div className="card">
                     <div className="card-header">
                       <ul
@@ -406,358 +448,196 @@ function AddProduct() {
                           <div className="row">
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="stocks-input"
+                                <label className="form-label">
+                                  Product Category
+                                </label>
+                                <select
+                                  className={`form-select ${
+                                    errors.categories ? "is-invalid" : ""
+                                  }`}
+                                  id="choices-category-input"
+                                  name="categories"
+                                  value={formData.categories}
+                                  onChange={handleChange}
+                                  data-choices=""
+                                  data-choices-search-false=""
                                 >
-                                  Stocks
+                                  <option>select </option>
+                                  {categories.map((cat) => (
+                                    <option
+                                      key={cat._id}
+                                      value={cat.categoriesTitle}
+                                    >
+                                      {cat.categoriesTitle}
+                                    </option>
+                                  ))}
+                                </select>
+                                {errors.categories && (
+                                  <div className="invalid-feedback">
+                                    {errors.categories}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  Product Tags
                                 </label>
                                 <input
                                   type="text"
-                                  className="form-control"
-                                  id="stocks-input"
-                                  name="stockQuantity"
-                                  value={productData.stockQuantity}
-                                  onChange={handleInputChange}
-                                  required=""
+                                  className={`form-control ${
+                                    errors.tags ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter tags"
+                                  name="tags"
+                                  value={formData.tags}
+                                  onChange={handleChange}
                                 />
-                                <div className="invalid-feedback">
-                                  Please Enter a product stocks.
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="product-price-input"
-                                >
-                                  Price
-                                </label>
-                                <div className="input-group has-validation mb-3">
-                                  <span
-                                    className="input-group-text"
-                                    id="product-price-addon"
-                                  >
-                                    Rs
-                                  </span>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="product-price-input"
-                                    name="price"
-                                    value={productData.price}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter price"
-                                    aria-label="Price"
-                                    aria-describedby="product-price-addon"
-                                    required=""
-                                  />
+                                {errors.tags && (
                                   <div className="invalid-feedback">
-                                    Please Enter a product price.
+                                    {errors.tags}
                                   </div>
-                                </div>
+                                )}
                               </div>
                             </div>
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="product-discount-input"
-                                >
-                                  Discount
-                                </label>
-                                <div className="input-group mb-3">
-                                  <span
-                                    className="input-group-text"
-                                    id="product-discount-addon"
-                                  >
-                                    %
-                                  </span>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="product-discount-input"
-                                    name="discount"
-                                    value={productData.discount}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter discount"
-                                    aria-label="discount"
-                                    aria-describedby="product-discount-addon"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="orders-input"
-                                >
-                                  Rating
+                                <label className="form-label">
+                                  Product Price
                                 </label>
                                 <input
                                   type="number"
-                                  className="form-control"
-                                  id="orders-input"
-                                  name="rating"
-                                  value={productData.rating}
-                                  onChange={handleInputChange}
-                                  placeholder="rating"
-                                  required=""
+                                  className={`form-control ${
+                                    errors.price ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter price"
+                                  name="price"
+                                  value={formData.price}
+                                  onChange={handleChange}
                                 />
-                                <div className="invalid-feedback">
-                                  Please Enter a product rating.
-                                </div>
+                                {errors.price && (
+                                  <div className="invalid-feedback">
+                                    {errors.price}
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="orders-input"
-                                >
-                                  Is item have Attribute
+                                <label className="form-label">
+                                  Product Discount
                                 </label>
-                                <div
-                                  className="form-check mb-9"
-                                  style={{ paddingTop: "10px" }}
-                                >
-                                  <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    id="formCheck6"
-                                    checked={productData.hasAttributes}
-                                    onChange={handleCheckboxChange}
-                                  />
-                                  <label
-                                    className="form-check-label mb-90"
-                                    htmlFor="formCheck6"
-                                  >
-                                    Checkbox Primary
-                                  </label>
-                                </div>
-                                <div className="invalid-feedback">
-                                  Please Enter a product orders.
-                                </div>
+                                <input
+                                  type="number"
+                                  className={`form-control ${
+                                    errors.discount ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter discount"
+                                  name="discount"
+                                  value={formData.discount}
+                                  onChange={handleChange}
+                                />
+                                {errors.discount && (
+                                  <div className="invalid-feedback">
+                                    {errors.discount}
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            <div className="col-lg-6 col-sm-6">
-                              {productData.hasAttributes &&
-                                attributes.map((attribute, index) => (
-                                  <div className="d-flex gap-4 w" key={index}>
-                                    <div className="mb-3">
-                                      <label
-                                        className="form-label"
-                                        htmlFor={`attribute-input-${index}`}
-                                      >
-                                        Attribute
-                                      </label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        id={`attribute-input-${index}`}
-                                        name="attributeName"
-                                        value={attribute.attributeName}
-                                        onChange={(e) =>
-                                          handleAttributeChange(index, e)
-                                        }
-                                        placeholder="Enter additional attribute"
-                                      />
-                                    </div>
-                                    <div className="row">
-                                      <div className="col">
-                                        <div className="mb-3">
-                                          <label
-                                            className="form-label"
-                                            htmlFor={`variation-input-${index}`}
-                                          >
-                                            Variation
-                                          </label>
-                                          <input
-                                            type="text"
-                                            className="form-control"
-                                            id={`variation-input-${index}`}
-                                            name="attributeValue"
-                                            value={attribute.attributeValue}
-                                            onChange={(e) =>
-                                              handleAttributeChange(index, e)
-                                            }
-                                            placeholder="Enter variation"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Cut Price</label>
+                                <input
+                                  type="number"
+                                  className={`form-control ${
+                                    errors.cutPrice ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter cut price"
+                                  name="cutPrice"
+                                  value={formData.cutPrice}
+                                  onChange={handleChange}
+                                />
+                                {errors.cutPrice && (
+                                  <div className="invalid-feedback">
+                                    {errors.cutPrice}
                                   </div>
-                                ))}
-                              {productData.hasAttributes && (
-                                <button
-                                  type="button"
-                                  className="btn btn-primary"
-                                  onClick={addAttributeField}
-                                >
-                                  Add Attribute
-                                </button>
-                              )}
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  Product SKU
+                                </label>
+                                <input
+                                  type="text"
+                                  className={`form-control ${
+                                    errors.sku ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter SKU"
+                                  name="sku"
+                                  value={formData.sku}
+                                  onChange={handleChange}
+                                />
+                                {errors.sku && (
+                                  <div className="invalid-feedback">
+                                    {errors.sku}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Stocks</label>
+                                <input
+                                  type="number"
+                                  className={`form-control ${
+                                    errors.stocks ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter stocks quantity"
+                                  name="stocks"
+                                  value={formData.stocks}
+                                  onChange={handleChange}
+                                />
+                                {errors.stocks && (
+                                  <div className="invalid-feedback">
+                                    {errors.stocks}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-lg-12">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  Short Description
+                                </label>
+                                <textarea
+                                  type="text"
+                                  className={`form-control ${
+                                    errors.shortDescription ? "is-invalid" : ""
+                                  }`}
+                                  placeholder="Enter short description"
+                                  name="shortDescription"
+                                  value={formData.shortDescription}
+                                  onChange={handleChange}
+                                />
+                                {errors.shortDescription && (
+                                  <div className="invalid-feedback">
+                                    {errors.shortDescription}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  <div className="text-end mb-3">
-                    <button type="submit" className="btn btn-success w-sm">
-                      {loading && (
-                        <span className="spinner-border spinner-border-sm me-1"></span>
-                      )}
-                      {loading ? "Loading..." : "Submit"}
+                  <div className="text-strat">
+                    <button type="submit" className="btn btn-primary">
+                      {loading ? "Submitting..." : "Submit"}
                     </button>
-                  </div>
-                </div>
-
-                <div className="col-lg-4">
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Publish</h5>
-                    </div>
-                    <div className="card-body">
-                      <div className="mb-3">
-                        <label
-                          htmlFor="choices-publish-status-input"
-                          className="form-label"
-                        >
-                          Stock
-                        </label>
-                        <select
-                          className="form-select"
-                          id="choices-publish-status-input"
-                          name="stockStatus"
-                          value={productData.stockStatus}
-                          onChange={handleInputChange}
-                          data-choices=""
-                          data-choices-search-false=""
-                        >
-                          <option>select </option>
-                          <option value="in_stock">in_stock</option>
-                          <option value="out_of_stock">out_of_stock</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="choices-publish-visibility-input"
-                          className="form-label"
-                        >
-                          Visibility
-                        </label>
-
-                        <select
-                          className="form-select"
-                          id="choices-publish-visibility-input"
-                          name="visibility"
-                          value={productData.visibility}
-                          onChange={handleInputChange}
-                        >
-                          <option>select </option>
-                          <option value="active">active</option>
-                          <option value="inactive">inactive</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Product Categories</h5>
-                    </div>
-                    <div className="card-body">
-                      <p className="text-muted mb-2">Select product category</p>
-                      <select
-                        className="form-select"
-                        id="choices-category-input"
-                        name="categoryName"
-                        value={productData.categoryName}
-                        onChange={handleInputChange}
-                        data-choices=""
-                        data-choices-search-false=""
-                      >
-                        <option>select </option>
-                        {category.map((cat) => (
-                          <option key={cat._id} value={cat.categoriesTitle}>
-                            {cat.categoriesTitle}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Product Tags</h5>
-                    </div>
-                    <div className="card-body">
-                      <div className="hstack gap-3 align-items-start">
-                        <div className="flex-grow-1">
-                          <input
-                            className="form-control"
-                            data-choices=""
-                            data-choices-multiple-remove="true"
-                            placeholder="Enter tags"
-                            type="text"
-                            name="tags"
-                            value={productData.tags}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Product SKU</h5>
-                    </div>
-                    <div className="card-body">
-                      <div className="hstack gap-3 align-items-start">
-                        <div className="flex-grow-1">
-                          <input
-                            className={`form-control ${
-                              validateSKU(productData.sku)
-                                ? "is-valid"
-                                : "is-invalid"
-                            }`}
-                            data-choices=""
-                            data-choices-multiple-remove="true"
-                            placeholder="Enter sku"
-                            type="text"
-                            name="sku"
-                            value={productData.sku}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">
-                        Product Short Description
-                      </h5>
-                    </div>
-                    <div className="card-body">
-                      <p className="text-muted mb-2">
-                        Add short description for product
-                      </p>
-                      <textarea
-                        className="form-control"
-                        placeholder="Must enter minimum of a 100 characters"
-                        rows="3"
-                        name="shortDescription"
-                        value={productData.shortDescription}
-                        onChange={handleInputChange}
-                      ></textarea>
-                    </div>
                   </div>
                 </div>
               </div>

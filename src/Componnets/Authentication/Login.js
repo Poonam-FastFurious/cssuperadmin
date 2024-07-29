@@ -8,6 +8,7 @@ function Login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [validationError, setValidationError] = useState("");
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -15,14 +16,25 @@ function Login() {
   };
 
   const isEmail = (value) => {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailPattern = /^[^\s@]{2,}@[^\s@]{2,}\.[^\s@]{2,}$/;
     return emailPattern.test(value);
   };
-
+  const handleUsernameOrEmailChange = (e) => {
+    const value = e.target.value;
+    setUsernameOrEmail(value);
+    if (!isEmail(value) && value.includes("@")) {
+      setValidationError("Invalid email format");
+    } else {
+      setValidationError("");
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+    if (validationError) {
+      setError("Please correct the errors before submitting.");
+      return;
+    }
     try {
       const isEmailAddress = isEmail(usernameOrEmail);
       const payload = isEmailAddress
@@ -49,9 +61,9 @@ function Login() {
         localStorage.setItem("adminId", user._id);
 
         // Store in cookies
-        Cookies.set("accessToken", accessToken, { expires: 1 }); // 1 day expiration
-        Cookies.set("refreshToken", refreshToken, { expires: 7 }); // 7 days expiration
-        Cookies.set("adminId", user._id, { expires: 7 });
+        Cookies.set("accessToken", accessToken);
+        Cookies.set("refreshToken", refreshToken);
+        Cookies.set("adminId", user._id);
 
         // Redirect to the dashboard or another page
         navigate("/");
@@ -100,7 +112,7 @@ function Login() {
                     <div className="text-center mt-2">
                       <h5 className="text-primary">Welcome Back!</h5>
                       <p className="text-muted">
-                        Sign in to continue to Velzon.
+                        Sign in to continue to Proven Ro.
                       </p>
                     </div>
                     <div className="p-2 mt-4">
@@ -114,22 +126,28 @@ function Login() {
                           </label>
                           <input
                             type="text"
-                            className="form-control"
+                            className={`form-control ${
+                              validationError ? "is-invalid" : ""
+                            }`}
                             id="usernameOrEmail"
                             placeholder="Enter username or email"
                             value={usernameOrEmail}
-                            onChange={(e) => setUsernameOrEmail(e.target.value)}
+                            onChange={handleUsernameOrEmailChange}
                           />
                         </div>
-
+                        {validationError && (
+                          <div className="invalid-feedback">
+                            {validationError}
+                          </div>
+                        )}
                         <div className="mb-3">
                           <div className="float-end">
-                            <Link
+                            {/* <Link
                               to="auth-pass-reset-basic"
                               className="text-muted"
                             >
                               Forgot password?
-                            </Link>
+                            </Link> */}
                           </div>
                           <label
                             className="form-label"

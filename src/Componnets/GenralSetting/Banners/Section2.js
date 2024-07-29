@@ -19,6 +19,30 @@ function Section2() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [loading, setLoading] = useState(false);
+  const [editId, setEditId] = useState("");
+  const [edittitle, setEdittitle] = useState("");
+  const [editLink, setEditLink] = useState("");
+  const [edittype, setEdittype] = useState("");
+  const [editdetails, setEditdetails] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editImage, setEditImage] = useState("");
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        Baseurl + "/api/v1/Banner/allabnner?type=2"
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setBanners(data.data); // Assuming data is an array of banner objects
+      setFilteredBanners(data.data); // Initialize filteredBanners with all banners initially
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+    }
+  };
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData((prevState) => ({
@@ -26,7 +50,81 @@ function Section2() {
       [name]: files ? files[0] : value,
     }));
   };
+  const handleEditImageChange = (e) => {
+    setEditImage(e.target.files[0]);
+  };
+  const handleEditClick = (cat) => {
+    setEditId(cat._id);
+    setEdittitle(cat.title);
+    setEditLink(cat.link);
+    setEditStatus(cat.status);
+    setEditdetails(cat.details);
+    setEdittype(cat.type);
+    setEditImage(null);
+  };
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
 
+    const formData = new FormData();
+    formData.append("id", editId);
+    formData.append("title", edittitle);
+    formData.append("link", editLink);
+    formData.append("status", editStatus);
+    formData.append("type", edittype);
+    formData.append("details", editdetails);
+    if (editImage) {
+      formData.append("image", editImage);
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(Baseurl + "/api/v1/Banner/edit", {
+        method: "PATCH",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Category updated successfully", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          onClose: () => {
+            const modalElement = document.getElementById("editshowModal");
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+            fetchData();
+          },
+        });
+      } else {
+        throw new Error("Banner update failed");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("Banner update failed", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -80,42 +178,6 @@ function Section2() {
       alert("Failed to add banner. Please try again.");
     }
   };
-
-  const handleSearch = (e) => {
-    const searchTerm = e.target.value;
-    setSearchTerm(searchTerm);
-
-    const filteredBanners = banners.filter((banner) =>
-      banner.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredBanners(filteredBanners);
-    setCurrentPage(1); // Reset to first page when searching
-  };
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          Baseurl + "/api/v1/Banner/allabnner?type=2"
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        setBanners(data.data); // Assuming data is an array of banner objects
-        setFilteredBanners(data.data); // Initialize filteredBanners with all banners initially
-      } catch (error) {
-        console.error("Error fetching banners:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredBanners.slice(indexOfFirstItem, indexOfLastItem);
-
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -154,7 +216,26 @@ function Section2() {
       }
     });
   };
+  const handleSearch = (e) => {
+    const searchTerm = e.target.value;
+    setSearchTerm(searchTerm);
 
+    const filteredBanners = banners.filter((banner) =>
+      banner.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBanners(filteredBanners);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  useEffect(() => {
+
+
+    fetchData();
+  }, []);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredBanners.slice(indexOfFirstItem, indexOfLastItem);
   return (
     <>
       <div class="main-content">
@@ -218,16 +299,7 @@ function Section2() {
                         >
                           <thead class="table-light">
                             <tr>
-                              <th scope="col" style={{ width: "50px;" }}>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="checkAll"
-                                    value="option"
-                                  />
-                                </div>
-                              </th>
+
                               <th class="sort" data-sort="customer_name">
                                 Image
                               </th>
@@ -254,16 +326,7 @@ function Section2() {
                           <tbody class="list form-check-all">
                             {currentItems.map((item, index) => (
                               <tr key={index}>
-                                <th scope="row">
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
+
                                 <td class="id" style={{ display: "none;" }}>
                                   <img
                                     src={item.image}
@@ -273,7 +336,7 @@ function Section2() {
                                 </td>
                                 <td class="email">{item.title}</td>
                                 <td class="email">{item.details}</td>
-                                <td class="phone">Section 1</td>
+                                <td class="phone">Section 2</td>
                                 <td class="date">{item.link}</td>
                                 <td class="status">
                                   <span class="badge bg-success-subtle text-success text-uppercase">
@@ -285,8 +348,10 @@ function Section2() {
                                     <div class="edit">
                                       <button
                                         class="btn btn-sm btn-success edit-item-btn"
+                                        onClick={() => handleEditClick(item)}
                                         data-bs-toggle="modal"
-                                        data-bs-target="#showModal"
+
+                                        data-bs-target="#editshowModal"
                                       >
                                         Edit
                                       </button>
@@ -327,9 +392,8 @@ function Section2() {
                         <nav>
                           <ul className="pagination">
                             <li
-                              className={`page-item ${
-                                currentPage === 1 && "disabled"
-                              }`}
+                              className={`page-item ${currentPage === 1 && "disabled"
+                                }`}
                             >
                               <button
                                 className="page-link"
@@ -347,9 +411,8 @@ function Section2() {
                               (_, i) => (
                                 <li
                                   key={i}
-                                  className={`page-item ${
-                                    currentPage === i + 1 && "active"
-                                  }`}
+                                  className={`page-item ${currentPage === i + 1 && "active"
+                                    }`}
                                 >
                                   <button
                                     className="page-link"
@@ -361,12 +424,11 @@ function Section2() {
                               )
                             )}
                             <li
-                              className={`page-item ${
-                                currentPage ===
-                                  Math.ceil(
-                                    filteredBanners.length / itemsPerPage
-                                  ) && "disabled"
-                              }`}
+                              className={`page-item ${currentPage ===
+                                Math.ceil(
+                                  filteredBanners.length / itemsPerPage
+                                ) && "disabled"
+                                }`}
                             >
                               <button
                                 className="page-link"
@@ -381,167 +443,6 @@ function Section2() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="modal fade"
-            id="showModal"
-            tabIndex="-1"
-            aria-labelledby="exampleModalLabel"
-            aria-hidden="true"
-          >
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header bg-light p-3">
-                  <h5 className="modal-title" id="exampleModalLabel">
-                    Add BANNER
-                  </h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                    id="close-modal"
-                  ></button>
-                </div>
-                <form
-                  className="tablelist-form"
-                  autoComplete="off"
-                  onSubmit={handleSubmit}
-                >
-                  <div className="modal-body">
-                    <div className="mb-3">
-                      <label htmlFor="title-field" className="form-label">
-                        Banner Title
-                      </label>
-                      <input
-                        type="text"
-                        id="title-field"
-                        className="form-control"
-                        placeholder="Enter Title"
-                        required
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
-                      />
-                      <div className="invalid-feedback">
-                        Please enter a Title
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="details-field" className="form-label">
-                        Details
-                      </label>
-                      <input
-                        type="text"
-                        id="details-field"
-                        className="form-control"
-                        placeholder="Enter Details"
-                        required
-                        name="details"
-                        value={formData.details}
-                        onChange={handleChange}
-                      />
-                      <div className="invalid-feedback">
-                        Please enter Details
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="link-field" className="form-label">
-                        Link
-                      </label>
-                      <input
-                        type="text"
-                        id="link-field"
-                        className="form-control"
-                        placeholder="Enter Link"
-                        required
-                        name="link"
-                        value={formData.link}
-                        onChange={handleChange}
-                      />
-                      <div className="invalid-feedback">
-                        Please enter a Link
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="status-field" className="form-label">
-                        Status
-                      </label>
-                      <select
-                        className="form-control"
-                        name="status"
-                        id=""
-                        required
-                        value={formData.status}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Block">Block</option>
-                      </select>
-                      <div className="invalid-feedback">
-                        Please select a Status
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="type-field" className="form-label">
-                        Place
-                      </label>
-                      <select
-                        className="form-control"
-                        name="type"
-                        id="type"
-                        required
-                        value={formData.type}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select place</option>
-                        <option value="3">Section 3</option>
-                        {/* Add more options as needed */}
-                      </select>
-                      <div className="invalid-feedback">
-                        Please select a Type
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="image-field" className="form-label">
-                        Image
-                      </label>
-                      <input
-                        type="file"
-                        id="image-field"
-                        className="form-control"
-                        required
-                        name="image"
-                        onChange={handleChange}
-                      />
-                      <div className="invalid-feedback">
-                        Please select an Image
-                      </div>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <div className="hstack gap-2 justify-content-end">
-                      <button
-                        type="button"
-                        className="btn btn-light"
-                        data-bs-dismiss="modal"
-                      >
-                        Close
-                      </button>
-                      <button
-                        type="submit"
-                        className="btn btn-success"
-                        id="add-btn"
-                      >
-                        Add Banner
-                      </button>
-                    </div>
-                  </div>
-                </form>
               </div>
             </div>
           </div>
@@ -700,6 +601,171 @@ function Section2() {
                       >
                         Add Banner
                       </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="modal fade"
+            id="editshowModal"
+            tabIndex="-1"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-light p-3">
+                  <h5 className="modal-title" id="exampleModalLabel">
+                    Edit BANNER
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                    id="close-modal"
+                  ></button>
+                </div>
+                <form
+                  className="tablelist-form"
+                  autoComplete="off"
+                  onSubmit={handleEditSubmit}
+                >
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label htmlFor="title-field" className="form-label">
+                        Banner Title
+                      </label>
+                      <input
+                        type="text"
+                        id="title-field"
+                        className="form-control"
+                        placeholder="Enter Title"
+                        required
+                        value={edittitle}
+                        onChange={(e) => setEdittitle(e.target.value)}
+                      />
+                      <div className="invalid-feedback">
+                        Please enter a Title
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="details-field" className="form-label">
+                        Details
+                      </label>
+                      <input
+                        type="text"
+                        id="details-field"
+                        className="form-control"
+                        placeholder="Enter Details"
+                        required
+                        value={editdetails}
+                        onChange={(e) => setEditdetails(e.target.value)}
+
+                      />
+                      <div className="invalid-feedback">
+                        Please enter Details
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="link-field" className="form-label">
+                        Link
+                      </label>
+                      <input
+                        type="text"
+                        id="link-field"
+                        className="form-control"
+                        placeholder="Enter Link"
+                        required
+                        value={editLink}
+                        onChange={(e) => setEditLink(e.target.value)}
+                      />
+                      <div className="invalid-feedback">
+                        Please enter a Link
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="status-field" className="form-label">
+                        Status
+                      </label>
+                      <select
+                        className="form-control"
+                        name="status"
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
+                      >
+                        <option value="">Select Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Block">Block</option>
+                      </select>
+                      <div className="invalid-feedback">
+                        Please select a Status
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="type-field" className="form-label">
+                        Place
+                      </label>
+                      <select
+                        className="form-control"
+                        name="type"
+                        id="type"
+                        required
+                        value={edittype}
+                        onChange={(e) => setEdittype(e.target.value)}
+                      >
+                        <option value="">Select place</option>
+                        <option value="2">Section 2</option>
+                        {/* Add more options as needed */}
+                      </select>
+                      <div className="invalid-feedback">
+                        Please select a Type
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="image-field" className="form-label">
+                        Image
+                      </label>
+                      <input
+                        type="file"
+                        id="image-field"
+                        className="form-control"
+                        onChange={handleEditImageChange}
+                      />
+                      <div className="invalid-feedback">
+                        Please select an Image
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <div className="hstack gap-2 justify-content-end">
+                      <button
+                        type="button"
+                        className="btn btn-light"
+                        data-bs-dismiss="modal"
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="submit"
+                        className="btn btn-success"
+                        id="add-btn"
+                      >
+                        Update Banner
+                      </button>
+                      {loading && (
+                        <div className="loader">
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </form>

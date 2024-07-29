@@ -11,11 +11,12 @@ function Coupon() {
   const [editmodal, setEditmodal] = useState(false);
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("");
-  const [numberOfTimes, setNumberOfTimes] = useState("");
+
   const [discount, setDiscount] = useState("");
   const [status, setStatus] = useState("");
   const [coupontoEdit, setCoupontoEdit] = useState(null);
   const [fetching, setFetching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -27,7 +28,7 @@ function Coupon() {
         body: JSON.stringify({
           title: title,
           code: code,
-          numberOfTimes: numberOfTimes,
+
           discount: discount,
           status: status,
         }),
@@ -51,7 +52,7 @@ function Coupon() {
           setTitle("");
           setCode("");
           setStatus("active");
-          setNumberOfTimes("");
+
           setDiscount("");
           setShowModal(false);
         },
@@ -145,7 +146,7 @@ function Coupon() {
     try {
       // Make the API call to update tax
       const response = await fetch(Baseurl + "/api/v1/coupon/update", {
-        method: "PATCH", // Use PUT method for update
+        method: "PATCH", // 
         headers: {
           "Content-Type": "application/json",
         },
@@ -155,7 +156,7 @@ function Coupon() {
           code: coupontoEdit.code,
           status: coupontoEdit.status,
           discount: coupontoEdit.discount,
-          numberOfTimes: coupontoEdit.numberOfTimes,
+
         }),
       });
 
@@ -173,20 +174,31 @@ function Coupon() {
         progress: undefined,
         theme: "light",
         onClose: () => {
-          const modalElement = document.getElementById("editModal");
-          const modal = window.bootstrap.Modal.getInstance(modalElement);
-          modal.hide();
+
+          setEditmodal(false);
+          setCoupontoEdit({
+            _id: "",
+            title: "",
+            code: "",
+            status: "",
+            discount: "",
+            numberOfTimes: "",
+          });
         },
       });
-      setEditmodal(false); // Close the edit modal after successful update
+      // Close the edit modal after successful update
 
       // Refetch the tax list
       fetchcoupon();
+
     } catch (error) {
       toast.error("Error updating coupon: ");
       console.log("Error updating tax: " + error.message);
     }
   };
+  const filteredCoupons = allcoupon.filter((coupon) =>
+    coupon.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   return (
     <>
       <div className="main-content">
@@ -221,13 +233,7 @@ function Coupon() {
                       </div>
                       <div className="col-sm-auto">
                         <div className="d-flex flex-wrap align-items-start gap-2 ">
-                          <button
-                            style={{ visibility: "hidden" }}
-                            className="btn btn-soft-danger"
-                            id="remove-actions "
-                          >
-                            <i className="ri-delete-bin-2-line"></i>
-                          </button>
+
                           <button
                             type="button"
                             className="btn btn-success add-btn"
@@ -249,38 +255,15 @@ function Coupon() {
                             <input
                               type="text"
                               className="form-control search"
-                              placeholder="Search  something..."
+                              placeholder="Search by title..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             <i className="ri-search-line search-icon"></i>
                           </div>
                         </div>
 
-                        <div className="col-xl-6">
-                          <div className="row g-3">
-                            <div className="col-sm-4">
-                              <div className="">
-                                <input
-                                  type="date"
-                                  className="form-control"
-                                  id="datepicker-range"
-                                  placeholder="Select date"
-                                />
-                              </div>
-                            </div>
 
-                            <div className="col-sm-4">
-                              <div>
-                                <button
-                                  type="button"
-                                  className="btn btn-primary w-100"
-                                >
-                                  <i className="ri-equalizer-fill me-2 align-bottom"></i>
-                                  Filters
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </form>
                   </div>
@@ -305,14 +288,13 @@ function Coupon() {
                               </th>
                               <th className="sort">Title</th>
                               <th className="sort">Code</th>
-                              <th className="sort">No. Of Times</th>
                               <th className="sort">Discount</th>
                               <th className="sort">Status</th>
                               <th className="sort">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="list form-check-all">
-                            {allcoupon.map((cou, index) => (
+                            {filteredCoupons.length > 0 ? (filteredCoupons.map((cou, index) => (
                               <tr key={index}>
                                 <th scope="row">
                                   <div className="form-check">
@@ -326,7 +308,7 @@ function Coupon() {
                                 </th>
                                 <td className="customer_name">{cou.title}</td>
                                 <td className="email">{cou.code}</td>
-                                <td className="phone">{cou.numberOfTimes}</td>
+
                                 <td className="phone">{cou.discount} %</td>
                                 <td className="phone">{cou.status}</td>
 
@@ -359,10 +341,12 @@ function Coupon() {
                                   </ul>
                                 </td>
                               </tr>
-                            ))}
+
+                            ))) : (
+                              <tr></tr>)}
                           </tbody>
                         </table>
-                        {allcoupon.length === 0 && !fetching && (
+                        {filteredCoupons.length === 0 && !fetching && (
                           <div className="noresult">
                             <div className="text-center">
                               <lord-icon
@@ -380,20 +364,7 @@ function Coupon() {
                           </div>
                         )}
                       </div>
-                      <div className="d-flex justify-content-end">
-                        <div className="pagination-wrap hstack gap-2">
-                          <Link
-                            className="page-item pagination-prev disabled"
-                            to="#"
-                          >
-                            Previous
-                          </Link>
-                          <ul className="pagination listjs-pagination mb-0"></ul>
-                          <Link className="page-item pagination-next" to="#">
-                            Next
-                          </Link>
-                        </div>
-                      </div>
+
                     </div>
                     {showModal && (
                       <div
@@ -464,7 +435,7 @@ function Coupon() {
                                     onChange={(e) => setTitle(e.target.value)}
                                   />
                                   <div className="invalid-feedback">
-                                    Please enter a customer name.
+
                                   </div>
                                 </div>
                                 <div className="mb-3">
@@ -487,28 +458,7 @@ function Coupon() {
                                     Please enter an email.
                                   </div>
                                 </div>
-                                <div className="mb-3">
-                                  <label
-                                    htmlFor="email-field"
-                                    className="form-label"
-                                  >
-                                    Number of times
-                                  </label>
-                                  <input
-                                    type="text"
-                                    id="email-field"
-                                    className="form-control"
-                                    placeholder="Enter Number Of Times"
-                                    required=""
-                                    value={numberOfTimes}
-                                    onChange={(e) =>
-                                      setNumberOfTimes(e.target.value)
-                                    }
-                                  />
-                                  <div className="invalid-feedback">
-                                    Please enter an email.
-                                  </div>
-                                </div>
+
                                 <div className="mb-3">
                                   <label
                                     htmlFor="email-field"
@@ -568,13 +518,7 @@ function Coupon() {
                                   >
                                     Add Coupon
                                   </button>
-                                  {/* <button
-                                    type="button"
-                                    className="btn btn-success"
-                                    id="edit-btn"
-                                  >
-                                    Update
-                                  </button> */}
+
                                 </div>
                               </div>
                             </form>
@@ -614,26 +558,7 @@ function Coupon() {
                               onSubmit={handleUpdate}
                             >
                               <div className="modal-body">
-                                <input type="hidden" id="id-field" />
-                                <div
-                                  className="mb-3"
-                                  id="modal-id"
-                                  style={{ display: "none" }}
-                                >
-                                  <label
-                                    htmlFor="id-field1"
-                                    className="form-label"
-                                  >
-                                    ID
-                                  </label>
-                                  <input
-                                    type="text"
-                                    id="id-field1"
-                                    className="form-control"
-                                    placeholder="ID"
-                                    readOnly=""
-                                  />
-                                </div>
+
                                 <div className="mb-3">
                                   <label
                                     htmlFor="customername-field"
@@ -684,31 +609,7 @@ function Coupon() {
                                     Please enter an email.
                                   </div>
                                 </div>
-                                <div className="mb-3">
-                                  <label
-                                    htmlFor="email-field"
-                                    className="form-label"
-                                  >
-                                    Number of times
-                                  </label>
-                                  <input
-                                    type="text"
-                                    id="email-field"
-                                    className="form-control"
-                                    placeholder="Enter Number Of Times"
-                                    required=""
-                                    value={coupontoEdit.numberOfTimes}
-                                    onChange={(e) =>
-                                      setCoupontoEdit({
-                                        ...coupontoEdit,
-                                        numberOfTimes: e.target.value,
-                                      })
-                                    }
-                                  />
-                                  <div className="invalid-feedback">
-                                    Please enter an email.
-                                  </div>
-                                </div>{" "}
+
                                 <div className="mb-3">
                                   <label
                                     htmlFor="email-field"
@@ -753,8 +654,8 @@ function Coupon() {
                                       })
                                     }
                                   >
-                                    <option value="Active">Active</option>
-                                    <option value="Block">Block</option>
+                                    <option value="active">Active</option>
+                                    <option value="expired">Expired</option>
                                   </select>
                                 </div>
                               </div>
@@ -767,13 +668,7 @@ function Coupon() {
                                   >
                                     Close
                                   </button>
-                                  {/* <button
-                                    type="submit"
-                                    className="btn btn-success"
-                                    id="add-btn"
-                                  >
-                                    Add Coupon
-                                  </button> */}
+
                                   <button
                                     type="submit"
                                     className="btn btn-success"

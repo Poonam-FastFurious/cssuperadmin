@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Baseurl } from "../../../config";
+import Swal from "sweetalert2";
 
 function Sliderlist() {
   const [sliders, setSliders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
     const fetchSliders = async () => {
       try {
@@ -22,22 +24,50 @@ function Sliderlist() {
   }, []);
   const deleteSlider = async (id) => {
     try {
-      const response = await fetch(Baseurl + "/api/v1/slider/delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
       });
-      if (!response.ok) {
-        throw new Error("Failed to delete slider");
+
+      if (result.isConfirmed) {
+        const response = await fetch(Baseurl + "/api/v1/slider/delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete slider");
+        }
+
+        Swal.fire(
+          'Deleted!',
+          'Your slider has been deleted.',
+          'success'
+        );
+
+        // Update sliders state after successful deletion
+        setSliders(sliders.filter((slider) => slider._id !== id));
       }
-      // Update sliders state after successful deletion
-      setSliders(sliders.filter((slider) => slider._id !== id));
     } catch (error) {
       console.error("Error deleting slider:", error);
+      Swal.fire(
+        'Error!',
+        'There was a problem deleting the slider.',
+        'error'
+      );
     }
   };
+  const filterbaneer = sliders.filter((slider) =>
+    slider.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <>
       <div className="main-content">
@@ -66,7 +96,9 @@ function Sliderlist() {
                             type="text"
                             className="form-control"
                             id="searchProductList"
-                            placeholder="Search Categories..."
+                            placeholder="Search Slider with Name..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                           />
                           <i className="ri-search-line search-icon"></i>
                         </div>
@@ -93,7 +125,7 @@ function Sliderlist() {
                 </tr>
               </thead>
               <tbody>
-                {sliders.map((slider) => (
+                {filterbaneer.map((slider) => (
                   <tr key={slider._id}>
                     <th scope="row">
                       <img

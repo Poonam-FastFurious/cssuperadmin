@@ -43,6 +43,9 @@ import Employeerol from "./Componnets/EmployeeManagement/Employeerol";
 import Testimonial from "./Componnets/GenralSetting/Testimonial";
 import Review from "./Componnets/Product/Review";
 import EditProduct from "./Componnets/Product/EditProduct";
+import EditSlider from "./Componnets/GenralSetting/Slider/EditSlider";
+import EditBlogs from "./Componnets/GenralSetting/Blogs/EditBlogs";
+import Lockscreen from "./Componnets/SiteSetting/Lockscreen";
 function App() {
   return (
     <>
@@ -50,6 +53,7 @@ function App() {
         <Routes>
           <Route>
             <Route path="/Admin/login" element={<Login />} />
+            <Route path="/Lock" element={<Lockscreen />}></Route>
           </Route>
           <Route
             element={
@@ -74,6 +78,7 @@ function App() {
             <Route path="/banner" element={<Banner />}></Route>
             <Route path="/Slider" element={<Sliderlist />}></Route>
             <Route path="/addslider" element={<Addslider />}></Route>
+            <Route path="/edit/:id" element={<EditSlider />}></Route>
             <Route path="/bannersection2" element={<Section2 />}></Route>
             <Route path="/bannersection3" element={<Section3 />}></Route>
             <Route path="/bannersection4" element={<Section4 />}></Route>
@@ -86,10 +91,12 @@ function App() {
             <Route path="/ReturnPolicy" element={<ReturnPolicy />}></Route>
             <Route path="/Bloges" element={<ListBlog />}></Route>
             <Route path="/Addblogs" element={<Addblogs />}></Route>
+            <Route path="/Editblog/:id" element={<EditBlogs />}></Route>
             <Route path="/InquiryList" element={<Inquiry />}></Route>
             <Route path="/Empolyerole" element={<Employeerol />}></Route>
             <Route path="/Testimonial" element={<Testimonial />}></Route>
             <Route path="/review" element={<Review />}></Route>
+
             <Route
               path="/pages-term-conditions"
               element={<Termsandcondition />}

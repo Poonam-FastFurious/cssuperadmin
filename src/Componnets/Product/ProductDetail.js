@@ -6,6 +6,8 @@ import { Baseurl } from "../../config";
 
 function ProductDetail() {
   const [products, setProducts] = useState([]);
+  const [thumbnail, setThumbnail] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const { id } = useParams();
   useEffect(() => {
     const fetchProducts = async () => {
@@ -17,13 +19,29 @@ function ProductDetail() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setProducts(data.data);
+        setProducts(data.product);
+        setThumbnail(data.product.thumbnail);
       } catch (err) {
-        throw new Error("data not fetch ", err);
+        throw new Error("data not fetch", err);
       }
     };
-
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch(
+          `${Baseurl}/api/v1/review/product?productId=${id}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setReviews(data.data || []);
+        // Adjust based on actual API response structure
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+      }
+    };
     fetchProducts();
+    fetchReviews();
   }, [id]);
   return (
     <>
@@ -61,34 +79,15 @@ function ProductDetail() {
                             spaceBetween={10}
                             slidesPerView={1}
                           >
-                            <SwiperSlide>
-                              <img
-                                src={products.thumbnail}
-                                alt=""
-                                className="img-fluid d-block"
-                              />
-                            </SwiperSlide>
-                            <SwiperSlide>
-                              <img
-                                src={products.thumbnail}
-                                alt=""
-                                className="img-fluid d-block"
-                              />
-                            </SwiperSlide>
-                            <SwiperSlide>
-                              <img
-                                src={products.thumbnail}
-                                alt=""
-                                className="img-fluid d-block"
-                              />
-                            </SwiperSlide>
-                            <SwiperSlide>
-                              <img
-                                src={products.thumbnail}
-                                alt=""
-                                className="img-fluid d-block"
-                              />
-                            </SwiperSlide>
+                            {thumbnail.map((thumb, index) => (
+                              <SwiperSlide key={index}>
+                                <img
+                                  src={thumb}
+                                  alt=""
+                                  className="img-fluid d-block"
+                                />
+                              </SwiperSlide>
+                            ))}
                           </Swiper>
                         </div>
                       </div>
@@ -97,16 +96,17 @@ function ProductDetail() {
                         <div className="mt-xl-0 mt-5">
                           <div className="d-flex">
                             <div className="flex-grow-1">
-                              <h4>{products.name}</h4>
+                              <h4>{products.title}</h4>
                               <div className="hstack gap-3 flex-wrap">
                                 <div>
                                   <Link to="#" className="text-primary d-block">
-                                    {products.description}
+                                    <div
+                                      dangerouslySetInnerHTML={{
+                                        __html: products.shortDescription,
+                                      }}
+                                    />
                                   </Link>
                                 </div>
-                                <div className="vr"></div>
-
-                                <div className="vr"></div>
                               </div>
                             </div>
                           </div>
@@ -119,7 +119,9 @@ function ProductDetail() {
                               <span className="mdi mdi-star text-warning"></span>
                               <span className="mdi mdi-star text-warning"></span>
                             </div>
-                            <div className="text-muted">( Rating)</div>
+                            <div className="text-muted">
+                              ( {reviews.length})
+                            </div>
                           </div>
 
                           <div className="row mt-4">
@@ -132,9 +134,7 @@ function ProductDetail() {
                                     </div>
                                   </div>
                                   <div className="flex-grow-1">
-                                    <p className="text-muted mb-1">
-                                      Price :{products.price}
-                                    </p>
+                                    <p className="text-muted mb-1">Price</p>
                                     <h5 className="mb-0">{products.price}</h5>
                                   </div>
                                 </div>
@@ -151,9 +151,11 @@ function ProductDetail() {
                                   </div>
                                   <div className="flex-grow-1">
                                     <p className="text-muted mb-1">
-                                      off price Price :
+                                      Off Price :
                                     </p>
-                                    <h5 className="mb-0">cutprice</h5>
+                                    <h5 className="mb-0">
+                                      {products.cutPrice}
+                                    </h5>
                                   </div>
                                 </div>
                               </div>
@@ -171,7 +173,7 @@ function ProductDetail() {
                                     <p className="text-muted mb-1">
                                       Available Stocks :
                                     </p>
-                                    <h5 className="mb-0">50</h5>
+                                    <h5 className="mb-0">{products.stocks}</h5>
                                   </div>
                                 </div>
                               </div>
@@ -187,9 +189,7 @@ function ProductDetail() {
                                   </div>
                                   <div className="flex-grow-1">
                                     <p className="text-muted mb-1">status :</p>
-                                    <h5 className="mb-0">
-                                      {products.visibility}
-                                    </h5>
+                                    <h5 className="mb-0">Active</h5>
                                   </div>
                                 </div>
                               </div>
@@ -199,174 +199,12 @@ function ProductDetail() {
                           <div className="mt-4 text-muted">
                             <h5 className="fs-14">Description :</h5>
                             <p>
-                              Tommy Hilfiger men striped pink sweatshirt.
-                              Crafted with cotton. Material composition is 100%
-                              organic cotton. This is one of the world’s leading
-                              designer lifestyle brands and is internationally
-                              recognized for celebrating the essence of classic
-                              American cool style, featuring preppy with a twist
-                              designs.
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: products.description,
+                                }}
+                              />
                             </p>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-sm-6">
-                              <div className="mt-3">
-                                <h5 className="fs-14">Features :</h5>
-                                <ul className="list-unstyled">
-                                  <li className="py-1">
-                                    <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                    Full Sleeve
-                                  </li>
-                                  <li className="py-1">
-                                    <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                    Cotton
-                                  </li>
-                                  <li className="py-1">
-                                    <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                    All Sizes available
-                                  </li>
-                                  <li className="py-1">
-                                    <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                    4 Different Color
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                            <div className="col-sm-6">
-                              <div className="mt-3">
-                                <h5 className="fs-14">Services :</h5>
-                                <ul className="list-unstyled product-desc-list">
-                                  <li className="py-1">10 Days Replacement</li>
-                                  <li className="py-1">
-                                    Cash on Delivery available
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="product-content mt-5">
-                            <h5 className="fs-14 mb-3">
-                              Product Description :
-                            </h5>
-                            <nav>
-                              <ul
-                                className="nav nav-tabs nav-tabs-custom nav-success"
-                                id="nav-tab"
-                                role="tablist"
-                              >
-                                <li className="nav-item">
-                                  <Link
-                                    className="nav-link active"
-                                    id="nav-speci-tab"
-                                    data-bs-toggle="tab"
-                                    to="#nav-speci"
-                                    role="tab"
-                                    aria-controls="nav-speci"
-                                    aria-selected="true"
-                                  >
-                                    Specification
-                                  </Link>
-                                </li>
-                                <li className="nav-item">
-                                  <Link
-                                    className="nav-link"
-                                    id="nav-detail-tab"
-                                    data-bs-toggle="tab"
-                                    to="#nav-detail"
-                                    role="tab"
-                                    aria-controls="nav-detail"
-                                    aria-selected="false"
-                                  >
-                                    Details
-                                  </Link>
-                                </li>
-                              </ul>
-                            </nav>
-                            <div
-                              className="tab-content border border-top-0 p-4"
-                              id="nav-tabContent"
-                            >
-                              <div
-                                className="tab-pane fade show active"
-                                id="nav-speci"
-                                role="tabpanel"
-                                aria-labelledby="nav-speci-tab"
-                              >
-                                <div className="table-responsive">
-                                  <table className="table mb-0">
-                                    <tbody>
-                                      <tr>
-                                        <th
-                                          scope="row"
-                                          style={{ width: "200px" }}
-                                        >
-                                          Category
-                                        </th>
-                                        <td>T-Shirt</td>
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">Brand</th>
-                                        <td>Tommy Hilfiger</td>
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">Color</th>
-                                        <td>Blue</td>
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">Material</th>
-                                        <td>Cotton</td>
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">Weight</th>
-                                        <td>140 Gram</td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                              <div
-                                className="tab-pane fade"
-                                id="nav-detail"
-                                role="tabpanel"
-                                aria-labelledby="nav-detail-tab"
-                              >
-                                <div>
-                                  <h5 className="font-size-16 mb-3">
-                                    Tommy Hilfiger Sweatshirt for Men (Pink)
-                                  </h5>
-                                  <p>
-                                    Tommy Hilfiger men striped pink sweatshirt.
-                                    Crafted with cotton. Material composition is
-                                    100% organic cotton. This is one of the
-                                    world’s leading designer lifestyle brands
-                                    and is internationally recognized for
-                                    celebrating the essence of classic American
-                                    cool style, featuring preppy with a twist
-                                    designs.
-                                  </p>
-                                  <div>
-                                    <p className="mb-2">
-                                      <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                      Machine Wash
-                                    </p>
-                                    <p className="mb-2">
-                                      <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                      Fit Type: Regular
-                                    </p>
-                                    <p className="mb-2">
-                                      <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                      100% Cotton
-                                    </p>
-                                    <p className="mb-0">
-                                      <i className="mdi mdi-circle-medium me-1 text-muted align-middle"></i>
-                                      Long sleeve
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
                           </div>
 
                           <div className="mt-5">
@@ -564,159 +402,41 @@ function ProductDetail() {
                                     style={{ maxheight: "225px" }}
                                   >
                                     <ul className="list-unstyled mb-0">
-                                      <li className="py-2">
-                                        <div className="border border-dashed rounded p-3">
-                                          <div className="d-flex align-items-start mb-3">
-                                            <div className="hstack gap-3">
-                                              <div className="badge rounded-pill bg-success mb-0">
-                                                <i className="mdi mdi-star"></i>
-                                                4.2
+                                      {reviews.map((review, index) => (
+                                        <li className="py-2" key={index}>
+                                          <div className="border border-dashed rounded p-3">
+                                            <div className="d-flex align-items-start mb-3">
+                                              <div className="hstack gap-3">
+                                                <div className="badge rounded-pill bg-success mb-0">
+                                                  <i className="mdi mdi-star"></i>
+                                                  {review.rating}
+                                                </div>
+                                                <div className="vr"></div>
+                                                <div className="flex-grow-1">
+                                                  <p className="text-muted mb-0">
+                                                    {review.message}
+                                                  </p>
+                                                </div>
                                               </div>
-                                              <div className="vr"></div>
+                                            </div>
+                                            <div className="d-flex align-items-end">
                                               <div className="flex-grow-1">
-                                                <p className="text-muted mb-0">
-                                                  Superb sweatshirt. I loved it.
-                                                  It is for winter.
+                                                <h5 className="fs-14 mb-0">
+                                                  {review.name}
+                                                </h5>
+                                              </div>
+
+                                              <div className="flex-shrink-0">
+                                                <p className="text-muted fs-13 mb-0">
+                                                  {new Date(
+                                                    review.createdAt
+                                                  ).toLocaleDateString()}
                                                 </p>
                                               </div>
                                             </div>
                                           </div>
-
-                                          <div className="d-flex flex-grow-1 gap-2 mb-3">
-                                            <Link to="#" className="d-block">
-                                              <img
-                                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-12.jpg"
-                                                alt=""
-                                                className="avatar-sm rounded object-fit-cover"
-                                              />
-                                            </Link>
-                                            <Link to="#" className="d-block">
-                                              <img
-                                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-11.jpg"
-                                                alt=""
-                                                className="avatar-sm rounded object-fit-cover"
-                                              />
-                                            </Link>
-                                            <Link to="#" className="d-block">
-                                              <img
-                                                src="https://themesbrand.com/velzon/html/master/assets/images/small/img-10.jpg"
-                                                alt=""
-                                                className="avatar-sm rounded object-fit-cover"
-                                              />
-                                            </Link>
-                                          </div>
-
-                                          <div className="d-flex align-items-end">
-                                            <div className="flex-grow-1">
-                                              <h5 className="fs-14 mb-0">
-                                                Henry
-                                              </h5>
-                                            </div>
-
-                                            <div className="flex-shrink-0">
-                                              <p className="text-muted fs-13 mb-0">
-                                                12 Jul, 21
-                                              </p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </li>
-                                      <li className="py-2">
-                                        <div className="border border-dashed rounded p-3">
-                                          <div className="d-flex align-items-start mb-3">
-                                            <div className="hstack gap-3">
-                                              <div className="badge rounded-pill bg-success mb-0">
-                                                <i className="mdi mdi-star"></i>
-                                                4.0
-                                              </div>
-                                              <div className="vr"></div>
-                                              <div className="flex-grow-1">
-                                                <p className="text-muted mb-0">
-                                                  Great at this price, Product
-                                                  quality and look is awesome.
-                                                </p>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="d-flex align-items-end">
-                                            <div className="flex-grow-1">
-                                              <h5 className="fs-14 mb-0">
-                                                Nancy
-                                              </h5>
-                                            </div>
-
-                                            <div className="flex-shrink-0">
-                                              <p className="text-muted fs-13 mb-0">
-                                                06 Jul, 21
-                                              </p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </li>
-
-                                      <li className="py-2">
-                                        <div className="border border-dashed rounded p-3">
-                                          <div className="d-flex align-items-start mb-3">
-                                            <div className="hstack gap-3">
-                                              <div className="badge rounded-pill bg-success mb-0">
-                                                <i className="mdi mdi-star"></i>
-                                                4.2
-                                              </div>
-                                              <div className="vr"></div>
-                                              <div className="flex-grow-1">
-                                                <p className="text-muted mb-0">
-                                                  Good product. I am so happy.
-                                                </p>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="d-flex align-items-end">
-                                            <div className="flex-grow-1">
-                                              <h5 className="fs-14 mb-0">
-                                                Joseph
-                                              </h5>
-                                            </div>
-
-                                            <div className="flex-shrink-0">
-                                              <p className="text-muted fs-13 mb-0">
-                                                06 Jul, 21
-                                              </p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </li>
-
-                                      <li className="py-2">
-                                        <div className="border border-dashed rounded p-3">
-                                          <div className="d-flex align-items-start mb-3">
-                                            <div className="hstack gap-3">
-                                              <div className="badge rounded-pill bg-success mb-0">
-                                                <i className="mdi mdi-star"></i>
-                                                4.1
-                                              </div>
-                                              <div className="vr"></div>
-                                              <div className="flex-grow-1">
-                                                <p className="text-muted mb-0">
-                                                  Nice Product, Good Quality.
-                                                </p>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="d-flex align-items-end">
-                                            <div className="flex-grow-1">
-                                              <h5 className="fs-14 mb-0">
-                                                Jimmy
-                                              </h5>
-                                            </div>
-
-                                            <div className="flex-shrink-0">
-                                              <p className="text-muted fs-13 mb-0">
-                                                24 Jun, 21
-                                              </p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </li>
+                                        </li>
+                                      ))}
                                     </ul>
                                   </div>
                                 </div>

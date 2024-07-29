@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 import { Baseurl } from "../../config";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
 function SubCategory() {
@@ -23,6 +23,26 @@ function SubCategory() {
   const [editImage, setEditImage] = useState("");
   const [editcategoryName, setEditcategoryName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const fetchCategory = async () => {
+    try {
+      const response = await axios.get(
+        Baseurl + "/api/v1/category/allcategory"
+      );
+      setCategory(response.data.data);
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    }
+  };
+  const fetchsubcategory = async () => {
+    try {
+      const response = await axios.get(
+        Baseurl + "/api/v1/subcategory/allcategory"
+      );
+      setSubcategory(response.data.data);
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    }
+  };
   const clearForm = () => {
     setSubCategoryTitle(""); // Clear the state for categoriesTitle
     setLink(""); // Clear the state for link
@@ -83,6 +103,7 @@ function SubCategory() {
             const modalElement = document.getElementById("editModal");
             const modal = window.bootstrap.Modal.getInstance(modalElement);
             modal.hide();
+            fetchsubcategory();
           },
         });
       } else {
@@ -139,8 +160,11 @@ function SubCategory() {
           progress: undefined,
           theme: "light",
           onClose: () => {
+            const modalElement = document.getElementById("showModal");
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
             clearForm();
-            window.location.reload();
+            fetchsubcategory();
           },
         });
       } else {
@@ -163,27 +187,6 @@ function SubCategory() {
     }
   };
   useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await axios.get(
-          Baseurl + "/api/v1/category/allcategory"
-        );
-        setCategory(response.data.data);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      }
-    };
-    const fetchsubcategory = async () => {
-      try {
-        const response = await axios.get(
-          Baseurl + "/api/v1/subcategory/allcategory"
-        );
-        setSubcategory(response.data.data);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      }
-    };
-
     fetchCategory();
     fetchsubcategory();
   }, []);
@@ -208,10 +211,22 @@ function SubCategory() {
           });
 
           if (response.ok) {
-            toast.success("Subcategory deleted successfully!");
-            window.location.reload();
+            toast.success("Subcategory deleted successfully!", {
+              position: "top-right",
+              autoClose: 1000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              onClose: () => {
+                fetchsubcategory();
+              }
+            });
+
           } else {
-            toast.error("Failed to delete subcategory!");
+            toast.error(response.statusText, "Failed to delete subcategory!");
             console.error("Error:", response.statusText);
           }
         } catch (error) {
@@ -226,7 +241,7 @@ function SubCategory() {
   );
   return (
     <>
-      <ToastContainer autoClose={1000} />
+
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -263,13 +278,7 @@ function SubCategory() {
                             >
                               <i class="ri-add-line align-bottom me-1"></i> Add
                             </button>
-                            <button
-                              style={{ marginLeft: "10px" }}
-                              class="btn btn-soft-danger"
-                              onclick="deleteMultiple()"
-                            >
-                              <i class="ri-delete-bin-2-line"></i>
-                            </button>
+
                           </div>
                         </div>
                         <div class="col-sm">
@@ -295,16 +304,7 @@ function SubCategory() {
                         >
                           <thead class="table-light">
                             <tr>
-                              <th scope="col" style={{ width: "50px;" }}>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="checkAll"
-                                    value="option"
-                                  />
-                                </div>
-                              </th>
+
                               <th class="sort" data-sort="customer_name">
                                 Image
                               </th>
@@ -326,18 +326,9 @@ function SubCategory() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {filteredCategories.map((subcat, index) => (
+                            {filteredCategories.length > 0 ? (filteredCategories.map((subcat, index) => (
                               <tr key={index}>
-                                <th scope="row">
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
+
 
                                 <td class="email">
                                   <img
@@ -381,40 +372,31 @@ function SubCategory() {
                                   </div>
                                 </td>
                               </tr>
-                            ))}
+                            ))) : (<tr>
+                              <td colSpan="6" class="text-center">
+                                <div class="noresult" >
+                                  <div class="text-center">
+                                    <lord-icon
+                                      src="../../../msoeawqm.json"
+                                      trigger="loop"
+                                      colors="primary:#121331,secondary:#08a88a"
+                                      style={{ width: "75px", height: "75px" }}
+                                    ></lord-icon>
+                                    <h5 class="mt-2">Sorry! No Result Found</h5>
+                                    <p class="text-muted mb-0">
+                                      We've searched more than 150+ Orders We did not
+                                      find any orders for you search.
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>)}
                           </tbody>
                         </table>
-                        <div class="noresult" style={{ display: "none" }}>
-                          <div class="text-center">
-                            <lord-icon
-                              src="../../../msoeawqm.json"
-                              trigger="loop"
-                              colors="primary:#121331,secondary:#08a88a"
-                              style={{ width: "75px", height: "75px" }}
-                            ></lord-icon>
-                            <h5 class="mt-2">Sorry! No Result Found</h5>
-                            <p class="text-muted mb-0">
-                              We've searched more than 150+ Orders We did not
-                              find any orders for you search.
-                            </p>
-                          </div>
-                        </div>
+
                       </div>
 
-                      <div class="d-flex justify-content-end">
-                        <div class="pagination-wrap hstack gap-2">
-                          <Link
-                            class="page-item pagination-prev disabled"
-                            to="#"
-                          >
-                            Previous
-                          </Link>
-                          <ul class="pagination listjs-pagination mb-0"></ul>
-                          <Link class="page-item pagination-next" to="#">
-                            Next
-                          </Link>
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { Baseurl } from "../../config";
 import Swal from "sweetalert2";
 
 function Addon() {
   // State to manage form inputs and messages
   const [addons, setAddons] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [status, setStatus] = useState("");
@@ -38,6 +40,7 @@ function Addon() {
   const handleAddAddon = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const response = await fetch(Baseurl + "/api/v1/addons/add", {
         method: "POST",
         headers: {
@@ -59,6 +62,8 @@ function Addon() {
       }
     } catch (error) {
       console.log("Failed to add addon. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
   const handleDelete = async (id) => {
@@ -76,6 +81,7 @@ function Addon() {
     // If user confirms deletion
     if (confirmation.isConfirmed) {
       try {
+
         const response = await fetch(Baseurl + "/api/v1/addons/delete", {
           method: "DELETE",
           headers: {
@@ -125,6 +131,7 @@ function Addon() {
   const handleUpdateAddon = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const response = await fetch(Baseurl + "/api/v1/addons/update", {
         method: "PATCH",
         headers: {
@@ -148,11 +155,16 @@ function Addon() {
       }
     } catch (error) {
       console.log("Failed to update addon. Please try again.", error);
+    } finally {
+      setLoading(false);
     }
   };
+  const filteredAddons = addons.filter((addon) =>
+    addon.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <>
-      <ToastContainer autoClose={1000} />
+
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -189,13 +201,7 @@ function Addon() {
                             >
                               <i class="ri-add-line align-bottom me-1"></i> Add
                             </button>
-                            <button
-                              style={{ marginLeft: "10px" }}
-                              class="btn btn-soft-danger"
-                              onclick="deleteMultiple()"
-                            >
-                              <i class="ri-delete-bin-2-line"></i>
-                            </button>
+
                           </div>
                         </div>
                         <div class="col-sm">
@@ -204,7 +210,9 @@ function Addon() {
                               <input
                                 type="text"
                                 class="form-control search"
-                                placeholder="Search..."
+                                placeholder="Search add on..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                               />
                               <i class="ri-search-line search-icon"></i>
                             </div>
@@ -219,16 +227,7 @@ function Addon() {
                         >
                           <thead class="table-light">
                             <tr>
-                              <th scope="col" style={{ width: "50px;" }}>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="checkAll"
-                                    value="option"
-                                  />
-                                </div>
-                              </th>
+
                               <th class="sort" data-sort="customer_name">
                                 Name
                               </th>
@@ -246,18 +245,9 @@ function Addon() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {addons.map((addon) => (
+                            {filteredAddons.length > 0 ? (filteredAddons.map((addon) => (
                               <tr key={addon.id}>
-                                <th scope="row">
-                                  <div className="form-check">
-                                    <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value={addon.id}
-                                    />
-                                  </div>
-                                </th>
+
                                 <td className="email">{addon.name}</td>
                                 <td className="date">{addon.price}</td>
                                 <td className="status">
@@ -290,40 +280,31 @@ function Addon() {
                                   </div>
                                 </td>
                               </tr>
-                            ))}
+                            ))) : (<tr>
+                              <td colSpan="6" class="text-center">
+                                <div class="noresult" >
+                                  <div class="text-center">
+                                    <lord-icon
+                                      src="../../../msoeawqm.json"
+                                      trigger="loop"
+                                      colors="primary:#121331,secondary:#08a88a"
+                                      style={{ width: "75px", height: "75px" }}
+                                    ></lord-icon>
+                                    <h5 class="mt-2">Sorry! No Result Found</h5>
+                                    <p class="text-muted mb-0">
+                                      We've searched more than 150+ Orders We did not
+                                      find any orders for you search.
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>)}
                           </tbody>
                         </table>
-                        <div class="noresult" style={{ display: "none" }}>
-                          <div class="text-center">
-                            <lord-icon
-                              src="../../../msoeawqm.json"
-                              trigger="loop"
-                              colors="primary:#121331,secondary:#08a88a"
-                              style={{ width: "75px", height: "75px" }}
-                            ></lord-icon>
-                            <h5 class="mt-2">Sorry! No Result Found</h5>
-                            <p class="text-muted mb-0">
-                              We've searched more than 150+ Orders We did not
-                              find any orders for you search.
-                            </p>
-                          </div>
-                        </div>
+
                       </div>
 
-                      <div class="d-flex justify-content-end">
-                        <div class="pagination-wrap hstack gap-2">
-                          <Link
-                            class="page-item pagination-prev disabled"
-                            to="#"
-                          >
-                            Previous
-                          </Link>
-                          <ul class="pagination listjs-pagination mb-0"></ul>
-                          <Link class="page-item pagination-next" to="#">
-                            Next
-                          </Link>
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -438,6 +419,16 @@ function Addon() {
                       >
                         Add addons
                       </button>
+                      {loading && (
+                        <div className="loader">
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </form>
@@ -538,6 +529,16 @@ function Addon() {
                       <button type="submit" className="btn btn-success">
                         Update Addon
                       </button>
+                      {loading && (
+                        <div className="loader">
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </form>

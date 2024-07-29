@@ -5,30 +5,6 @@ import { Baseurl } from "../config";
 
 function Header() {
   const [showModal, setShowModal] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
-
-  const toggleDrawer = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const closeDrawer = () => {
-    setIsOpen(false);
-  };
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth <= 460) {
-        closeDrawer();
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
   const navigate = useNavigate();
   const handleShowModal = () => {
     setShowModal(true);
@@ -117,7 +93,6 @@ function Header() {
                   type="button"
                   className="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"
                   id="drawer-toggle"
-                  onClick={toggleDrawer}
                 >
                   <span className="hamburger-icon">
                     <span></span>
@@ -125,23 +100,6 @@ function Header() {
                     <span></span>
                   </span>
                 </button>
-
-                <form className="app-search  d-md-block">
-                  <div className="position-relative">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Search..."
-                      autoComplete="off"
-                      id="search-options"
-                    />
-                    <span className="mdi mdi-magnify search-widget-icon"></span>
-                    <span
-                      className="mdi mdi-close-circle search-widget-icon search-widget-icon-close d-none"
-                      id="search-close-options"
-                    ></span>
-                  </div>
-                </form>
               </div>
 
               <div className="d-flex align-items-center">
@@ -211,96 +169,6 @@ function Header() {
                     </Link>
                   </div>
                 </div>
-
-                <div className="dropdown topbar-head-dropdown ms-1 header-item">
-                  <button
-                    type="button"
-                    className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <i className="bx bx-category-alt fs-22"></i>
-                  </button>
-                  <div className="dropdown-menu dropdown-menu-lg p-0 dropdown-menu-end">
-                    <div className="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
-                      <div className="row align-items-center">
-                        <div className="col">
-                          <h6 className="m-0 fw-semibold fs-15"> Web Apps </h6>
-                        </div>
-                        <div className="col-auto">
-                          <Link to="/#!" className="btn btn-sm btn-soft-info">
-                            View All Apps
-                            <i className="ri-arrow-right-s-line align-middle"></i>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-2">
-                      <div className="row g-0">
-                        <div className="col">
-                          <Link className="dropdown-icon-item" to="/#!">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/brands/github.png"
-                              alt="Github"
-                            />
-                            <span>GitHub</span>
-                          </Link>
-                        </div>
-                        <div className="col">
-                          <Link className="dropdown-icon-item" to="/#!">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/brands/bitbucket.png"
-                              alt="bitbucket"
-                            />
-                            <span>Bitbucket</span>
-                          </Link>
-                        </div>
-                        <div className="col">
-                          <Link className="dropdown-icon-item" to="/#!">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/brands/dribbble.png"
-                              alt="dribbble"
-                            />
-                            <span>Dribbble</span>
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="row g-0">
-                        <div className="col">
-                          <Link className="dropdown-icon-item" to="/#!">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/brands/dropbox.png"
-                              alt="dropbox"
-                            />
-                            <span>Dropbox</span>
-                          </Link>
-                        </div>
-                        <div className="col">
-                          <Link className="dropdown-icon-item" to="/#!">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/brands/mail_chimp.png"
-                              alt="mail_chimp"
-                            />
-                            <span>Mail Chimp</span>
-                          </Link>
-                        </div>
-                        <div className="col">
-                          <Link className="dropdown-icon-item" to="/#!">
-                            <img
-                              src="https://themesbrand.com/velzon/html/default/assets/images/brands/slack.png"
-                              alt="slack"
-                            />
-                            <span>Slack</span>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div
                   className="dropdown topbar-head-dropdown ms-1 header-item"
                   id="notificationDropdown"
@@ -348,26 +216,20 @@ function Header() {
                       <i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
                       <span className="align-middle">Profile</span>
                     </Link>
-                    <Link className="dropdown-item" to="/Chat">
-                      <i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i>
-                      <span className="align-middle">Messages</span>
+                    <Link className="dropdown-item" to="/Notification">
+                      <i className="bx bx-bell text-muted fs-16 align-middle me-1"></i>
+
+                      <span className="align-middle">Notification</span>
                     </Link>
 
-                    <Link className="dropdown-item" to="/pages-faqs">
-                      <i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i>
-                      <span className="align-middle">Help</span>
-                    </Link>
                     <div className="dropdown-divider"></div>
                     <Link className="dropdown-item" to="/pages-profile">
                       <i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i>
                       <span className="align-middle">
-                        Balance : <b>$5971.67</b>
+                        Balance : <b>$646464.67</b>
                       </span>
                     </Link>
-                    <Link
-                      className="dropdown-item"
-                      to="/pages-profile-settings"
-                    >
+                    <Link className="dropdown-item" to="/Profile">
                       <span className="badge bg-success-subtle text-success mt-1 float-end">
                         New
                       </span>
@@ -390,10 +252,7 @@ function Header() {
             </div>
           </div>
         </header>
-        <div
-          className={`app-menu navbar-menu ${isOpen ? "open" : "closed"}`}
-          style={{ overflowY: "auto" }}
-        >
+        <div className={`app-menu navbar-menu`} style={{ overflowY: "auto" }}>
           <div className="navbar-brand-box">
             <Link to="/" className="logo logo-dark">
               <span className="logo-sm">

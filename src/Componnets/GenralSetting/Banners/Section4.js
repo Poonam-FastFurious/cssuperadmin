@@ -11,7 +11,7 @@ function Section4() {
     details: "",
     link: "",
     status: "", // Assuming you need to add a field for status
-    type: "2", // Assuming you need to add a field for type
+    type: "4", // Assuming you need to add a field for type
     image: null,
   });
   const [banners, setBanners] = useState([]);
@@ -19,6 +19,30 @@ function Section4() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [loading, setLoading] = useState(false);
+  const [editId, setEditId] = useState("");
+  const [edittitle, setEdittitle] = useState("");
+  const [editLink, setEditLink] = useState("");
+  const [edittype, setEdittype] = useState("");
+  const [editdetails, setEditdetails] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editImage, setEditImage] = useState("");
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        Baseurl + "/api/v1/Banner/allabnner?type=4"
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setBanners(data.data); // Assuming data is an array of banner objects
+      setFilteredBanners(data.data); // Initialize filteredBanners with all banners initially
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+    }
+  };
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData((prevState) => ({
@@ -26,7 +50,81 @@ function Section4() {
       [name]: files ? files[0] : value,
     }));
   };
+  const handleEditImageChange = (e) => {
+    setEditImage(e.target.files[0]);
+  };
+  const handleEditClick = (cat) => {
+    setEditId(cat._id);
+    setEdittitle(cat.title);
+    setEditLink(cat.link);
+    setEditStatus(cat.status);
+    setEditdetails(cat.details);
+    setEdittype(cat.type);
+    setEditImage(null);
+  };
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
 
+    const formData = new FormData();
+    formData.append("id", editId);
+    formData.append("title", edittitle);
+    formData.append("link", editLink);
+    formData.append("status", editStatus);
+    formData.append("type", edittype);
+    formData.append("details", editdetails);
+    if (editImage) {
+      formData.append("image", editImage);
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(Baseurl + "/api/v1/Banner/edit", {
+        method: "PATCH",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Category updated successfully", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          onClose: () => {
+            const modalElement = document.getElementById("editshowModal");
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            modal.hide();
+            fetchData();
+          },
+        });
+      } else {
+        throw new Error("Banner update failed");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("Banner update failed", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -80,42 +178,6 @@ function Section4() {
       alert("Failed to add banner. Please try again.");
     }
   };
-
-  const handleSearch = (e) => {
-    const searchTerm = e.target.value;
-    setSearchTerm(searchTerm);
-
-    const filteredBanners = banners.filter((banner) =>
-      banner.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredBanners(filteredBanners);
-    setCurrentPage(1); // Reset to first page when searching
-  };
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          Baseurl + "/api/v1/Banner/allabnner?type=4"
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        setBanners(data.data); // Assuming data is an array of banner objects
-        setFilteredBanners(data.data); // Initialize filteredBanners with all banners initially
-      } catch (error) {
-        console.error("Error fetching banners:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredBanners.slice(indexOfFirstItem, indexOfLastItem);
-
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -154,7 +216,26 @@ function Section4() {
       }
     });
   };
+  const handleSearch = (e) => {
+    const searchTerm = e.target.value;
+    setSearchTerm(searchTerm);
 
+    const filteredBanners = banners.filter((banner) =>
+      banner.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBanners(filteredBanners);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  useEffect(() => {
+
+
+    fetchData();
+  }, []);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredBanners.slice(indexOfFirstItem, indexOfLastItem);
   return (
     <>
       <div class="main-content">
@@ -218,16 +299,7 @@ function Section4() {
                         >
                           <thead class="table-light">
                             <tr>
-                              <th scope="col" style={{ width: "50px;" }}>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="checkAll"
-                                    value="option"
-                                  />
-                                </div>
-                              </th>
+
                               <th class="sort" data-sort="customer_name">
                                 Image
                               </th>
@@ -254,17 +326,8 @@ function Section4() {
                           <tbody class="list form-check-all">
                             {currentItems.map((item, index) => (
                               <tr key={index}>
-                                <th scope="row">
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
-                                <td class="id" style={{ display: "none;" }}>
+
+                                <td class="id" >
                                   <img
                                     src={item.image}
                                     alt=""
@@ -273,7 +336,7 @@ function Section4() {
                                 </td>
                                 <td class="email">{item.title}</td>
                                 <td class="email">{item.details}</td>
-                                <td class="phone">Section 1</td>
+                                <td class="phone">Section 4</td>
                                 <td class="date">{item.link}</td>
                                 <td class="status">
                                   <span class="badge bg-success-subtle text-success text-uppercase">
@@ -285,8 +348,10 @@ function Section4() {
                                     <div class="edit">
                                       <button
                                         class="btn btn-sm btn-success edit-item-btn"
+                                        onClick={() => handleEditClick(item)}
                                         data-bs-toggle="modal"
-                                        data-bs-target="#showModal"
+
+                                        data-bs-target="#editshowModal"
                                       >
                                         Edit
                                       </button>
@@ -327,9 +392,8 @@ function Section4() {
                         <nav>
                           <ul className="pagination">
                             <li
-                              className={`page-item ${
-                                currentPage === 1 && "disabled"
-                              }`}
+                              className={`page-item ${currentPage === 1 && "disabled"
+                                }`}
                             >
                               <button
                                 className="page-link"
@@ -347,9 +411,8 @@ function Section4() {
                               (_, i) => (
                                 <li
                                   key={i}
-                                  className={`page-item ${
-                                    currentPage === i + 1 && "active"
-                                  }`}
+                                  className={`page-item ${currentPage === i + 1 && "active"
+                                    }`}
                                 >
                                   <button
                                     className="page-link"
@@ -361,12 +424,11 @@ function Section4() {
                               )
                             )}
                             <li
-                              className={`page-item ${
-                                currentPage ===
-                                  Math.ceil(
-                                    filteredBanners.length / itemsPerPage
-                                  ) && "disabled"
-                              }`}
+                              className={`page-item ${currentPage ===
+                                Math.ceil(
+                                  filteredBanners.length / itemsPerPage
+                                ) && "disabled"
+                                }`}
                             >
                               <button
                                 className="page-link"
@@ -548,7 +610,7 @@ function Section4() {
 
           <div
             className="modal fade"
-            id="showModal"
+            id="editshowModal"
             tabIndex="-1"
             aria-labelledby="exampleModalLabel"
             aria-hidden="true"
@@ -557,7 +619,7 @@ function Section4() {
               <div className="modal-content">
                 <div className="modal-header bg-light p-3">
                   <h5 className="modal-title" id="exampleModalLabel">
-                    Add BANNER
+                    Edit BANNER
                   </h5>
                   <button
                     type="button"
@@ -570,7 +632,7 @@ function Section4() {
                 <form
                   className="tablelist-form"
                   autoComplete="off"
-                  onSubmit={handleSubmit}
+                  onSubmit={handleEditSubmit}
                 >
                   <div className="modal-body">
                     <div className="mb-3">
@@ -583,9 +645,8 @@ function Section4() {
                         className="form-control"
                         placeholder="Enter Title"
                         required
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
+                        value={edittitle}
+                        onChange={(e) => setEdittitle(e.target.value)}
                       />
                       <div className="invalid-feedback">
                         Please enter a Title
@@ -601,9 +662,9 @@ function Section4() {
                         className="form-control"
                         placeholder="Enter Details"
                         required
-                        name="details"
-                        value={formData.details}
-                        onChange={handleChange}
+                        value={editdetails}
+                        onChange={(e) => setEditdetails(e.target.value)}
+
                       />
                       <div className="invalid-feedback">
                         Please enter Details
@@ -619,9 +680,8 @@ function Section4() {
                         className="form-control"
                         placeholder="Enter Link"
                         required
-                        name="link"
-                        value={formData.link}
-                        onChange={handleChange}
+                        value={editLink}
+                        onChange={(e) => setEditLink(e.target.value)}
                       />
                       <div className="invalid-feedback">
                         Please enter a Link
@@ -634,10 +694,8 @@ function Section4() {
                       <select
                         className="form-control"
                         name="status"
-                        id=""
-                        required
-                        value={formData.status}
-                        onChange={handleChange}
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
                       >
                         <option value="">Select Status</option>
                         <option value="Active">Active</option>
@@ -656,11 +714,11 @@ function Section4() {
                         name="type"
                         id="type"
                         required
-                        value={formData.type}
-                        onChange={handleChange}
+                        value={edittype}
+                        onChange={(e) => setEdittype(e.target.value)}
                       >
                         <option value="">Select place</option>
-                        <option value="2">Section 2</option>
+                        <option value="4">Section 4</option>
                         {/* Add more options as needed */}
                       </select>
                       <div className="invalid-feedback">
@@ -675,9 +733,7 @@ function Section4() {
                         type="file"
                         id="image-field"
                         className="form-control"
-                        required
-                        name="image"
-                        onChange={handleChange}
+                        onChange={handleEditImageChange}
                       />
                       <div className="invalid-feedback">
                         Please select an Image
@@ -698,8 +754,18 @@ function Section4() {
                         className="btn btn-success"
                         id="add-btn"
                       >
-                        Add Banner
+                        Update Banner
                       </button>
+                      {loading && (
+                        <div className="loader">
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </form>

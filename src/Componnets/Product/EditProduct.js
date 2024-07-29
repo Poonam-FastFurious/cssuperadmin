@@ -6,69 +6,105 @@ import axios from "axios";
 import { Baseurl } from "../../config";
 import { toast } from "react-toastify";
 
+
 function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [category, setCategory] = useState([]);
+  const [error, setError] = useState('');
+
   const [productData, setProductData] = useState(null);
-  const [attributes, setAttributes] = useState([]);
   const [description, setDescription] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [thumbnailPreviews, setThumbnailPreviews] = useState([]);
+
   useEffect(() => {
     fetch(Baseurl + "/api/v1/category/allcategory")
       .then((response) => response.json())
       .then((jsonData) => setCategory(jsonData.data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
+
   useEffect(() => {
-    // Fetch product data
     axios
       .get(`${Baseurl}/api/v1/Product/product?id=${id}`)
       .then((response) => {
         if (response.data.success) {
-          setProductData(response.data.data);
-          setAttributes(response.data.data.attributes || []);
-          setDescription(response.data.data.description || "");
+          const product = response.data.product;
+          setProductData(product);
+          setDescription(product.description || "");
+          setImagePreview(product.image || null);
+          setThumbnailPreviews(product.thumbnail || []);
         }
       })
       .catch((error) => {
         console.error("There was an error fetching the product data!", error);
       });
   }, [id]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const img = new Image();
+      img.onload = () => {
+        if (img.width === 1280 && img.height === 1280) {
+          setImagePreview(URL.createObjectURL(file));
+          setError('');
+        } else {
+          setError('Please upload an image of size 1280x1280 pixels.');
+        }
+      };
+      img.src = URL.createObjectURL(file);
+    }
+  };
+
+  const handleThumbnailChange = (e) => {
+    const files = Array.from(e.target.files);
+    const validFiles = [];
+    let errorMessage = '';
+
+    files.forEach((file) => {
+      const img = new Image();
+      img.onload = () => {
+        if (img.width === 1280 && img.height === 1280) {
+          validFiles.push(URL.createObjectURL(file));
+        } else {
+          errorMessage = 'One or more thumbnails do not meet the 1280x1280 size requirement.';
+        }
+
+        // Update state after processing all files
+        if (validFiles.length === files.length) {
+          setThumbnailPreviews(validFiles);
+          setError('');
+        } else {
+          setError(errorMessage);
+        }
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+
   const handleFormSubmit = (event) => {
     event.preventDefault();
 
     const formData = new FormData();
     formData.append("id", productData._id);
-    formData.append("name", event.target.name.value);
+    formData.append("title", event.target.title?.value || "");
     formData.append("description", description);
-    formData.append("stockQuantity", event.target.stockQuantity.value);
-    formData.append("price", event.target.price.value);
-    formData.append("discount", event.target.discount.value);
-    formData.append("rating", event.target.rating.value); // Corrected from event.target.discount.rating
-    formData.append("hasAttributes", event.target.hasAttributes.checked);
-    formData.append("status", event.target.status.value);
-    formData.append("visibility", event.target.visibility.value);
-    formData.append("category", event.target.category.value);
+    formData.append("stocks", event.target.stocks?.value || 0);
+    formData.append("price", event.target.price?.value || 0);
+    formData.append("youtubeVideoLink", event.target.youtubeVideoLink?.value || "");
+    formData.append("discount", event.target.discount?.value || 0);
+    formData.append("shortDescription", event.target.shortDescription?.value || "");
+    formData.append("cutPrice", event.target.cutPrice?.value || 0);
+    formData.append("category", event.target.category?.value || "");
 
-    // Append attributes if hasAttributes is true
-    if (event.target.hasAttributes.checked) {
-      attributes.forEach((attribute, index) => {
-        formData.append(
-          `attributes[${index}].attributeName`,
-          event.target[`attributeName-${index}`].value
-        );
-        formData.append(
-          `attributes[${index}].attributeValue`,
-          event.target[`attributeValue-${index}`].value
-        );
-      });
-    }
-
-    // Append images
     const imageInput = document.getElementById("product-image-input");
     if (imageInput.files.length > 0) {
       formData.append("image", imageInput.files[0]);
     }
+
     const thumbnailInput = document.getElementById("product-thumbnail-input");
     for (let i = 0; i < thumbnailInput.files.length; i++) {
       formData.append("thumbnail", thumbnailInput.files[i]);
@@ -80,7 +116,7 @@ function EditProduct() {
       })
       .then((response) => {
         if (response.data.success) {
-          toast.success("Product Update  successfully ", {
+          toast.success("Product updated successfully", {
             position: "top-right",
             autoClose: 1000,
             hideProgressBar: false,
@@ -99,6 +135,7 @@ function EditProduct() {
         console.error("There was an error updating the product!", error);
       });
   };
+
 
   if (!productData) {
     return <div>Loading...</div>;
@@ -134,7 +171,7 @@ function EditProduct() {
               onSubmit={handleFormSubmit}
             >
               <div className="row">
-                <div className="col-lg-8">
+                <div className="col-lg-12">
                   <div className="card">
                     <div className="card-body">
                       <div className="mb-3">
@@ -149,7 +186,7 @@ function EditProduct() {
                           className="form-control"
                           id="product-title-input"
                           name="id"
-                          value={id}
+                          defaultValue={id}
                           readOnly
                         />
                         <div className="invalid-feedback">
@@ -167,8 +204,8 @@ function EditProduct() {
                           type="text"
                           className="form-control"
                           id="product-title-input"
-                          name="name"
-                          defaultValue={productData.name}
+                          name="title"
+                          defaultValue={productData.title}
                         />
                         <div className="invalid-feedback">
                           Please Enter a product title.
@@ -205,6 +242,7 @@ function EditProduct() {
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="right"
                                 title="Select Image"
+
                               >
                                 <div className="avatar-xs">
                                   <div className="avatar-title bg-light border rounded-circle text-muted cursor-pointer">
@@ -217,7 +255,9 @@ function EditProduct() {
                                 id="product-image-input"
                                 type="file"
                                 accept="image/png, image/gif, image/jpeg"
+                                onChange={handleImageChange}
                               />
+                              {error && <div style={{ color: 'red' }}>{error}</div>}
                             </div>
                             {productData.image && (
                               <ul
@@ -229,15 +269,16 @@ function EditProduct() {
                                     <div className="d-flex p-2">
                                       <div className="flex-shrink-0 me-3">
                                         <div className="avatar-sm bg-light rounded">
-                                          <img
-                                            src={productData.image}
-                                            alt="Selected"
-                                            style={{
-                                              width: "300px",
-                                              height: "auto",
-                                            }}
-                                            className="img-fluid rounded d-block"
-                                          />
+                                          {imagePreview && (
+                                            <div className="mt-2">
+                                              <img
+                                                src={imagePreview}
+                                                alt="Selected"
+                                                style={{ width: "300px", height: "auto" }}
+                                                className="img-fluid rounded d-block"
+                                              />
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
                                       <div className="flex-grow-1">
@@ -286,11 +327,12 @@ function EditProduct() {
                                 </div>
                               </label>
                               <input
-                                className="form-control  d-flex"
+                                className="form-control  d-none"
                                 id="product-thumbnail-input"
                                 type="file"
                                 multiple
-                              />
+                                onChange={handleThumbnailChange}
+                              /> {error && <div style={{ color: 'red' }}>{error}</div>}
                             </div>
                           </div>
                         </div>
@@ -299,32 +341,48 @@ function EditProduct() {
                             className="list-unstyled mb-0  d-flex"
                             id="gallery-preview"
                           >
-                            {productData.thumbnail.map((file, index) => (
-                              <li
-                                key={index}
-                                className="mt-2"
-                                id="gallery-preview-list"
-                              >
+                            {thumbnailPreviews.map((file, index) => (
+                              <li key={index} className="mt-2" id="gallery-preview-list">
                                 <div className="border rounded">
                                   <div className="d-flex p-2">
                                     <img
                                       src={file}
                                       alt={`Thumbnail ${index}`}
-                                      style={{
-                                        width: "100px",
-                                        height: "auto",
-                                      }}
+                                      style={{ width: "100px", height: "auto" }}
                                     />
                                   </div>
                                 </div>
                               </li>
                             ))}
+
                           </ul>
                         )}
                       </div>
                     </div>
                   </div>
+                  <div className="card">
+                    <div className="card-header">
+                      <h5 className="card-title mb-0">Product VideoUrl</h5>
+                    </div>
+                    <div className="card-body">
+                      <div className="hstack gap-3 align-items-start">
+                        <div className="flex-grow-1">
+                          <input
+                            className={`form-control `}
 
+                            placeholder="Enter Url"
+                            type="text"
+                            name="youtubeVideoLink"
+                            defaultValue={productData.youtubeVideoLink}
+
+
+                          />
+
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="card">
                     <div className="card-header">
                       <ul
@@ -354,178 +412,143 @@ function EditProduct() {
                           <div className="row">
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="stocks-input"
-                                >
-                                  Stocks
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  id="stocks-input"
-                                  name="stockQuantity"
-                                  defaultValue={productData.stock.quantity}
-                                  required=""
-                                />
-                                <div className="invalid-feedback">
-                                  Please Enter a product stocks.
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="product-price-input"
-                                >
-                                  Price
-                                </label>
-                                <div className="input-group has-validation mb-3">
-                                  <span
-                                    className="input-group-text"
-                                    id="product-price-addon"
-                                  >
-                                    Rs
-                                  </span>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="product-price-input"
-                                    name="price"
-                                    placeholder="Enter price"
-                                    defaultValue={productData.price}
-                                    aria-label="Price"
-                                    aria-describedby="product-price-addon"
-                                    required=""
-                                  />
-                                  <div className="invalid-feedback">
-                                    Please Enter a product price.
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="product-discount-input"
-                                >
-                                  Discount
-                                </label>
-                                <div className="input-group mb-3">
-                                  <span
-                                    className="input-group-text"
-                                    id="product-discount-addon"
-                                  >
-                                    %
-                                  </span>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="product-discount-input"
-                                    name="discount"
-                                    defaultValue={productData.discount}
-                                    placeholder="Enter discount"
-                                    aria-label="discount"
-                                    aria-describedby="product-discount-addon"
-                                    required=""
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="orders-input"
-                                >
-                                  Rating
-                                </label>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  id="product-discount-input"
-                                  name="rating"
-                                  defaultValue={productData.rating}
-                                  placeholder="Enter discount"
-                                  aria-label="rating"
-                                  aria-describedby="product-discount-addon"
-                                  required=""
-                                />
-                                <div className="invalid-feedback">
-                                  Please Enter a product rating.
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label
-                                  className="form-label"
-                                  htmlFor="orders-input"
-                                >
-                                  Is item have Attribute
-                                </label>
-                                <div
-                                  className="form-check mb-9"
-                                  style={{ paddingTop: "10px" }}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    id="product-has-attributes-input"
-                                    name="hasAttributes"
-                                    defaultChecked={productData.hasAttributes}
-                                  />
-                                  <label
-                                    className="form-check-label mb-90"
-                                    htmlFor="formCheck6"
-                                  >
-                                    Checkbox Primary
-                                  </label>
-                                </div>
-                                <div className="invalid-feedback">
-                                  Please Enter a product orders.
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-lg-6 col-sm-6">
-                              {productData.hasAttributes && (
-                                <div className="mb-3">
-                                  <label className="form-label">
-                                    Attributes
-                                  </label>
-                                  {attributes.map((attribute, index) => (
-                                    <div key={index} className="mb-3">
-                                      <div className="row">
-                                        <div className="col-6">
-                                          <input
-                                            type="text"
-                                            className="form-control"
-                                            name={`attributeName-${index}`}
-                                            defaultValue={
-                                              attribute.attributeName
-                                            }
-                                            placeholder="Attribute Name"
-                                          />
-                                        </div>
+                                <label className="form-label">Product Category</label>
+                                <select
+                                  className={`form-select `}
 
-                                        <div className="col-6">
-                                          <input
-                                            type="text"
-                                            className="form-control"
-                                            name={`attributeValue-${index}`}
-                                            defaultValue={
-                                              attribute.attributeValue
-                                            }
-                                            placeholder="Attribute Value"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
+                                  id="choices-category-input"
+                                  name="categories"
+                                  defaultValue={productData.categories}
+                                  //
+                                  data-choices=""
+                                  data-choices-search-false=""
+                                >
+                                  <option>select </option>
+                                  {category.map((cat) => (
+                                    <option key={cat._id} value={cat.categoriesTitle}>
+                                      {cat.categoriesTitle}
+                                    </option>
                                   ))}
-                                </div>
-                              )}
+                                </select>
+
+
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Product Tags</label>
+                                <input
+                                  type="text"
+                                  className={`form-control `}
+
+                                  placeholder="Enter tags"
+                                  name="tags"
+                                  defaultValue={productData.tags}
+
+
+                                />
+
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Product Price</label>
+                                <input
+                                  type="number"
+                                  className={`form-control `}
+
+                                  placeholder="Enter price"
+                                  name="price"
+                                  defaultValue={productData.price}
+
+                                />
+
+
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Product Discount</label>
+                                <input
+                                  type="number"
+                                  className={`form-control `}
+
+                                  placeholder="Enter discount"
+                                  name="discount"
+                                  defaultValue={productData.discount}
+
+
+                                />
+
+
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Cut Price</label>
+                                <input
+                                  type="number"
+                                  className={`form-control `}
+
+                                  placeholder="Enter cut price"
+                                  name="cutPrice"
+                                  defaultValue={productData.cutPrice}
+
+
+                                />
+
+
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Product SKU</label>
+                                <input
+                                  type="text"
+                                  className={`form-control `}
+
+                                  placeholder="Enter SKU"
+                                  name="sku"
+                                  defaultValue={productData.sku}
+
+
+                                />
+
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">Stocks</label>
+                                <input
+                                  type="number"
+                                  className={`form-control `}
+
+                                  placeholder="Enter stocks quantity"
+                                  name="stocks"
+                                  defaultValue={productData.stocks}
+
+
+                                />
+
+
+                              </div>
+                            </div>
+                            <div className="col-lg-12">
+                              <div className="mb-3">
+                                <label className="form-label">Short Description</label>
+                                <textarea
+                                  type="text"
+                                  className={`form-control `}
+
+                                  placeholder="Enter short description"
+                                  name="shortDescription"
+                                  defaultValue={productData.shortDescription}
+
+
+                                />
+
+
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -533,121 +556,14 @@ function EditProduct() {
                     </div>
                   </div>
 
-                  <div className="text-end mb-3">
+                  <div className="text-start mb-3">
                     <button type="submit" className="btn btn-success w-sm">
                       submit
                     </button>
                   </div>
                 </div>
 
-                <div className="col-lg-4">
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Publish</h5>
-                    </div>
-                    <div className="card-body">
-                      <div className="mb-3">
-                        <label
-                          htmlFor="choices-publish-status-input"
-                          className="form-label"
-                        >
-                          Stock Status
-                        </label>
-                        <select
-                          className="form-select"
-                          id="choices-publish-status-input"
-                          name="status"
-                          defaultValue={productData.status}
-                        >
-                          <option>select </option>
-                          <option value="in_stock">in_stock</option>
-                          <option value="out_of_stock">out_of_stock</option>
-                        </select>
-                      </div>
 
-                      <div>
-                        <label
-                          htmlFor="choices-publish-visibility-input"
-                          className="form-label"
-                        >
-                          Visibility
-                        </label>
-
-                        <select
-                          className="form-select"
-                          id="choices-publish-visibility-input"
-                          name="visibility"
-                          defaultValue={productData.visibility}
-                        >
-                          <option>select </option>
-                          <option value="active">active</option>
-                          <option value="inactive">inactive</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Product Categories</h5>
-                    </div>
-                    <div className="card-body">
-                      <p className="text-muted mb-2">Select product category</p>
-                      <select
-                        className="form-select"
-                        id="choices-category-input"
-                        name="category"
-                        defaultValue={productData.category}
-                      >
-                        <option>select </option>
-                        {category.map((cat) => (
-                          <option key={cat._id} value={cat.categoriesTitle}>
-                            {cat.categoriesTitle}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">Product Tags</h5>
-                    </div>
-                    <div className="card-body">
-                      <div className="hstack gap-3 align-items-start">
-                        <div className="flex-grow-1">
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="product-tags-input"
-                            placeholder="Enter tags"
-                            defaultValue={productData.tags.join(", ")}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <h5 className="card-title mb-0">
-                        Product Short Description
-                      </h5>
-                    </div>
-                    <div className="card-body">
-                      <p className="text-muted mb-2">
-                        Add short description for product
-                      </p>
-                      <textarea
-                        className="form-control"
-                        placeholder="Must enter minimum of a 100 characters"
-                        rows="3"
-                        name="shortDescription"
-                        defaultValue={productData.shortDescription}
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
               </div>
             </form>
           </div>

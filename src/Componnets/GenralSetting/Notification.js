@@ -1,84 +1,52 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Baseurl } from "../../config";
+import { Baseurl } from "../../config"; // Make sure Baseurl is correctly set
 
 function Notification() {
-  const [image, setImage] = useState("");
+  const [type, setType] = useState("");
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
-  const [link, setLink] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleGoBack = () => {
     navigate(-1);
   };
 
-  // const handleImageChange = (e) => {
-  //   setImage(e.target.files[0]);
-  // };
-
-  const handelsubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("image", image);
-    formData.append("title", title);
-    formData.append("details", details);
-    formData.append("link", link);
-
-    setLoading(true); // Start loader
+    // Construct the notification data
+    const notificationData = {
+      Type: type,
+      Title: title,
+      Detail: details,
+    };
 
     try {
-      const response = await fetch(Baseurl + "/api/v1/Banner/add", {
+      // Send the data to the server
+      const response = await fetch(`${Baseurl}/api/v1/Notification/send`, {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(notificationData),
       });
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error("Failed to send notification");
       }
 
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Banner uploaded successfully", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          onClose: () => {
-            // Clear the form
-            setTitle("");
-            setImage("");
-
-            setDetails("");
-            setLink("");
-            window.location.reload();
-          },
-        });
-      } else {
-        throw new Error("Banner upload failed");
-      }
+      // Handle success
+      toast.success("Notification sent successfully!");
+      // Optionally, reset the form or navigate away
+      setType("");
+      setTitle("");
+      setDetails("");
     } catch (error) {
-      console.error("Error:", error.message);
-      toast.error("Banner upload failed", {
-        position: "top-right",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } finally {
-      setLoading(false); // Stop loader
+      // Handle errors
+      console.error("Error sending notification:", error);
+      toast.error("Failed to send notification");
     }
   };
 
@@ -93,11 +61,7 @@ function Notification() {
                   <div className="row g-4">
                     <div className="col-sm-auto">
                       <div>
-                        <Link
-                          to="/addslider"
-                          className="btn"
-                          id="addproduct-btn"
-                        >
+                        <Link to="/addslider" className="btn" id="addproduct-btn">
                           Send Notification
                         </Link>
                       </div>
@@ -105,12 +69,7 @@ function Notification() {
                     <div className="col-sm">
                       <div className="d-flex justify-content-sm-end">
                         <div className="search-box ms-2">
-                          <Link
-                            onClick={handleGoBack}
-                            to="/add-product"
-                            className="btn btn-success"
-                            id="addproduct-btn"
-                          >
+                          <Link onClick={handleGoBack} to="/add-product" className="btn btn-success" id="addproduct-btn">
                             <i className="align-bottom me-1"></i> Back
                           </Link>
                         </div>
@@ -123,12 +82,8 @@ function Notification() {
           </div>
           <div style={{ backgroundColor: "white" }}>
             <form
-              onSubmit={handelsubmit}
-              style={{
-                paddingLeft: "50px",
-                paddingRight: "50px",
-                height: "100vh",
-              }}
+              style={{ paddingLeft: "50px", paddingRight: "50px", height: "100vh" }}
+              onSubmit={handleSubmit}
             >
               <div className="row" style={{ paddingTop: "10px" }}>
                 <div className="col-lg-6">
@@ -136,55 +91,56 @@ function Notification() {
                     <div className="card-header">
                       <h4 className="card-title mb-0">Type </h4>
                     </div>
-
                     <div className="card-body">
                       <select
-                        class="form-select mb-3"
+                        className="form-select mb-3"
                         aria-label="Default select example"
+                        value={type}
+                        onChange={(e) => setType(e.target.value)}
+                        required
                       >
-                        <option selected>Open this select menu</option>
-                        <option value="1">Product</option>
-                        <option value="2">Genral</option>
-                        <option value="3">Categories</option>
+                        <option value="">Select Notification Type</option>
+                        <option value="Product">Product</option>
+                        <option value="General">General</option>
+                        <option value="Categories">Categories</option>
                       </select>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="mb-3 col-lg-6">
-                <label htmlFor="employeeName" className="form-label">
+                <label htmlFor="notificationTitle" className="form-label">
                   Title
                 </label>
                 <input
                   type="text"
                   className="form-control"
-                  id="employeeName"
-                  placeholder="Enter employee name"
-                  onChange={(e) => setTitle(e.target.value)}
+                  id="notificationTitle"
+                  placeholder="Enter notification title"
                   value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
                 />
               </div>
               <div className="mb-3 col-lg-6">
-                <label htmlFor="details" className="form-label">
+                <label htmlFor="notificationDetails" className="form-label">
                   Details
                 </label>
                 <textarea
-                  type="text"
                   className="form-control h-12"
-                  id="details"
-                  placeholder="Enter details"
-                  onChange={(e) => setDetails(e.target.value)}
+                  id="notificationDetails"
+                  placeholder="Enter notification details"
                   value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  required
                 />
               </div>
-
-              <div className="">
+              <div>
                 <button type="submit" className="btn btn-success">
                   Send Notification
                 </button>
               </div>
             </form>
-            {loading && <span className="loader"></span>}
           </div>
         </div>
       </div>

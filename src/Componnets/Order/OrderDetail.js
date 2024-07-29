@@ -106,20 +106,6 @@ function OrderDetail() {
                                           : "Product Not Found"}
                                       </Link>
                                     </h5>
-                                    {product.product &&
-                                      product.product.attributes.map(
-                                        (attribute, index) => (
-                                          <p
-                                            key={index}
-                                            className="text-muted mb-0"
-                                          >
-                                            {attribute.attributeName}:{" "}
-                                            <span className="fw-medium">
-                                              {attribute.attributeValue}
-                                            </span>
-                                          </p>
-                                        )
-                                      )}
                                   </div>
                                 </div>
                               </td>
@@ -249,7 +235,7 @@ function OrderDetail() {
                             id="collapseOne"
                             className="accordion-collapse collapse show"
                             aria-labelledby="headingOne"
-                            data-bs-parent="#accordionExample"
+                            data-bs-parent="#accordionFlushExample"
                           >
                             <div className="accordion-body ms-2 ps-5 pt-0">
                               <h6 className="mb-1">
@@ -270,139 +256,72 @@ function OrderDetail() {
                             </div>
                           </div>
                         </div>
-                        <div className="accordion-item border-0">
-                          <div className="accordion-header" id="headingTwo">
-                            <Link
-                              className="accordion-button p-2 shadow-none"
-                              data-bs-toggle="collapse"
-                              to="#collapseTwo"
-                              aria-expanded="false"
-                              aria-controls="collapseTwo"
+
+                        {orderData.orderHistory.map((history, index) => (
+                          <div key={index} className="accordion-item border-0">
+                            <div
+                              className="accordion-header"
+                              id={`heading${index + 2}`}
                             >
-                              <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0 avatar-xs">
-                                  <div className="avatar-title bg-success rounded-circle">
-                                    <i className="mdi mdi-gift-outline"></i>
+                              <Link
+                                className="accordion-button p-2 shadow-none"
+                                data-bs-toggle="collapse"
+                                to={`#collapse${index + 2}`}
+                                aria-expanded="false"
+                                aria-controls={`collapse${index + 2}`}
+                              >
+                                <div className="d-flex align-items-center">
+                                  <div className="flex-shrink-0 avatar-xs">
+                                    <div className="avatar-title bg-success rounded-circle">
+                                      <i
+                                        className={`icon-for-${history.status.toLowerCase()}`}
+                                      ></i>
+                                    </div>
+                                  </div>
+                                  <div className="flex-grow-1 ms-3">
+                                    <h6 className="fs-15 mb-1 fw-semibold">
+                                      {history.status} -
+                                      <span className="fw-normal">
+                                        {new Date(
+                                          history.changedAt
+                                        ).toLocaleDateString("en-US", {
+                                          weekday: "long",
+                                          year: "numeric",
+                                          month: "long",
+                                          day: "numeric",
+                                        })}
+                                      </span>
+                                    </h6>
                                   </div>
                                 </div>
-                                <div className="flex-grow-1 ms-3">
-                                  <h6 className="fs-15 mb-1 fw-semibold">
-                                    Packed -{" "}
-                                    <span className="fw-normal">
-                                      Thu, 16 Dec 2024
-                                    </span>
-                                  </h6>
-                                </div>
+                              </Link>
+                            </div>
+                            <div
+                              id={`collapse${index + 2}`}
+                              className="accordion-collapse collapse"
+                              aria-labelledby={`heading${index + 2}`}
+                              data-bs-parent="#accordionFlushExample"
+                            >
+                              <div className="accordion-body ms-2 ps-5 pt-0">
+                                <h6 className="mb-1">{history.description}</h6>
+                                <p className="text-muted mb-0">
+                                  {new Date(history.changedAt).toLocaleString(
+                                    "en-US",
+                                    {
+                                      weekday: "long",
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                      hour: "numeric",
+                                      minute: "numeric",
+                                      hour12: true,
+                                    }
+                                  )}
+                                </p>
                               </div>
-                            </Link>
-                          </div>
-                          <div
-                            id="collapseTwo"
-                            className="accordion-collapse collapse show"
-                            aria-labelledby="headingTwo"
-                            data-bs-parent="#accordionExample"
-                          >
-                            <div className="accordion-body ms-2 ps-5 pt-0">
-                              <h6 className="mb-1">
-                                Your Item has been picked up by courier partner
-                              </h6>
-                              <p className="text-muted mb-0">
-                                Fri, 17 Dec 2024 - 9:45AM
-                              </p>
                             </div>
                           </div>
-                        </div>
-                        <div className="accordion-item border-0">
-                          <div className="accordion-header" id="headingThree">
-                            <Link
-                              className="accordion-button p-2 shadow-none"
-                              data-bs-toggle="collapse"
-                              to="#collapseThree"
-                              aria-expanded="false"
-                              aria-controls="collapseThree"
-                            >
-                              <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0 avatar-xs">
-                                  <div className="avatar-title bg-success rounded-circle">
-                                    <i className="ri-truck-line"></i>
-                                  </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                  <h6 className="fs-15 mb-1 fw-semibold">
-                                    Shipping -{" "}
-                                    <span className="fw-normal">
-                                      Thu, 16 Dec 2024
-                                    </span>
-                                  </h6>
-                                </div>
-                              </div>
-                            </Link>
-                          </div>
-                          <div
-                            id="collapseThree"
-                            className="accordion-collapse collapse show"
-                            aria-labelledby="headingThree"
-                            data-bs-parent="#accordionExample"
-                          >
-                            <div className="accordion-body ms-2 ps-5 pt-0">
-                              <h6 className="fs-14">
-                                RQK Logistics - MFDS1400457854
-                              </h6>
-                              <h6 className="mb-1">
-                                Your item has been shipped.
-                              </h6>
-                              <p className="text-muted mb-0">
-                                Sat, 18 Dec 2024 - 4.54PM
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="accordion-item border-0">
-                          <div className="accordion-header" id="headingFour">
-                            <Link
-                              className="accordion-button p-2 shadow-none"
-                              data-bs-toggle="collapse"
-                              to="#collapseFour"
-                              aria-expanded="false"
-                            >
-                              <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0 avatar-xs">
-                                  <div className="avatar-title bg-light text-success rounded-circle">
-                                    <i className="ri-takeaway-fill"></i>
-                                  </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                  <h6 className="fs-14 mb-0 fw-semibold">
-                                    Out For Delivery
-                                  </h6>
-                                </div>
-                              </div>
-                            </Link>
-                          </div>
-                        </div>
-                        <div className="accordion-item border-0">
-                          <div className="accordion-header" id="headingFive">
-                            <Link
-                              className="accordion-button p-2 shadow-none"
-                              data-bs-toggle="collapse"
-                              to="#collapseFile"
-                              aria-expanded="false"
-                            >
-                              <div className="d-flex align-items-center">
-                                <div className="flex-shrink-0 avatar-xs">
-                                  <div className="avatar-title bg-light text-success rounded-circle">
-                                    <i className="mdi mdi-package-variant"></i>
-                                  </div>
-                                </div>
-                                <div className="flex-grow-1 ms-3">
-                                  <h6 className="fs-14 mb-0 fw-semibold">
-                                    Delivered
-                                  </h6>
-                                </div>
-                              </div>
-                            </Link>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -419,7 +338,7 @@ function OrderDetail() {
                       </h5>
                       <div className="flex-shrink-0">
                         <Link
-                          to="#;"
+                          to={orderData.shippingInfo.shippingLink}
                           className="badge bg-primary-subtle text-primary fs-11"
                         >
                           Track Order
@@ -478,33 +397,13 @@ function OrderDetail() {
                       </li>
                       <li>
                         <i className="ri-phone-line me-2 align-middle text-muted fs-16"></i>
-                        {orderData.customer.email
-                          ? "9876543210"
-                          : orderData.customer.number}
+                        {orderData.customer && orderData.customer.mobile
+                          ? orderData.customer.mobile
+                          : "No mobile number available"}{" "}
                       </li>
                     </ul>
                   </div>
                 </div>
-
-                {/* <div className="card">
-                  <div className="card-header">
-                    <h5 className="card-title mb-0">
-                      <i className="ri-map-pin-line align-middle me-1 text-muted"></i>{" "}
-                      Billing Address
-                    </h5>
-                  </div>
-                  <div className="card-body">
-                    <ul className="list-unstyled vstack gap-2 fs-13 mb-0">
-                      <li className="fw-medium fs-14">
-                        {orderData.customer.fullName}
-                      </li>
-                      <li>+(256) 245451 451</li>
-                      <li>2186 Joyce Street Rocky Mount</li>
-                      <li>New York - 25645</li>
-                      <li>United States</li>
-                    </ul>
-                  </div>
-                </div> */}
 
                 <div className="card">
                   <div className="card-header">
@@ -516,8 +415,8 @@ function OrderDetail() {
                   <div className="card-body">
                     <ul className="list-unstyled vstack gap-2 fs-13 mb-0">
                       <li className="fw-medium fs-14">Joseph Parker</li>
-                      <li>+(256) 245451 451</li>
-                      <li>2186 Joyce Street Rocky Mount</li>
+                      <li>{orderData.shippingInfo.address}</li>
+                      <li>{orderData.shippingInfo.country}</li>
                       <li>California - 24567</li>
                       <li>United States</li>
                     </ul>

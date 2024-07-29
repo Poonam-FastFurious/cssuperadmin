@@ -14,6 +14,7 @@ function Order() {
   const [newStatus, setNewStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [newShippingLink, setNewShippingLink] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 10;
 
   // Calculate indexes for slicing current page items
@@ -32,7 +33,10 @@ function Order() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setOrders(data.data);
+        const sortedOrders = data.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setOrders(sortedOrders);
         const filteredCanceledOrders = data.data.filter(
           (order) => order.status === "Cancelled"
         );
@@ -55,6 +59,12 @@ function Order() {
 
     fetchProducts();
   }, []);
+
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.orderID.includes(searchQuery) ||
+      order.customer.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const handleEditClick = (order) => {
     setSelectedOrder(order);
     setNewStatus(order.status);
@@ -176,10 +186,7 @@ function Order() {
                         </p>
                       </div>
                       <div className="flex-shrink-0">
-                        <h5 className="text-success fs-14 mb-0">
-                          <i className="ri-arrow-right-up-line fs-13 align-middle"></i>
-                          +16.24 %
-                        </h5>
+                        <h5 className="text-success fs-14 mb-0">d</h5>
                       </div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
@@ -217,10 +224,7 @@ function Order() {
                         </p>
                       </div>
                       <div className="flex-shrink-0">
-                        <h5 className="text-danger fs-14 mb-0">
-                          <i className="ri-arrow-right-down-line fs-13 align-middle"></i>
-                          -3.57 %
-                        </h5>
+                        <h5 className="text-danger fs-14 mb-0"></h5>
                       </div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
@@ -258,10 +262,7 @@ function Order() {
                         </p>
                       </div>
                       <div className="flex-shrink-0">
-                        <h5 className="text-success fs-14 mb-0">
-                          <i className="ri-arrow-right-up-line fs-13 align-middle"></i>
-                          +29.08 %
-                        </h5>
+                        <h5 className="text-success fs-14 mb-0"></h5>
                       </div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
@@ -298,9 +299,7 @@ function Order() {
                           Cancelled
                         </p>
                       </div>
-                      <div className="flex-shrink-0">
-                        <h5 className="text-muted fs-14 mb-0">+0.00 %</h5>
-                      </div>
+                      <div className="flex-shrink-0"></div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
                       <div>
@@ -337,7 +336,11 @@ function Order() {
                       </div>
                       <div className="col-sm-auto">
                         <div className="d-flex gap-1 flex-wrap">
-                          <button type="button" className="btn btn-info">
+                          <button
+                            type="button"
+                            className="btn btn-info"
+                            style={{ visibility: "hidden" }}
+                          >
                             <i className="ri-file-download-line align-bottom me-1"></i>
                             Import
                           </button>
@@ -360,6 +363,8 @@ function Order() {
                               type="text"
                               className="form-control search"
                               placeholder="Search for order ID, customer, order status or something..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             <i className="ri-search-line search-icon"></i>
                           </div>
@@ -369,58 +374,10 @@ function Order() {
                           <div>
                             <input
                               type="date"
-                              data-provider="flatpickr"
-                              data-date-format="d M, Y"
-                              data-multiple-date="true"
                               className="form-control"
-                              data-range-date="true"
                               id="demo-datepicker"
                               placeholder="Select date"
                             />
-                          </div>
-                        </div>
-
-                        <div className="col-xxl-2 col-sm-4">
-                          <div>
-                            <select
-                              className="form-control"
-                              data-choices=""
-                              data-choices-search-false=""
-                              name="choices-single-default"
-                              id="idStatus"
-                            >
-                              <option value="">Status</option>
-                              <option value="all" selected="">
-                                All
-                              </option>
-                              <option value="Pending">Pending</option>
-                              <option value="Inprogress">Processing</option>
-                              <option value="Cancelled">Cancelled</option>
-                              <option value="Pickups">Shipped</option>
-                              <option value="Returns">Delivered</option>
-                              <option value="Delivered">Cancelled</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="col-xxl-2 col-sm-4">
-                          <div>
-                            <select
-                              className="form-control"
-                              data-choices=""
-                              data-choices-search-false=""
-                              name="choices-single-default"
-                              id="idPayment"
-                            >
-                              <option value="">Select Payment</option>
-                              <option value="all" selected="">
-                                All
-                              </option>
-                              <option value="Mastercard">Credit Card</option>
-                              <option value="Paypal">Paypal</option>
-                              <option value="Visa">Bank Transfer</option>
-                              <option value="COD">COD</option>
-                            </select>
                           </div>
                         </div>
 
@@ -431,7 +388,7 @@ function Order() {
                               className="btn btn-primary w-100"
                             >
                               <i className="ri-equalizer-fill me-1 align-bottom"></i>
-                              Filters
+                              Clear
                             </button>
                           </div>
                         </div>
@@ -480,10 +437,7 @@ function Order() {
                             aria-selected="false"
                           >
                             <i className="ri-truck-line me-1 align-bottom"></i>
-                            Pickups
-                            <span className="badge bg-danger align-middle ms-1">
-                              2
-                            </span>
+                            Shiped
                           </Link>
                         </li>
                         <li className="nav-item">
@@ -547,7 +501,7 @@ function Order() {
                                 </tr>
                               </thead>
                               <tbody className="list form-check-all">
-                                {currentItems.map((order, index) => (
+                                {filteredOrders.map((order, index) => (
                                   <tr key={index}>
                                     <th scope="row">
                                       <div className="form-check">
@@ -630,7 +584,7 @@ function Order() {
                               </tbody>
                             </table>
 
-                            {orders.length === 0 && !fetching && (
+                            {filteredOrders.length === 0 && !fetching && (
                               <div className="noresult">
                                 <div className="text-center">
                                   <lord-icon
@@ -813,24 +767,26 @@ function Order() {
                                             <i className="ri-eye-fill fs-16"></i>
                                           </Link>
                                         </li>
-                                        <li
-                                          className="list-inline-item edit"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-trigger="hover"
-                                          data-bs-placement="top"
-                                          title="Edit"
-                                        >
-                                          <Link
-                                            to="#showModal"
-                                            data-bs-toggle="modal"
-                                            className="text-primary d-inline-block edit-item-btn"
-                                            onClick={() =>
-                                              handleEditClick(order)
-                                            }
+                                        {order.status !== "Delivered" && (
+                                          <li
+                                            className="list-inline-item edit"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-trigger="hover"
+                                            data-bs-placement="top"
+                                            title="Edit"
                                           >
-                                            <i className="ri-pencil-fill fs-16"></i>
-                                          </Link>
-                                        </li>
+                                            <Link
+                                              to="#showModal"
+                                              data-bs-toggle="modal"
+                                              className="text-primary d-inline-block edit-item-btn"
+                                              onClick={() =>
+                                                handleEditClick(order)
+                                              }
+                                            >
+                                              <i className="ri-pencil-fill fs-16"></i>
+                                            </Link>
+                                          </li>
+                                        )}
                                       </ul>
                                     </td>
                                   </tr>
@@ -863,7 +819,6 @@ function Order() {
                           id="pickups"
                           role="tabpanel"
                         >
-                          {/* Pickups Orders Content */}
                           <div className="table-responsive table-card mb-1">
                             <table className="table table-nowrap align-middle">
                               <thead className="text-muted table-light">
@@ -1208,9 +1163,8 @@ function Order() {
                                   value={newStatus}
                                   onChange={(e) => setNewStatus(e.target.value)}
                                 >
-                                  <option value="Pending">Pending</option>
-                                  <option value="Processing">Processing</option>
-                                  <option value="Cancelled">Cancelled</option>
+                                  <option value="Pending">Select Status</option>
+
                                   <option value="Shipped">Shipped</option>
                                   <option value="Delivered">Delivered</option>
                                   <option value="Cancelled">Cancelled</option>

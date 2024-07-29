@@ -1,33 +1,40 @@
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { useState } from "react";
-import { MdDescription } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { Baseurl } from "../../config";
 
+
 function Faq() {
-  const [faq, setFaq] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     try {
       setLoading(true); // Start loading
+
       const response = await fetch(Baseurl + "/api/v1/faq/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ faq: faq }),
+        body: JSON.stringify({
+          question: question, // Add the question field
+          answer: answer, // Add the answer field
+        }),
       });
 
       if (response.ok) {
-        // Return policy added successfully
-        toast.success("Faq added successfully");
-        setFaq("");
+        // FAQ added successfully
+        toast.success("FAQ added successfully");
+        setQuestion(""); // Clear the question field
+        setAnswer(""); // Clear the answer field
       } else {
         // Handle error response
-        toast.error("Failed to add FAQ ");
+        toast.error("Failed to add FAQ");
       }
     } catch (error) {
       console.error("Error:", error.message);
@@ -79,19 +86,36 @@ function Faq() {
                     </div>
                   </div>
                 </div>
-                <div className="card-body border border-dashed border-end-0 border-start-0"></div>
-
-                <CKEditor
-                  editor={ClassicEditor}
-                  data={MdDescription}
-                  onChange={(event, editor) => setFaq(editor.getData())}
-                />
+                <div className="card-body border border-dashed border-end-0 border-start-0">
+                  <div className="mb-3">
+                    <label htmlFor="sectionTitle" className="form-label">
+                      Question
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="sectionTitle"
+                      placeholder="Enter section title"
+                      value={question} // Bind state value
+                      onChange={(e) => setQuestion(e.target.value)} // Update state
+                    />
+                  </div>
+                </div>
+                <div className="card-body border border-dashed border-end-0 border-start-0">
+                  <div className="mb-3">
+                    <CKEditor
+                      editor={ClassicEditor}
+                      data={answer} // Bind state value
+                      onChange={(event, editor) => setAnswer(editor.getData())} // Update state
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <button
             type="button"
-            className={`btn btn-info ${loading ? "disabled" : ""}`}
+            className={`btn btn-success ${loading ? "disabled" : ""}`}
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -105,7 +129,7 @@ function Faq() {
             ) : (
               <i className="ri-file-download-line align-bottom me-1"></i>
             )}
-            Add Return Policy
+            Add FAQ
           </button>
           <ToastContainer
             position="top-right"

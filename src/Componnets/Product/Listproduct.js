@@ -1,102 +1,86 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
+import axios from "axios";
 import Swal from "sweetalert2";
 import { Baseurl } from "../../config";
 
 function Listproduct() {
   const [products, setProducts] = useState([]);
-  const [activeProducts, setActiveProducts] = useState([]);
-  const [inactiveProducts, setInactiveProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 10;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
+  const [filteredProducts, setFilteredProducts] = useState([]); // State for filtered products
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(Baseurl + "/api/v1/Product/products");
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        // Set all products
-        setProducts(data.products);
-
-        // Filter products based on their status
-        const activeProducts = data.products.filter(
-          (product) => product.visibility === "active"
+        const response = await axios.get(Baseurl + "/api/v1/Product/products");
+        const sortedProducts = response.data.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        const inactiveProducts = data.products.filter(
-          (product) => product.visibility === "inactive"
-        );
-
-        // Set the state for active and inactive products
-        setActiveProducts(activeProducts);
-        setInactiveProducts(inactiveProducts);
+        setProducts(sortedProducts);
+        setFilteredProducts(sortedProducts);
       } catch (error) {
-        console.error("Error fetching products:", error);
+        setError("Error fetching products. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProducts();
   }, []);
-  const handleSearch = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    setSearchTerm(searchTerm);
 
-    const filteredProducts = products.filter((product) =>
-      product.name.toLowerCase().includes(searchTerm)
+  // Function to handle search
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+
+    const lowercasedQuery = query.toLowerCase();
+    const filtered = products.filter(
+      (product) =>
+        product.title.toLowerCase().includes(lowercasedQuery) ||
+        product.sku.toLowerCase().includes(lowercasedQuery) ||
+        product.categories.toLowerCase().includes(lowercasedQuery)
     );
-    setFilteredProducts(filteredProducts);
+
+    setFilteredProducts(filtered);
   };
 
-  const deleteProduct = async (id) => {
-    try {
-      const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      });
-
+  const handleDelete = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        const response = await fetch(`${Baseurl}/api/v1/Product/delete`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        try {
+          await axios.delete(`${Baseurl}/api/v1/Product/delete?id=${id}`);
+          // Remove deleted product from state
+          setProducts(products.filter((product) => product._id !== id));
+          setFilteredProducts(
+            filteredProducts.filter((product) => product._id !== id)
+          );
+          Swal.fire("Deleted!", "Your product has been deleted.", "success");
+        } catch (error) {
+          console.error("Error deleting product:", error);
+          setError("Error deleting product. Please try again later.");
+          Swal.fire(
+            "Error!",
+            "There was a problem deleting the product.",
+            "error"
+          );
         }
-
-        // Update state after successful deletion
-        setProducts(products.filter((product) => product._id !== id));
-        Swal.fire("Deleted!", "Your product has been deleted.", "success");
       }
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      Swal.fire("Error!", "Failed to delete the product.", "error");
-    }
+    });
   };
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = (searchTerm ? filteredProducts : products).slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-  const totalPages = Math.ceil(
-    (searchTerm ? filteredProducts.length : products.length) / productsPerPage
-  );
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  if (loading) return <div>Loading...</div>;
+
+  if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <>
@@ -146,8 +130,8 @@ function Listproduct() {
                                 className="form-control"
                                 id="searchProductList"
                                 placeholder="Search Products..."
-                                value={searchTerm}
-                                onChange={handleSearch}
+                                value={searchQuery}
+                                onChange={(e) => handleSearch(e.target.value)} // Update search query
                               />
                               <i className="ri-search-line search-icon"></i>
                             </div>
@@ -172,33 +156,8 @@ function Listproduct() {
                               >
                                 All
                                 <span className="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1">
-                                  {products.length}
-                                </span>
-                              </Link>
-                            </li>
-                            <li className="nav-item">
-                              <Link
-                                className="nav-link fw-semibold"
-                                data-bs-toggle="tab"
-                                to="#productnav-published"
-                                role="tab"
-                              >
-                                Active
-                                <span className="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1">
-                                  {activeProducts.length}
-                                </span>
-                              </Link>
-                            </li>
-                            <li className="nav-item">
-                              <Link
-                                className="nav-link fw-semibold"
-                                data-bs-toggle="tab"
-                                to="#productnav-draft"
-                                role="tab"
-                              >
-                                InActive
-                                <span className="badge bg-danger-subtle text-danger align-middle rounded-pill ms-1">
-                                  {inactiveProducts.length}
+                                  {filteredProducts.length}{" "}
+                                  {/* Display count of filtered products */}
                                 </span>
                               </Link>
                             </li>
@@ -238,54 +197,24 @@ function Listproduct() {
                             <table className="table table-nowrap table-striped-columns mb-0">
                               <thead className="table-light">
                                 <tr>
-                                  <th scope="col">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        value=""
-                                        id="cardtableCheck"
-                                      />
-                                      <label
-                                        className="form-check-label"
-                                        htmlFor="cardtableCheck"
-                                      ></label>
-                                    </div>
-                                  </th>
                                   <th scope="col">Image</th>
                                   <th scope="col">Product Name</th>
                                   <th scope="col">Category</th>
                                   <th scope="col">Stock</th>
                                   <th scope="col">Price</th>
-
-                                  <th scope="col">Rating</th>
-                                  <th scope="col">Status</th>
+                                  <th scope="col">Discount</th>
                                   <th scope="col">Action</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {currentProducts.map((product, index) => (
-                                  <tr key={index}>
-                                    <td>
-                                      <div className="form-check">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          value=""
-                                          id="cardtableCheck04"
-                                        />
-                                        <label
-                                          className="form-check-label"
-                                          htmlFor="cardtableCheck04"
-                                        ></label>
-                                      </div>
-                                    </td>
+                                {filteredProducts.map((product) => (
+                                  <tr key={product._id}>
                                     <td>
                                       <div className="d-flex align-items-center">
                                         <div className="flex-shrink-0 me-2">
                                           <img
                                             src={product.image}
-                                            alt=""
+                                            alt={product.title}
                                             className="avatar-xs rounded-circle"
                                           />
                                         </div>
@@ -293,26 +222,21 @@ function Listproduct() {
                                     </td>
                                     <td>
                                       <Link
-                                        to={`${product._id}`}
-                                        className="fw-semibold"
+                                        to={`/product/${product._id}`}
+                                        className="fw-semibold text-truncate"
+                                        title={product.title}
                                       >
-                                        {product.name}
+                                        {product.title}
                                       </Link>
                                     </td>
-                                    <td>{product.category}</td>
-                                    <td>{product.stock.quantity}</td>
-                                    <td> ₹{product.price}</td>
-
-                                    <td>{product.rating}</td>
-                                    <td>
-                                      <span className="badge bg-success">
-                                        {product.visibility}
-                                      </span>
-                                    </td>
+                                    <td>{product.categories}</td>
+                                    <td>{product.stocks}</td>
+                                    <td>₹{product.price}</td>
+                                    <td>{product.discount}</td>
                                     <td>
                                       <div className="hstack gap-3 flex-wrap">
                                         <Link
-                                          to={`/EditProduct/${product._id}`}
+                                          to={`/editProduct/${product._id}`}
                                           className="link-success fs-15"
                                         >
                                           <i className="ri-edit-2-line"></i>
@@ -321,240 +245,7 @@ function Listproduct() {
                                           to="#;"
                                           className="link-danger fs-15"
                                           onClick={() =>
-                                            deleteProduct(product._id)
-                                          }
-                                        >
-                                          <i className="ri-delete-bin-line"></i>
-                                        </Link>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          <nav className="mt-4">
-                            <ul className="pagination ">
-                              {Array.from({ length: totalPages }).map(
-                                (_, index) => (
-                                  <li
-                                    key={index}
-                                    className={`page-item ${
-                                      currentPage === index + 1 ? "active" : ""
-                                    }`}
-                                  >
-                                    <button
-                                      className="page-link"
-                                      onClick={() => paginate(index + 1)}
-                                    >
-                                      {index + 1}
-                                    </button>
-                                  </li>
-                                )
-                              )}
-                            </ul>
-                          </nav>
-                        </div>
-
-                        <div
-                          className="tab-pane"
-                          id="productnav-published"
-                          role="tabpanel"
-                        >
-                          <div className="table-responsive table-card">
-                            <table className="table table-nowrap table-striped-columns mb-0">
-                              <thead className="table-light">
-                                <tr>
-                                  <th scope="col">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        value=""
-                                        id="cardtableCheck"
-                                      />
-                                      <label
-                                        className="form-check-label"
-                                        htmlFor="cardtableCheck"
-                                      ></label>
-                                    </div>
-                                  </th>
-                                  <th scope="col">Image</th>
-                                  <th scope="col">Product Name</th>
-                                  <th scope="col">Category</th>
-                                  <th scope="col">Stock</th>
-                                  <th scope="col">Price</th>
-
-                                  <th scope="col">Rating</th>
-                                  <th scope="col">Status</th>
-                                  <th scope="col">Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {activeProducts.map((product, index) => (
-                                  <tr key={index}>
-                                    <td>
-                                      <div className="form-check">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          value=""
-                                          id="cardtableCheck04"
-                                        />
-                                        <label
-                                          className="form-check-label"
-                                          htmlFor="cardtableCheck04"
-                                        ></label>
-                                      </div>
-                                    </td>
-                                    <td>
-                                      <div className="d-flex align-items-center">
-                                        <div className="flex-shrink-0 me-2">
-                                          <img
-                                            src={product.image}
-                                            alt=""
-                                            className="avatar-xs rounded-circle"
-                                          />
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td>
-                                      <Link
-                                        to={`${product._id}`}
-                                        className="fw-semibold"
-                                      >
-                                        {product.name}
-                                      </Link>
-                                    </td>
-                                    <td>{product.category}</td>
-                                    <td>{product.stock.quantity}</td>
-                                    <td> ₹{product.price}</td>
-
-                                    <td>{product.rating}</td>
-                                    <td>
-                                      <span className="badge bg-success">
-                                        {product.visibility}
-                                      </span>
-                                    </td>
-                                    <td>
-                                      <div className="hstack gap-3 flex-wrap">
-                                        <Link
-                                          to={`/EditProduct/${product._id}`}
-                                          className="link-success fs-15"
-                                        >
-                                          <i className="ri-edit-2-line"></i>
-                                        </Link>
-                                        <Link
-                                          to="#;"
-                                          className="link-danger fs-15"
-                                          onClick={() =>
-                                            deleteProduct(product._id)
-                                          }
-                                        >
-                                          <i className="ri-delete-bin-line"></i>
-                                        </Link>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-
-                        <div
-                          className="tab-pane"
-                          id="productnav-draft"
-                          role="tabpanel"
-                        >
-                          <div className="table-responsive table-card">
-                            <table className="table table-nowrap table-striped-columns mb-0">
-                              <thead className="table-light">
-                                <tr>
-                                  <th scope="col">
-                                    <div className="form-check">
-                                      <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        value=""
-                                        id="cardtableCheck"
-                                      />
-                                      <label
-                                        className="form-check-label"
-                                        htmlFor="cardtableCheck"
-                                      ></label>
-                                    </div>
-                                  </th>
-                                  <th scope="col">Image</th>
-                                  <th scope="col">Product Name</th>
-                                  <th scope="col">Category</th>
-                                  <th scope="col">Stock</th>
-                                  <th scope="col">Price</th>
-
-                                  <th scope="col">Rating</th>
-                                  <th scope="col">Status</th>
-                                  <th scope="col">Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {inactiveProducts.map((product, index) => (
-                                  <tr key={index}>
-                                    <td>
-                                      <div className="form-check">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          value=""
-                                          id="cardtableCheck04"
-                                        />
-                                        <label
-                                          className="form-check-label"
-                                          htmlFor="cardtableCheck04"
-                                        ></label>
-                                      </div>
-                                    </td>
-                                    <td>
-                                      <div className="d-flex align-items-center">
-                                        <div className="flex-shrink-0 me-2">
-                                          <img
-                                            src={product.image}
-                                            alt=""
-                                            className="avatar-xs rounded-circle"
-                                          />
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td>
-                                      <Link
-                                        to={`${product._id}`}
-                                        className="fw-semibold"
-                                      >
-                                        {product.name}
-                                      </Link>
-                                    </td>
-                                    <td>{product.category}</td>
-                                    <td>{product.stock.quantity}</td>
-                                    <td> ₹{product.price}</td>
-
-                                    <td>{product.rating}</td>
-                                    <td>
-                                      <span className="badge bg-success">
-                                        {product.visibility}
-                                      </span>
-                                    </td>
-                                    <td>
-                                      <div className="hstack gap-3 flex-wrap">
-                                        <Link
-                                          to={`/EditProduct/${product._id}`}
-                                          className="link-success fs-15"
-                                        >
-                                          <i className="ri-edit-2-line"></i>
-                                        </Link>
-                                        <Link
-                                          to="#;"
-                                          className="link-danger fs-15"
-                                          onClick={() =>
-                                            deleteProduct(product._id)
+                                            handleDelete(product._id)
                                           }
                                         >
                                           <i className="ri-delete-bin-line"></i>

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { Baseurl } from "../../config";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -19,6 +19,17 @@ function Category() {
   const [editLink, setEditLink] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [editImage, setEditImage] = useState("");
+
+  const fetchCategory = async () => {
+    try {
+      const response = await axios.get(
+        Baseurl + "/api/v1/category/allcategory"
+      );
+      setCategory(response.data.data);
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    }
+  };
   const clearForm = () => {
     setCategoriesTitle(""); // Clear the state for categoriesTitle
     setLink(""); // Clear the state for link
@@ -77,6 +88,7 @@ function Category() {
             const modalElement = document.getElementById("editModal");
             const modal = window.bootstrap.Modal.getInstance(modalElement);
             modal.hide();
+            fetchCategory();
           },
         });
       } else {
@@ -136,6 +148,7 @@ function Category() {
             const modalElement = document.getElementById("showModal");
             const modal = window.bootstrap.Modal.getInstance(modalElement);
             modal.hide();
+            fetchCategory();
           },
         });
       } else {
@@ -154,7 +167,7 @@ function Category() {
         theme: "light",
       });
     } finally {
-      setLoading(false); // Set loading back to false after request completes
+      setLoading(false);
     }
   };
   const handleDelete = async (id) => {
@@ -183,6 +196,7 @@ function Category() {
             }).then(() => {
               setCategory(category.filter((cat) => cat._id !== id));
               window.location.reload(); // Reload the page or update state as needed
+              fetchCategory();
             });
           } else {
             throw new Error(response.data.message); // Throw error with response message
@@ -201,17 +215,6 @@ function Category() {
   };
 
   useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await axios.get(
-          Baseurl + "/api/v1/category/allcategory"
-        );
-        setCategory(response.data.data);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      }
-    };
-
     fetchCategory();
   }, []);
   const filteredCategories = category.filter((cat) =>
@@ -219,7 +222,6 @@ function Category() {
   );
   return (
     <>
-      <ToastContainer />
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -256,13 +258,7 @@ function Category() {
                             >
                               <i class="ri-add-line align-bottom me-1"></i> Add
                             </button>
-                            <button
-                              style={{ marginLeft: "10px" }}
-                              class="btn btn-soft-danger"
-                              onclick="deleteMultiple()"
-                            >
-                              <i class="ri-delete-bin-2-line"></i>
-                            </button>
+
                           </div>
                         </div>
                         <div class="col-sm">
@@ -288,16 +284,7 @@ function Category() {
                         >
                           <thead class="table-light">
                             <tr>
-                              <th scope="col" style={{ width: "50px;" }}>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="checkAll"
-                                    value="option"
-                                  />
-                                </div>
-                              </th>
+
                               <th class="sort" data-sort="customer_name">
                                 Image
                               </th>
@@ -317,90 +304,76 @@ function Category() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {filteredCategories.map((cat, index) => (
-                              <tr key={index}>
-                                <th scope="row">
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
+                            {filteredCategories.length > 0 ? (
+                              filteredCategories.map((cat, index) => (
+                                <tr key={index}>
 
-                                <td class="email">
-                                  <img
-                                    className="avatar-xs rounded-circle"
-                                    src={cat.image}
-                                    alt=""
-                                  ></img>
-                                </td>
-                                <td class="phone">{cat.categoriesTitle}</td>
-                                <td class="date">{cat.link}</td>
-                                <td class="status">
-                                  <span class="badge bg-success-subtle text-success text-uppercase">
-                                    {cat.status}
-                                  </span>
-                                </td>
-                                <td>
-                                  <div class="d-flex gap-2">
-                                    <div class="edit">
-                                      <button
-                                        class="btn btn-sm btn-success edit-item-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editModal"
-                                        onClick={() => handleEditClick(cat)}
-                                      >
-                                        Edit
-                                      </button>
+
+                                  <td class="email">
+                                    <img
+                                      className="avatar-xs rounded-circle"
+                                      src={cat.image}
+                                      alt=""
+                                    ></img>
+                                  </td>
+                                  <td class="phone">{cat.categoriesTitle}</td>
+                                  <td class="date">{cat.link}</td>
+                                  <td class="status">
+                                    <span class="badge bg-success-subtle text-success text-uppercase">
+                                      {cat.status}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div class="d-flex gap-2">
+                                      <div class="edit">
+                                        <button
+                                          class="btn btn-sm btn-success edit-item-btn"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#editModal"
+                                          onClick={() => handleEditClick(cat)}
+                                        >
+                                          Edit
+                                        </button>
+                                      </div>
+                                      <div class="remove">
+                                        <button
+                                          class="btn btn-sm btn-danger remove-item-btn"
+                                          onClick={() => handleDelete(cat._id)}
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
                                     </div>
-                                    <div class="remove">
-                                      <button
-                                        class="btn btn-sm btn-danger remove-item-btn"
-                                        onClick={() => handleDelete(cat._id)}
-                                      >
-                                        Remove
-                                      </button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="6" class="text-center">
+                                  <div class="noresult" >
+                                    <div class="text-center">
+                                      <lord-icon
+                                        src="../../../msoeawqm.json"
+                                        trigger="loop"
+                                        colors="primary:#121331,secondary:#08a88a"
+                                        style={{ width: "75px", height: "75px" }}
+                                      ></lord-icon>
+                                      <h5 class="mt-2">Sorry! No Result Found</h5>
+                                      <p class="text-muted mb-0">
+                                        We've searched more than 150+ Orders We did not
+                                        find any orders for you search.
+                                      </p>
                                     </div>
                                   </div>
                                 </td>
                               </tr>
-                            ))}
+                            )}
                           </tbody>
                         </table>
-                        <div class="noresult" style={{ display: "none" }}>
-                          <div class="text-center">
-                            <lord-icon
-                              src="../../../msoeawqm.json"
-                              trigger="loop"
-                              colors="primary:#121331,secondary:#08a88a"
-                              style={{ width: "75px", height: "75px" }}
-                            ></lord-icon>
-                            <h5 class="mt-2">Sorry! No Result Found</h5>
-                            <p class="text-muted mb-0">
-                              We've searched more than 150+ Orders We did not
-                              find any orders for you search.
-                            </p>
-                          </div>
-                        </div>
+
                       </div>
 
-                      <div class="d-flex justify-content-end">
-                        <div class="pagination-wrap hstack gap-2">
-                          <Link
-                            class="page-item pagination-prev disabled"
-                            to="#"
-                          >
-                            Previous
-                          </Link>
-                          <ul class="pagination listjs-pagination mb-0"></ul>
-                          <Link class="page-item pagination-next" to="#">
-                            Next
-                          </Link>
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -596,7 +569,7 @@ function Category() {
                         id="customername-field"
                         class="form-control"
                         placeholder="Enter Title"
-                        required=""
+                        required
                         value={editCategoriesTitle}
                         onChange={(e) => setEditCategoriesTitle(e.target.value)}
                       />

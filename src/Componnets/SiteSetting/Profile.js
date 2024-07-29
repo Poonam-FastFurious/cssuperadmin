@@ -2,6 +2,9 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
+import axios from "axios";
+import { toast } from "react-toastify";
 import { Baseurl } from "../../config";
 
 /* eslint-disable react/no-unescaped-entities */
@@ -9,14 +12,30 @@ function Profile() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [editable, setEditable] = useState(false);
+
   const adminId = localStorage.getItem("adminId");
   const token = localStorage.getItem("accessToken");
   const [adminProfile, setAdminProfile] = useState("");
-  const toggleEditable = () => {
-    setEditable(!editable);
+  const [initialData, setInitialData] = useState({});
+  const [formData, setFormData] = useState({
+    adminId: adminId,
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
+    designation: "",
+    website: "",
+    city: "",
+    country: "",
+    zipCode: "",
+    portfolioLink: "",
+  });
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
   };
   useEffect(() => {
     const fetchAdminProfile = async () => {
@@ -58,7 +77,32 @@ function Profile() {
     fetchAdminProfile();
     // Call the fetch function
   }, []);
-  console.log(adminProfile.email);
+  const handleupdateSubmit = async (e) => {
+    e.preventDefault();
+    // Create an object to hold the updated fields only
+    const updatedData = {};
+    for (const key in formData) {
+      if (formData[key] !== initialData[key]) {
+        updatedData[key] = formData[key];
+      }
+    }
+
+    try {
+      const response = await axios.patch(
+        Baseurl + "/api/v1/admin/update",
+        updatedData
+      );
+      if (response.data.success) {
+        toast.success("Profile updated successfully!");
+        setInitialData(formData); // Update initial data to the latest form data
+      } else {
+        toast.success("Profile updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("An error occurred while updating the profile.");
+    }
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -101,6 +145,9 @@ function Profile() {
         setError("Error changing password. Please try again.");
       });
   };
+  const handlePasswordToggle = () => {
+    setPasswordVisible(!passwordVisible);
+  };
   return (
     <>
       <div className="main-content">
@@ -113,30 +160,13 @@ function Profile() {
                   className="profile-wid-img"
                   alt=""
                 />
-                <div className="overlay-content">
-                  <div className="text-end p-3">
-                    <div className="p-0 ms-auto rounded-circle profile-photo-edit">
-                      <input
-                        id="profile-foreground-img-file-input"
-                        type="file"
-                        className="profile-foreground-img-file-input"
-                      />
-                      <label
-                        htmlFor="profile-foreground-img-file-input"
-                        className="profile-photo-edit btn btn-light"
-                      >
-                        <i className="ri-image-edit-line align-bottom me-1"></i>
-                        Change Cover
-                      </label>
-                    </div>
-                  </div>
-                </div>
+                <div className="overlay-content"></div>
               </div>
             </div>
 
             <div className="row">
               <div className="col-xxl-3">
-                <div className="card mt-n5">
+                <div className="card mt-4">
                   <div className="card-body p-4">
                     <div className="text-center">
                       <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
@@ -145,21 +175,6 @@ function Profile() {
                           alt="adminnameimage"
                           className="rounded-circle avatar-xl img-thumbnail user-profile-image"
                         />
-                        <div className="avatar-xs p-0 rounded-circle profile-photo-edit">
-                          <input
-                            id="profile-img-file-input"
-                            type="file"
-                            className="profile-img-file-input"
-                          />
-                          <label
-                            htmlFor="profile-img-file-input"
-                            className="profile-photo-edit avatar-xs"
-                          >
-                            <span className="avatar-title rounded-circle bg-light text-body">
-                              <i className="ri-camera-fill"></i>
-                            </span>
-                          </label>
-                        </div>
                       </div>
                       <h5 className="fs-16 mb-1">{adminProfile.username}</h5>
                     </div>
@@ -168,110 +183,55 @@ function Profile() {
 
                 <div className="card">
                   <div className="card-body">
-                    <div className="d-flex align-items-center mb-5">
-                      <div className="flex-grow-1">
-                        <h5 className="card-title mb-0">
-                          Complete Your Profile
-                        </h5>
-                      </div>
-                      <button
-                        className="flex-shrink-0"
-                        onClick={toggleEditable}
-                      >
-                        <Link className="badge bg-light text-primary fs-12">
-                          <i className="ri-edit-box-line align-bottom me-1"></i>
-                          Edit
-                        </Link>
-                      </button>
-                    </div>
-                    <div className="progress animated-progress custom-progress progress-label">
-                      <div
-                        className="progress-bar bg-danger"
-                        role="progressbar"
-                        style={{ width: "40%" }}
-                        aria-valuenow="40"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      >
-                        <div className="label">40%</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="card">
-                  <div className="card-body">
-                    <div className="d-flex align-items-center mb-4">
-                      <div className="flex-grow-1">
-                        <h5 className="card-title mb-0">Portfolio</h5>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <Link
-                          to="#"
-                          className="badge bg-light text-primary fs-12"
-                        >
-                          <i className="ri-add-fill align-bottom me-1"></i> Add
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="mb-3 d-flex">
-                      <div className="avatar-xs d-block flex-shrink-0 me-3">
-                        <span className="avatar-title rounded-circle fs-16 bg-body text-body">
-                          <i className="ri-github-fill"></i>
-                        </span>
-                      </div>
-                      <input
-                        type="email"
-                        className="form-control"
-                        id="gitUsername"
-                        value={adminProfile.firstName}
-                      />
-                    </div>
-                    <div className="mb-3 d-flex">
-                      <div className="avatar-xs d-block flex-shrink-0 me-3">
-                        <span className="avatar-title rounded-circle fs-16 bg-primary">
-                          <i className="ri-global-fill"></i>
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="websiteInput"
-                        placeholder="www.example.com"
-                        value={adminProfile.website}
-                      />
-                    </div>
-                    <div className="mb-3 d-flex">
-                      <div className="avatar-xs d-block flex-shrink-0 me-3">
-                        <span className="avatar-title rounded-circle fs-16 bg-success">
-                          <i className="ri-dribbble-fill"></i>
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="dribbleName"
-                        placeholder="Username"
-                      />
-                    </div>
-                    <div className="d-flex">
-                      <div className="avatar-xs d-block flex-shrink-0 me-3">
-                        <span className="avatar-title rounded-circle fs-16 bg-danger">
-                          <i className="ri-pinterest-fill"></i>
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="pinterestName"
-                        placeholder="Username"
-                      />
+
+                    <div className="table-responsive">
+                      <table className="table table-borderless mb-0">
+                        <tbody>
+                          <tr>
+                            <th className="ps-0" scope="row">
+                              Full Name
+                            </th>
+                            <td className="text-muted">
+                              {adminProfile.username}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th className="ps-0" scope="row">
+                              Mobile
+                            </th>
+                            <td className="text-muted">
+                              {adminProfile.phoneNumber}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th className="ps-0" scope="row">
+                              E-mail
+                            </th>
+                            <td className="text-muted">{adminProfile.email}</td>
+                          </tr>
+                          <tr>
+                            <th className="ps-0" scope="row">
+                              Location
+                            </th>
+                            <td className="text-muted">Noida</td>
+                          </tr>
+                          <tr>
+                            <th className="ps-0" scope="row">
+                              login Time
+                            </th>
+                            <td className="text-muted">
+                              {adminProfile.loginTime}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="col-xxl-9">
-                <div className="card mt-xxl-n5">
+                <div className="card mt-4">
                   <div className="card-header">
                     <ul
                       className="nav nav-tabs-custom rounded card-header-tabs border-bottom-0"
@@ -306,12 +266,12 @@ function Profile() {
                         id="personalDetails"
                         role="tabpanel"
                       >
-                        <form>
+                        <form onSubmit={handleupdateSubmit}>
                           <div className="row">
                             <div className="col-lg-6">
                               <div className="mb-3">
                                 <label
-                                  htmlFor="firstnameInput"
+                                  htmlFor="firstName"
                                   className="form-label"
                                 >
                                   First Name
@@ -319,10 +279,10 @@ function Profile() {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="firstnameInput"
+                                  id="firstName"
+                                  value={formData.firstName}
+                                  onChange={handleChange}
                                   placeholder="Enter your firstname"
-                                  value={adminProfile.firstName}
-                                  disabled={!editable}
                                 />
                               </div>
                             </div>
@@ -330,7 +290,7 @@ function Profile() {
                             <div className="col-lg-6">
                               <div className="mb-3">
                                 <label
-                                  htmlFor="lastnameInput"
+                                  htmlFor="lastName"
                                   className="form-label"
                                 >
                                   Last Name
@@ -338,10 +298,10 @@ function Profile() {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="lastnameInput"
+                                  id="lastName"
+                                  value={formData.lastName}
+                                  onChange={handleChange}
                                   placeholder="Enter your lastname"
-                                  value={adminProfile.lastName}
-                                  disabled={!editable}
                                 />
                               </div>
                             </div>
@@ -349,7 +309,7 @@ function Profile() {
                             <div className="col-lg-6">
                               <div className="mb-3">
                                 <label
-                                  htmlFor="phonenumberInput"
+                                  htmlFor="phoneNumber"
                                   className="form-label"
                                 >
                                   Phone Number
@@ -357,55 +317,34 @@ function Profile() {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="phonenumberInput"
+                                  id="phoneNumber"
+                                  value={formData.phoneNumber}
+                                  onChange={handleChange}
                                   placeholder="Enter your phone number"
-                                  disabled={!editable}
-                                  value={adminProfile.phoneNumber}
                                 />
                               </div>
                             </div>
 
                             <div className="col-lg-6">
                               <div className="mb-3">
-                                <label
-                                  htmlFor="emailInput"
-                                  className="form-label"
-                                >
+                                <label htmlFor="email" className="form-label">
                                   Email Address
                                 </label>
                                 <input
                                   type="email"
                                   className="form-control"
-                                  id="emailInput"
+                                  id="email"
+                                  value={formData.email}
+                                  onChange={handleChange}
                                   placeholder="Enter your email"
-                                  disabled={!editable}
-                                  value={adminProfile.email}
                                 />
                               </div>
                             </div>
 
-                            <div className="col-lg-12">
-                              <div className="mb-3">
-                                <label
-                                  htmlFor="JoiningdatInput"
-                                  className="form-label"
-                                >
-                                  Today Login time
-                                </label>
-                                <p>
-                                  {new Date(
-                                    adminProfile.loginTime
-                                  ).toLocaleString()}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="col-lg-12"></div>
-
                             <div className="col-lg-6">
                               <div className="mb-3">
                                 <label
-                                  htmlFor="designationInput"
+                                  htmlFor="designation"
                                   className="form-label"
                                 >
                                   Designation
@@ -413,88 +352,74 @@ function Profile() {
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="designationInput"
+                                  id="designation"
+                                  value={formData.designation}
+                                  onChange={handleChange}
                                   placeholder="Designation"
-                                  disabled={!editable}
-                                  value={adminProfile.designation}
                                 />
                               </div>
                             </div>
 
                             <div className="col-lg-6">
                               <div className="mb-3">
-                                <label
-                                  htmlFor="websiteInput1"
-                                  className="form-label"
-                                >
+                                <label htmlFor="website" className="form-label">
                                   Website
                                 </label>
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="websiteInput1"
+                                  id="website"
+                                  value={formData.website}
+                                  onChange={handleChange}
                                   placeholder="www.example.com"
-                                  disabled={!editable}
-                                  value={adminProfile.website}
                                 />
                               </div>
                             </div>
 
                             <div className="col-lg-4">
                               <div className="mb-3">
-                                <label
-                                  htmlFor="cityInput"
-                                  className="form-label"
-                                >
+                                <label htmlFor="city" className="form-label">
                                   City
                                 </label>
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="cityInput"
+                                  id="city"
+                                  value={formData.city}
+                                  onChange={handleChange}
                                   placeholder="City"
-                                  disabled={!editable}
-                                  value={adminProfile.city}
                                 />
                               </div>
                             </div>
 
                             <div className="col-lg-4">
                               <div className="mb-3">
-                                <label
-                                  htmlFor="countryInput"
-                                  className="form-label"
-                                >
+                                <label htmlFor="country" className="form-label">
                                   Country
                                 </label>
                                 <input
                                   type="text"
                                   className="form-control"
-                                  id="countryInput"
+                                  id="country"
+                                  value={formData.country}
+                                  onChange={handleChange}
                                   placeholder="Country"
-                                  disabled={!editable}
-                                  value={adminProfile.country}
                                 />
                               </div>
                             </div>
 
                             <div className="col-lg-4">
                               <div className="mb-3">
-                                <label
-                                  htmlFor="zipcodeInput"
-                                  className="form-label"
-                                >
+                                <label htmlFor="zipCode" className="form-label">
                                   Zip Code
                                 </label>
                                 <input
                                   type="text"
                                   className="form-control"
-                                  minLength="5"
-                                  maxLength="6"
-                                  id="zipcodeInput"
+                                  id="zipCode"
+                                  value={formData.zipCode}
+                                  onChange={handleChange}
                                   placeholder="Enter zipcode"
-                                  disabled={!editable}
-                                  value={adminProfile.zipCode}
                                 />
                               </div>
                             </div>
@@ -502,20 +427,19 @@ function Profile() {
                             <div className="col-lg-12">
                               <div className="mb-3 pb-2">
                                 <label
-                                  htmlFor="exampleFormControlTextarea"
+                                  htmlFor="description"
                                   className="form-label"
                                 >
                                   Description
                                 </label>
                                 <textarea
                                   className="form-control"
-                                  id="exampleFormControlTextarea"
+                                  id="portfolioLink"
+                                  value={formData.portfolioLink}
+                                  onChange={handleChange}
                                   placeholder="Enter your description"
                                   rows="3"
-                                  disabled
-                                >
-                                  lorem
-                                </textarea>
+                                />
                               </div>
                             </div>
 
@@ -523,12 +447,11 @@ function Profile() {
                               <div className="hstack gap-2 justify-content-end">
                                 <button
                                   type="submit"
-                                  className="btn btn-primary"
+                                  className="btn btn-success"
                                 >
-                                  Updates
+                                  Update
                                 </button>
                                 <button
-                                  onClick={toggleEditable}
                                   type="button"
                                   className="btn btn-soft-success"
                                 >
@@ -578,7 +501,7 @@ function Profile() {
                                   New Password*
                                 </label>
                                 <input
-                                  type="password"
+                                  type={passwordVisible ? "text" : "password"}
                                   className="form-control"
                                   id="newpasswordInput"
                                   placeholder="Enter new password"
@@ -588,6 +511,17 @@ function Profile() {
                                   }
                                   required
                                 />
+                                <button
+                                  className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon mt-4"
+                                  type="button"
+                                  id="password-addon"
+                                  onClick={handlePasswordToggle}
+                                >
+                                  <i
+                                    className={`ri-eye${passwordVisible ? "" : "-off"
+                                      }-fill align-middle`}
+                                  ></i>
+                                </button>
                               </div>
                             </div>
 
@@ -595,7 +529,7 @@ function Profile() {
                               <div>
                                 <label
                                   htmlFor="confirmpasswordInput"
-                                  className="form-label"
+                                  className="form-label "
                                 >
                                   Confirm Password*
                                 </label>
@@ -613,7 +547,10 @@ function Profile() {
                               </div>
                             </div>
 
-                            <div className="col-lg-12">
+                            <div
+                              className="col-lg-12  "
+                              style={{ visibility: "hidden" }}
+                            >
                               <div className="mb-3">
                                 <Link
                                   to="#"
@@ -659,11 +596,7 @@ function Profile() {
                           </div>
                         </form>
                         <div className="mt-4 mb-3 border-bottom pb-2">
-                          <div className="float-end">
-                            <Link to="#" className="link-primary">
-                              All Logout
-                            </Link>
-                          </div>
+                          <div className="float-end"></div>
                           <h5 className="card-title">Login History</h5>
                         </div>
                         <div className="d-flex align-items-center mb-3">
@@ -673,61 +606,9 @@ function Profile() {
                             </div>
                           </div>
                           <div className="flex-grow-1 ms-3">
-                            <h6>iPhone 12 Pro</h6>
                             <p className="text-muted mb-0">
-                              Los Angeles, United States - March 16 at 2:47PM
+                              March 16 at 2:47PM
                             </p>
-                          </div>
-                          <div>
-                            <Link to="#">Logout</Link>
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center mb-3">
-                          <div className="flex-shrink-0 avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded-3 fs-18">
-                              <i className="ri-tablet-line"></i>
-                            </div>
-                          </div>
-                          <div className="flex-grow-1 ms-3">
-                            <h6>Apple iPad Pro</h6>
-                            <p className="text-muted mb-0">
-                              Washington, United States - November 06 at 10:43AM
-                            </p>
-                          </div>
-                          <div>
-                            <Link to="#">Logout</Link>
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center mb-3">
-                          <div className="flex-shrink-0 avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded-3 fs-18">
-                              <i className="ri-smartphone-line"></i>
-                            </div>
-                          </div>
-                          <div className="flex-grow-1 ms-3">
-                            <h6>Galaxy S21 Ultra 5G</h6>
-                            <p className="text-muted mb-0">
-                              Conneticut, United States - June 12 at 3:24PM
-                            </p>
-                          </div>
-                          <div>
-                            <Link to="#">Logout</Link>
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center">
-                          <div className="flex-shrink-0 avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded-3 fs-18">
-                              <i className="ri-macbook-line"></i>
-                            </div>
-                          </div>
-                          <div className="flex-grow-1 ms-3">
-                            <h6>Dell Inspiron 14</h6>
-                            <p className="text-muted mb-0">
-                              Phoenix, United States - July 26 at 8:10AM
-                            </p>
-                          </div>
-                          <div>
-                            <Link to="#">Logout</Link>
                           </div>
                         </div>
                       </div>
@@ -742,7 +623,7 @@ function Profile() {
         <footer className="footer">
           <div className="container-fluid">
             <div className="row">
-              <div className="col-sm-6">© SS Agriculture</div>
+              <div className="col-sm-6">© Proven Ro</div>
               <div className="col-sm-6">
                 <div className="text-sm-end d-none d-sm-block">
                   Design & Develop by Brandbell
