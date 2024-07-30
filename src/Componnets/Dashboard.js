@@ -277,12 +277,12 @@ function Dashboard() {
                                 {orders.slice(0, 6).map((order) => (
                                   <tr key={order.id}>
                                     <td>
-                                      <Link
+                                      <div
                                         to="#"
                                         className="fw-medium link-primary"
                                       >
                                         #{order.orderID}
-                                      </Link>
+                                      </div>
                                     </td>
                                     <td>
                                       <div className="d-flex align-items-center">

@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from "react";
-
 import { Link } from "react-router-dom";
 import { Baseurl } from "../../config";
 import { toast } from "react-toastify";
 
 function Customer() {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(10); // Number of users per page
+
+  useEffect(() => {
+    fetch(Baseurl + "/api/v1/user/alluser")
+      .then((response) => response.json())
+      .then((data) => {
+        setUsers(data.data);
+        setFilteredUsers(data.data);
+      })
+      .catch((error) => console.error("Error fetching users:", error));
+  }, []);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -24,11 +38,7 @@ function Customer() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          fullName: fullName,
-          email: email,
-          password: password,
-        }),
+        body: JSON.stringify({ fullName, email, password }),
       });
 
       if (!response.ok) {
@@ -47,396 +57,282 @@ function Customer() {
       const modalElement = document.getElementById("showModal");
       const modal = window.bootstrap.Modal.getInstance(modalElement);
       modal.hide();
-      // Optionally close the modal here
+      setUsers([...users, data]);
     } catch (error) {
       console.error("Error:", error);
       setError("Failed to add customer.");
     }
   };
-  useEffect(() => {
-    fetch(Baseurl + "/api/v1/user/alluser")
-      .then((response) => response.json())
-      .then((data) => setUsers(data.data))
-      .catch((error) => console.error("Error fetching users:", error));
-  }, []);
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    if (e.target.value) {
+      const filtered = users.filter(
+        (user) =>
+          user.fullName.toLowerCase().includes(e.target.value.toLowerCase()) ||
+          user.email.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers(users);
+    }
+  };
+
+  // Pagination logic
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
-      <div class="main-content">
-        <div class="page-content">
-          <div class="container-fluid">
-            <div class="row">
-              <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                  <h4 class="mb-sm-0">Customers</h4>
+      <div className="main-content">
+        <div className="page-content">
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-12">
+                <div className="page-title-box d-sm-flex align-items-center justify-content-between">
+                  <h4 className="mb-sm-0">Customers</h4>
 
-                  <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                      <li class="breadcrumb-item">
+                  <div className="page-title-right">
+                    <ol className="breadcrumb m-0">
+                      <li className="breadcrumb-item">
                         <Link to="">Proven Ro</Link>
                       </li>
-                      <li class="breadcrumb-item active">Customers</li>
+                      <li className="breadcrumb-item active">Customers</li>
                     </ol>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-lg-12">
-                <div class="card" id="customerList">
-                  <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                      <div class="col-sm">
+            <div className="row">
+              <div className="col-lg-12">
+                <div className="card" id="customerList">
+                  <div className="card-header border-bottom-dashed">
+                    <div className="row g-4 align-items-center">
+                      <div className="col-sm">
                         <div>
-                          <h5 class="card-title mb-0">Customer List</h5>
+                          <h5 className="card-title mb-0">Customer List</h5>
                         </div>
                       </div>
-                      <div class="col-sm-auto">
-                        <div class="d-flex flex-wrap align-items-start gap-2">
+                      <div className="col-sm-auto">
+                        <div className="d-flex flex-wrap align-items-start gap-2">
                           <button
-                            class="btn btn-soft-danger"
+                            className="btn btn-soft-danger"
                             id="remove-actions"
                             onclick="deleteMultiple()"
                           >
-                            <i class="ri-delete-bin-2-line"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-success add-btn"
-                            data-bs-toggle="modal"
-                            id="create-btn"
-                            data-bs-target="#showModal"
-                          >
-                            <i class="ri-add-line align-bottom me-1"></i> Add
-                            Customer
-                          </button>
-                          <button type="button" class="btn btn-info">
-                            <i class="ri-file-download-line align-bottom me-1"></i>{" "}
-                            Import
+                            <i className="ri-delete-bin-2-line"></i>
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="card-body border-bottom-dashed border-bottom">
+                  <div className="card-body border-bottom-dashed border-bottom">
                     <form>
-                      <div class="row g-3">
-                        <div class="col-xl-6">
-                          <div class="search-box">
+                      <div className="row g-3">
+                        <div className="col-xl-6">
+                          <div className="search-box">
                             <input
                               type="text"
-                              class="form-control search"
+                              className="form-control search"
                               placeholder="Search for customer, email, phone, status or something..."
+                              value={search}
+                              onChange={handleSearch}
                             />
-                            <i class="ri-search-line search-icon"></i>
-                          </div>
-                        </div>
-
-                        <div class="col-xl-6">
-                          <div class="row g-3">
-                            <div class="col-sm-4">
-                              <div class="">
-                                <input
-                                  type="text"
-                                  class="form-control"
-                                  id="datepicker-range"
-                                  data-provider="flatpickr"
-                                  data-date-format="d M, Y"
-                                  data-range-date="true"
-                                  placeholder="Select date"
-                                />
-                              </div>
-                            </div>
-
-                            <div class="col-sm-4">
-                              <div>
-                                <select
-                                  class="form-control"
-                                  data-plugin="choices"
-                                  data-choices=""
-                                  data-choices-search-false=""
-                                  name="choices-single-default"
-                                  id="idStatus"
-                                >
-                                  <option value="">Status</option>
-                                  <option value="all" selected="">
-                                    All
-                                  </option>
-                                  <option value="Active">Active</option>
-                                  <option value="Block">Block</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div class="col-sm-4">
-                              <div>
-                                <button
-                                  type="button"
-                                  class="btn btn-primary w-100"
-                                  onclick="SearchData();"
-                                >
-                                  <i class="ri-equalizer-fill me-2 align-bottom"></i>
-                                  Filters
-                                </button>
-                              </div>
-                            </div>
+                            <i className="ri-search-line search-icon"></i>
                           </div>
                         </div>
                       </div>
                     </form>
                   </div>
-                  <div class="card-body">
+                  <div className="card-body">
                     <div>
-                      <div class="table-responsive table-card mb-1">
-                        <table class="table align-middle" id="customerTable">
-                          <thead class="table-light text-muted">
+                      <div className="table-responsive table-card mb-1">
+                        <table
+                          className="table align-middle"
+                          id="customerTable"
+                        >
+                          <thead className="table-light text-muted">
                             <tr>
-                              <th scope="col" style={{ width: "50px;" }}>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="checkAll"
-                                    value="option"
-                                  />
-                                </div>
-                              </th>
-
-                              <th class="sort" data-sort="customer_name">
+                              <th className="sort" data-sort="customer_name">
                                 Customer
                               </th>
-                              <th class="sort" data-sort="email">
+                              <th className="sort" data-sort="email">
                                 Email
                               </th>
-                              <th class="sort" data-sort="phone">
+                              <th className="sort" data-sort="phone">
                                 Phone
                               </th>
-                              <th class="sort" data-sort="date">
+                              <th className="sort" data-sort="date">
                                 Joining Date
                               </th>
-                              <th class="sort" data-sort="status">
+                              <th className="sort" data-sort="status">
                                 Status
-                              </th>
-                              <th class="sort" data-sort="action">
-                                Action
                               </th>
                             </tr>
                           </thead>
                           <tbody className="list form-check-all">
-                            {users.map((user) => (
-                              <tr key={user.id}>
-                                <th scope="row">
-                                  <div className="form-check">
-                                    <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
-
-                                <td className="customer_name">
-                                  {user.fullName}
-                                </td>
-                                <td className="email">{user.email}</td>
-                                <td className="phone">{user.phone}</td>
-                                <td className="date">
-                                  {new Date(
-                                    user.createdAt
-                                  ).toLocaleDateString()}
-                                </td>
-                                <td className="status">
-                                  <span className="badge bg-success-subtle text-success text-uppercase">
-                                    active
-                                  </span>
-                                </td>
-                                <td>
-                                  <ul className="list-inline hstack gap-2 mb-0">
-                                    <li className="list-inline-item edit">
-                                      <Link
-                                        to={`#edit/${user.id}`}
-                                        className="text-primary d-inline-block edit-item-btn"
-                                      >
-                                        <i className="ri-pencil-fill fs-16"></i>
-                                      </Link>
-                                    </li>
-                                    <li className="list-inline-item">
-                                      <button className="text-danger d-inline-block remove-item-btn">
-                                        <i className="ri-delete-bin-5-fill fs-16"></i>
-                                      </button>
-                                    </li>
-                                  </ul>
+                            {currentUsers.length > 0 ? (
+                              currentUsers.map((user) => (
+                                <tr key={user.id}>
+                                  <td className="customer_name">
+                                    {user.fullName}
+                                  </td>
+                                  <td className="email">{user.email}</td>
+                                  <td className="phone">{user.phone}</td>
+                                  <td className="date">
+                                    {new Date(
+                                      user.createdAt
+                                    ).toLocaleDateString()}
+                                  </td>
+                                  <td className="status">
+                                    <span className="badge bg-success-subtle text-success text-uppercase">
+                                      active
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="6" className="text-center">
+                                  No results found
                                 </td>
                               </tr>
-                            ))}
+                            )}
                           </tbody>
                         </table>
-                        <div class="noresult" style={{ display: "none" }}>
-                          <div class="text-center">
-                            <lord-icon
-                              src="../../../msoeawqm.json"
-                              trigger="loop"
-                              colors="primary:#121331,secondary:#08a88a"
-                              style={{ width: "75px", height: "75px" }}
-                            ></lord-icon>
-                            <h5 class="mt-2">Sorry! No Result Found</h5>
-                            <p class="text-muted mb-0">
-                              We've searched more than 150+ customer We did not
-                              find any customer for you search.
-                            </p>
+                        {currentUsers.length === 0 && (
+                          <div className="noresult">
+                            <div className="text-center">
+                              <lord-icon
+                                src="../../../msoeawqm.json"
+                                trigger="loop"
+                                colors="primary:#121331,secondary:#08a88a"
+                                style={{ width: "75px", height: "75px" }}
+                              ></lord-icon>
+                              <h5 className="mt-2">Sorry! No Result Found</h5>
+                              <p className="text-muted mb-0">
+                                We've searched more than 150+ customers. We did
+                                not find any customers matching your search.
+                              </p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                      <div class="d-flex justify-content-end">
-                        <div class="pagination-wrap hstack gap-2">
+                      <div className="d-flex justify-content-end">
+                        <div className="pagination-wrap hstack gap-2">
                           <Link
-                            class="page-item pagination-prev disabled"
+                            className={`page-item pagination-prev ${
+                              currentPage === 1 && "disabled"
+                            }`}
                             to="#"
+                            onClick={() => paginate(currentPage - 1)}
                           >
                             Previous
                           </Link>
-                          <ul class="pagination listjs-pagination mb-0"></ul>
-                          <Link class="page-item pagination-next" to="#">
+                          <ul className="pagination listjs-pagination mb-0">
+                            {[...Array(totalPages)].map((_, index) => (
+                              <li
+                                key={index}
+                                className={`page-item ${
+                                  currentPage === index + 1 ? "active" : ""
+                                }`}
+                                onClick={() => paginate(index + 1)}
+                              >
+                                <Link className="page-link" to="#">
+                                  {index + 1}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                          <Link
+                            className={`page-item pagination-next ${
+                              currentPage === totalPages && "disabled"
+                            }`}
+                            to="#"
+                            onClick={() => paginate(currentPage + 1)}
+                          >
                             Next
                           </Link>
                         </div>
                       </div>
                     </div>
-                    <div
-                      class="modal fade"
-                      id="showModal"
-                      tabindex="-1"
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header bg-light p-3">
-                            <h5 class="modal-title" id="exampleModalLabel">
-                              customer
-                            </h5>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                              id="close-modal"
-                            ></button>
-                          </div>
-                          <form
-                            class="tablelist-form"
-                            autocomplete="off"
-                            onSubmit={handleSubmit}
-                          >
-                            <div class="modal-body">
-                              <input type="hidden" id="id-field" />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                              <div
-                                class="mb-3"
-                                id="modal-id"
-                                style={{ display: "none;" }}
-                              >
-                                <label
-                                  for="id-field1"
-                                  class="form-label"
-                                  style={{ visibility: "hidden" }}
-                                >
-                                  ID
-                                </label>
-                                <input
-                                  type="hidden"
-                                  id="id-field1"
-                                  class="form-control"
-                                  placeholder="ID"
-                                  readonly=""
-                                />
-                              </div>
-
-                              <div class="mb-3">
-                                <label
-                                  for="customername-field"
-                                  class="form-label"
-                                >
-                                  Customer Name
-                                </label>
-                                <input
-                                  type="text"
-                                  id="customername-field"
-                                  class="form-control"
-                                  placeholder="Enter name"
-                                  required=""
-                                  value={fullName}
-                                  onChange={(e) => setFullName(e.target.value)}
-                                />
-                                <div class="invalid-feedback">
-                                  Please enter a customer name.
-                                </div>
-                              </div>
-
-                              <div class="mb-3">
-                                <label for="email-field" class="form-label">
-                                  Email
-                                </label>
-                                <input
-                                  type="email"
-                                  id="email-field"
-                                  class="form-control"
-                                  placeholder="Enter email"
-                                  required=""
-                                  value={email}
-                                  onChange={(e) => setEmail(e.target.value)}
-                                />
-                                <div class="invalid-feedback">
-                                  Please enter an email.
-                                </div>
-                              </div>
-                              {error && (
-                                <div className="alert alert-danger">
-                                  {error}
-                                </div>
-                              )}
-                              <div class="mb-3">
-                                <label for="phone-field" class="form-label">
-                                  Password
-                                </label>
-                                <input
-                                  type="password"
-                                  id="phone-field"
-                                  class="form-control"
-                                  placeholder="Enter password ."
-                                  required=""
-                                  value={password}
-                                  onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <div class="invalid-feedback">
-                                  Please enter a phone.
-                                </div>
-                              </div>
-                            </div>
-                            <div class="modal-footer">
-                              <div class="hstack gap-2 justify-content-end">
-                                <button
-                                  type="button"
-                                  class="btn btn-light"
-                                  data-bs-dismiss="modal"
-                                >
-                                  Close
-                                </button>
-                                <button
-                                  type="submit"
-                                  class="btn btn-success"
-                                  id="add-btn"
-                                >
-                                  Add Customer
-                                </button>
-                                {/* <!-- <button type="button" class="btn btn-success" id="edit-btn">Update</button> --> */}
-                              </div>
-                            </div>
-                          </form>
-                        </div>
+            {/* Modal for adding customer */}
+            <div
+              className="modal fade"
+              id="showModal"
+              tabIndex="-1"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title" id="exampleModalLabel">
+                      Add Customer
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <form onSubmit={handleSubmit}>
+                      <div className="mb-3">
+                        <label htmlFor="fullName" className="form-label">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="fullName"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required
+                        />
                       </div>
-                    </div>
+                      <div className="mb-3">
+                        <label htmlFor="email" className="form-label">
+                          Email address
+                        </label>
+                        <input
+                          type="email"
+                          className="form-control"
+                          id="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="password" className="form-label">
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          className="form-control"
+                          id="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                      {error && <div className="text-danger mb-3">{error}</div>}
+                      <button type="submit" className="btn btn-primary">
+                        Add Customer
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>

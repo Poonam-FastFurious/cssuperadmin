@@ -61,7 +61,12 @@ function ListBlog() {
   const filteredBlogs = bloges.filter((blog) =>
     blog.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  const truncateText = (text, maxLength) => {
+    if (!text) return ""; // Return an empty string if text is undefined or null
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
+  };
   // Pagination logic
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
@@ -166,7 +171,10 @@ function ListBlog() {
                                     />
                                   </div>
                                 </td>
-                                <td className="email text-truncate">{blog.title} </td>
+                                <td className="email ">
+                                  {" "}
+                                  {truncateText(blog.title, 20)}{" "}
+                                </td>
                                 <td className="phone">
                                   {new Date(
                                     blog.createdAt
@@ -225,8 +233,9 @@ function ListBlog() {
                             {Array.from({ length: totalPages }, (_, index) => (
                               <li
                                 key={index}
-                                className={`page-item ${currentPage === index + 1 ? "active" : ""
-                                  }`}
+                                className={`page-item ${
+                                  currentPage === index + 1 ? "active" : ""
+                                }`}
                               >
                                 <button
                                   onClick={() => setCurrentPage(index + 1)}
