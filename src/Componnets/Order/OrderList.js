@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
@@ -223,9 +224,7 @@ function Order() {
                           Processing
                         </p>
                       </div>
-                      <div className="flex-shrink-0">
-                        <h5 className="text-danger fs-14 mb-0"></h5>
-                      </div>
+                      <div className="flex-shrink-0"></div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
                       <div>
@@ -261,9 +260,7 @@ function Order() {
                           Completed
                         </p>
                       </div>
-                      <div className="flex-shrink-0">
-                        <h5 className="text-success fs-14 mb-0"></h5>
-                      </div>
+                      <div className="flex-shrink-0"></div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
                       <div>

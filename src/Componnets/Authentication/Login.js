@@ -142,12 +142,9 @@ function Login() {
                         )}
                         <div className="mb-3">
                           <div className="float-end">
-                            {/* <Link
-                              to="auth-pass-reset-basic"
-                              className="text-muted"
-                            >
+                            <Link to="/forgotPassword" className="text-muted">
                               Forgot password?
-                            </Link> */}
+                            </Link>
                           </div>
                           <label
                             className="form-label"

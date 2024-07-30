@@ -46,6 +46,8 @@ import EditProduct from "./Componnets/Product/EditProduct";
 import EditSlider from "./Componnets/GenralSetting/Slider/EditSlider";
 import EditBlogs from "./Componnets/GenralSetting/Blogs/EditBlogs";
 import Lockscreen from "./Componnets/SiteSetting/Lockscreen";
+import ForgotPassword from "./Componnets/Authentication/ForgotPassword";
+import Resetpassword from "./Componnets/Authentication/Resetpassword";
 function App() {
   return (
     <>
@@ -54,6 +56,11 @@ function App() {
           <Route>
             <Route path="/Admin/login" element={<Login />} />
             <Route path="/Lock" element={<Lockscreen />}></Route>
+            <Route path="/forgotPassword" element={<ForgotPassword />}></Route>
+            <Route
+              path="/reset_password/:id/:token"
+              element={<Resetpassword />}
+            ></Route>
           </Route>
           <Route
             element={
