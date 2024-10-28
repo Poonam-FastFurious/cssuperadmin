@@ -183,7 +183,6 @@ function Profile() {
 
                 <div className="card">
                   <div className="card-body">
-
                     <div className="table-responsive">
                       <table className="table table-borderless mb-0">
                         <tbody>
@@ -518,8 +517,9 @@ function Profile() {
                                   onClick={handlePasswordToggle}
                                 >
                                   <i
-                                    className={`ri-eye${passwordVisible ? "" : "-off"
-                                      }-fill align-middle`}
+                                    className={`ri-eye${
+                                      passwordVisible ? "" : "-off"
+                                    }-fill align-middle`}
                                   ></i>
                                 </button>
                               </div>
@@ -623,10 +623,10 @@ function Profile() {
         <footer className="footer">
           <div className="container-fluid">
             <div className="row">
-              <div className="col-sm-6">© Proven Ro</div>
+              <div className="col-sm-6">© CharanSparsh</div>
               <div className="col-sm-6">
                 <div className="text-sm-end d-none d-sm-block">
-                  Design & Develop by Brandbell
+                  Design & Develop by CharanSparsh
                 </div>
               </div>
             </div>

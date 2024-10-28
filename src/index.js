@@ -19,6 +19,7 @@ root.render(
       draggable
       pauseOnHover
       theme="light"
+      style={{ top: "50%", transform: "translateY(-20%)" }} // Custom style for vertical centering
     />
   </React.StrictMode>
 );

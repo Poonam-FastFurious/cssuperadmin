@@ -70,9 +70,9 @@ function ForgotPassword() {
                   <div>
                     <Link to="#" className="d-inline-block auth-logo">
                       <img
-                        src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
+                        src="https://charansparsh.brandbell.in/assets/logocharansparsh-JWUXuxY_.png"
                         alt=""
-                        height="40"
+                        height="80"
                       />
                     </Link>
                   </div>
@@ -89,7 +89,9 @@ function ForgotPassword() {
                   <div className="card-body p-4">
                     <div className="text-center mt-2">
                       <h5 className="text-primary">Forgot Password?</h5>
-                      <p className="text-muted">Reset password with Proven</p>
+                      <p className="text-muted">
+                        Reset password with CharanSparsh
+                      </p>
 
                       <img
                         alt="logo"
@@ -144,7 +146,7 @@ function ForgotPassword() {
                             className="btn btn-success w-100"
                             type="submit"
                           >
-                            Send Password
+                            Send Email
                           </button>
                         </div>
                       </form>
@@ -176,8 +178,9 @@ function ForgotPassword() {
                   <p className="mb-0 text-muted">
                     &copy;
                     {currentYear}
-                    Proven Ro Design with
-                    <i className="mdi mdi-heart text-danger"></i> by BrandBell
+                    CharanSparsh Design with
+                    <i className="mdi mdi-heart text-danger"></i> by
+                    CharanSparsh
                     {currentTime}
                   </p>
                 </div>

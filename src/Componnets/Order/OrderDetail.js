@@ -42,7 +42,7 @@ function OrderDetail() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Order Details</li>
                     </ol>
@@ -153,7 +153,7 @@ function OrderDetail() {
                                     <td>
                                       Discount{" "}
                                       <span className="text-muted">
-                                        (PROVEN15)
+                                        (Chransparsh15)
                                       </span>{" "}
                                       :
                                     </td>

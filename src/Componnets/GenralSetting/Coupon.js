@@ -55,11 +55,11 @@ function Coupon() {
 
           setDiscount("");
           setShowModal(false);
+          fetchcoupon();
         },
       });
 
       // Refetch the tax list
-      fetchcoupon();
     } catch (error) {
       console.log("Error fetching taxes: " + error.message);
     }
@@ -146,7 +146,7 @@ function Coupon() {
     try {
       // Make the API call to update tax
       const response = await fetch(Baseurl + "/api/v1/coupon/update", {
-        method: "PATCH", // 
+        method: "PATCH", //
         headers: {
           "Content-Type": "application/json",
         },
@@ -156,7 +156,6 @@ function Coupon() {
           code: coupontoEdit.code,
           status: coupontoEdit.status,
           discount: coupontoEdit.discount,
-
         }),
       });
 
@@ -174,7 +173,6 @@ function Coupon() {
         progress: undefined,
         theme: "light",
         onClose: () => {
-
           setEditmodal(false);
           setCoupontoEdit({
             _id: "",
@@ -184,13 +182,12 @@ function Coupon() {
             discount: "",
             numberOfTimes: "",
           });
+          fetchcoupon();
         },
       });
       // Close the edit modal after successful update
 
       // Refetch the tax list
-      fetchcoupon();
-
     } catch (error) {
       toast.error("Error updating coupon: ");
       console.log("Error updating tax: " + error.message);
@@ -212,7 +209,7 @@ function Coupon() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Coupon</li>
                     </ol>
@@ -233,7 +230,6 @@ function Coupon() {
                       </div>
                       <div className="col-sm-auto">
                         <div className="d-flex flex-wrap align-items-start gap-2 ">
-
                           <button
                             type="button"
                             className="btn btn-success add-btn"
@@ -262,8 +258,6 @@ function Coupon() {
                             <i className="ri-search-line search-icon"></i>
                           </div>
                         </div>
-
-
                       </div>
                     </form>
                   </div>
@@ -294,56 +288,58 @@ function Coupon() {
                             </tr>
                           </thead>
                           <tbody className="list form-check-all">
-                            {filteredCoupons.length > 0 ? (filteredCoupons.map((cou, index) => (
-                              <tr key={index}>
-                                <th scope="row">
-                                  <div className="form-check">
-                                    <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      name="chk_child"
-                                      value="option1"
-                                    />
-                                  </div>
-                                </th>
-                                <td className="customer_name">{cou.title}</td>
-                                <td className="email">{cou.code}</td>
+                            {filteredCoupons.length > 0 ? (
+                              filteredCoupons.map((cou, index) => (
+                                <tr key={index}>
+                                  <th scope="row">
+                                    <div className="form-check">
+                                      <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        name="chk_child"
+                                        value="option1"
+                                      />
+                                    </div>
+                                  </th>
+                                  <td className="customer_name">{cou.title}</td>
+                                  <td className="email">{cou.code}</td>
 
-                                <td className="phone">{cou.discount} %</td>
-                                <td className="phone">{cou.status}</td>
+                                  <td className="phone">{cou.discount} %</td>
+                                  <td className="phone">{cou.status}</td>
 
-                                <td>
-                                  <ul className="list-inline hstack gap-2 mb-0">
-                                    <li
-                                      className="list-inline-item edit"
-                                      title="Edit"
-                                      onClick={() => handleEdit(cou._id)}
-                                    >
-                                      <Link
-                                        to="#showModal"
-                                        className="text-primary d-inline-block edit-item-btn"
+                                  <td>
+                                    <ul className="list-inline hstack gap-2 mb-0">
+                                      <li
+                                        className="list-inline-item edit"
+                                        title="Edit"
+                                        onClick={() => handleEdit(cou._id)}
                                       >
-                                        <i className="ri-pencil-fill fs-16"></i>
-                                      </Link>
-                                    </li>
-                                    <li
-                                      className="list-inline-item"
-                                      title="Remove"
-                                      onClick={() => deletecoupon(cou._id)}
-                                    >
-                                      <Link
-                                        className="text-danger d-inline-block remove-item-btn"
-                                        to="#"
+                                        <Link
+                                          to="#showModal"
+                                          className="text-primary d-inline-block edit-item-btn"
+                                        >
+                                          <i className="ri-pencil-fill fs-16"></i>
+                                        </Link>
+                                      </li>
+                                      <li
+                                        className="list-inline-item"
+                                        title="Remove"
+                                        onClick={() => deletecoupon(cou._id)}
                                       >
-                                        <i className="ri-delete-bin-5-fill fs-16"></i>
-                                      </Link>
-                                    </li>
-                                  </ul>
-                                </td>
-                              </tr>
-
-                            ))) : (
-                              <tr></tr>)}
+                                        <Link
+                                          className="text-danger d-inline-block remove-item-btn"
+                                          to="#"
+                                        >
+                                          <i className="ri-delete-bin-5-fill fs-16"></i>
+                                        </Link>
+                                      </li>
+                                    </ul>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr></tr>
+                            )}
                           </tbody>
                         </table>
                         {filteredCoupons.length === 0 && !fetching && (
@@ -364,7 +360,6 @@ function Coupon() {
                           </div>
                         )}
                       </div>
-
                     </div>
                     {showModal && (
                       <div
@@ -434,9 +429,7 @@ function Coupon() {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                   />
-                                  <div className="invalid-feedback">
-
-                                  </div>
+                                  <div className="invalid-feedback"></div>
                                 </div>
                                 <div className="mb-3">
                                   <label
@@ -518,7 +511,6 @@ function Coupon() {
                                   >
                                     Add Coupon
                                   </button>
-
                                 </div>
                               </div>
                             </form>
@@ -558,7 +550,6 @@ function Coupon() {
                               onSubmit={handleUpdate}
                             >
                               <div className="modal-body">
-
                                 <div className="mb-3">
                                   <label
                                     htmlFor="customername-field"

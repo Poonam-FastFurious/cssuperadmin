@@ -2,17 +2,28 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Baseurl } from "../../config";
 import { toast } from "react-toastify";
+import ReusableTable from "../Molicule/Table";
+import Noresult from "../Molicule/Noresult";
+import Swal from "sweetalert2";
 
 function Customer() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // const [fullName, setFullName] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10); // Number of users per page
+  const tableHeaders = [
+    { content: "Name", className: "sort", dataSort: "name" },
+    { content: "Email", className: "sort", dataSort: "email" },
+    { content: "Mobile", className: "sort", dataSort: "mobile" },
+    { content: "Date", className: "sort", dataSort: "date" },
+    { content: "Status", className: "sort", dataSort: "status" },
+    { content: "Action", className: "sort", dataSort: "action" },
+  ];
 
   useEffect(() => {
     fetch(Baseurl + "/api/v1/user/alluser")
@@ -24,46 +35,74 @@ function Customer() {
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
 
-    if (!fullName || !email || !password) {
-      setError("Please fill out all fields.");
-      return;
-    }
+  //   if (!fullName || !email || !password) {
+  //     setError("Please fill out all fields.");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(Baseurl + "/api/v1/user/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ fullName, email, password }),
-      });
+  //   try {
+  //     const response = await fetch(Baseurl + "/api/v1/user/register", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ fullName, email, password }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+  //     if (!response.ok) {
+  //       throw new Error("Network response was not ok");
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Customer added:", data);
+
+  //     // Reset form
+  //     setFullName("");
+  //     setEmail("");
+  //     setPassword("");
+  //     setError("");
+  //     toast.success("Customer added successfully!");
+  //     const modalElement = document.getElementById("showModal");
+  //     const modal = window.bootstrap.Modal.getInstance(modalElement);
+  //     modal.hide();
+  //     setUsers([...users, data]);
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     setError("Failed to add customer.");
+  //   }
+  // };
+  const deleteCustomer = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`${Baseurl}/api/v1/user/delete?id=${id}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          toast.success("Users deleted successfully!");
+          setFilteredUsers(users.filter((address) => address._id !== id));
+        } else {
+          toast.error("Failed to delete Users.");
+        }
+      } catch (error) {
+        console.error("Error deleting Users:", error);
+        toast.error("An error occurred while deleting the Users.");
       }
-
-      const data = await response.json();
-      console.log("Customer added:", data);
-
-      // Reset form
-      setFullName("");
-      setEmail("");
-      setPassword("");
-      setError("");
-      toast.success("Customer added successfully!");
-      const modalElement = document.getElementById("showModal");
-      const modal = window.bootstrap.Modal.getInstance(modalElement);
-      modal.hide();
-      setUsers([...users, data]);
-    } catch (error) {
-      console.error("Error:", error);
-      setError("Failed to add customer.");
     }
   };
-
   const handleSearch = (e) => {
     setSearch(e.target.value);
     if (e.target.value) {
@@ -85,7 +124,7 @@ function Customer() {
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
+  console.log(currentUsers);
   return (
     <>
       <div className="main-content">
@@ -99,7 +138,7 @@ function Customer() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="">Proven Ro</Link>
+                        <Link to="">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Customers</li>
                     </ol>
@@ -152,76 +191,54 @@ function Customer() {
                   <div className="card-body">
                     <div>
                       <div className="table-responsive table-card mb-1">
-                        <table
-                          className="table align-middle"
-                          id="customerTable"
-                        >
-                          <thead className="table-light text-muted">
-                            <tr>
-                              <th className="sort" data-sort="customer_name">
-                                Customer
-                              </th>
-                              <th className="sort" data-sort="email">
-                                Email
-                              </th>
-                              <th className="sort" data-sort="phone">
-                                Phone
-                              </th>
-                              <th className="sort" data-sort="date">
-                                Joining Date
-                              </th>
-                              <th className="sort" data-sort="status">
-                                Status
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="list form-check-all">
-                            {currentUsers.length > 0 ? (
-                              currentUsers.map((user) => (
-                                <tr key={user.id}>
-                                  <td className="customer_name">
-                                    {user.fullName}
-                                  </td>
-                                  <td className="email">{user.email}</td>
-                                  <td className="phone">{user.phone}</td>
-                                  <td className="date">
-                                    {new Date(
-                                      user.createdAt
-                                    ).toLocaleDateString()}
-                                  </td>
-                                  <td className="status">
-                                    <span className="badge bg-success-subtle text-success text-uppercase">
-                                      active
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr>
-                                <td colSpan="6" className="text-center">
-                                  No results found
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                        {currentUsers.length === 0 && (
-                          <div className="noresult">
-                            <div className="text-center">
-                              <lord-icon
-                                src="../../../msoeawqm.json"
-                                trigger="loop"
-                                colors="primary:#121331,secondary:#08a88a"
-                                style={{ width: "75px", height: "75px" }}
-                              ></lord-icon>
-                              <h5 className="mt-2">Sorry! No Result Found</h5>
-                              <p className="text-muted mb-0">
-                                We've searched more than 150+ customers. We did
-                                not find any customers matching your search.
-                              </p>
-                            </div>
-                          </div>
-                        )}
+                        <ReusableTable
+                          headers={tableHeaders}
+                          rows={currentUsers.map((user) => [
+                            {
+                              content: (
+                                <a
+                                  href="apps-ecommerce-order-details.html"
+                                  className="fw-medium link-primary"
+                                >
+                                  {user.fullName}
+                                </a>
+                              ),
+                              className: "name",
+                            },
+                            { content: user.email, className: "email" },
+                            {
+                              content: user.mobile || "N/A",
+                              className: "mobile",
+                            }, // Replace with actual mobile if applicable
+                            {
+                              content: new Date(
+                                user.createdAt
+                              ).toLocaleDateString(),
+                              className: "date",
+                            },
+                            {
+                              content: user.status || "Active",
+                              className: "status",
+                            },
+                            {
+                              content: (
+                                <div style={{ display: "flex", gap: "4px" }}>
+                                  {/* <button className="btn btn-primary btn-sm">
+                                    Edit
+                                  </button> */}
+                                  <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => deleteCustomer(user._id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              ),
+                              className: "action",
+                            },
+                          ])}
+                        />
+                        {currentUsers.length === 0 && <Noresult />}
                       </div>
                       <div className="d-flex justify-content-end">
                         <div className="pagination-wrap hstack gap-2">
@@ -265,79 +282,79 @@ function Customer() {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Modal for adding customer */}
-            <div
-              className="modal fade"
-              id="showModal"
-              tabIndex="-1"
-              aria-labelledby="exampleModalLabel"
-              aria-hidden="true"
-            >
-              <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title" id="exampleModalLabel">
+          {/* Modal for adding customer */}
+          {/* <div
+            className="modal fade"
+            id="showModal"
+            tabIndex="-1"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="exampleModalLabel">
+                    Add Customer
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                      <label htmlFor="fullName" className="form-label">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="fullName"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="email" className="form-label">
+                        Email address
+                      </label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="password" className="form-label">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    {error && <div className="text-danger mb-3">{error}</div>}
+                    <button type="submit" className="btn btn-primary">
                       Add Customer
-                    </h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      data-bs-dismiss="modal"
-                      aria-label="Close"
-                    ></button>
-                  </div>
-                  <div className="modal-body">
-                    <form onSubmit={handleSubmit}>
-                      <div className="mb-3">
-                        <label htmlFor="fullName" className="form-label">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="fullName"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label htmlFor="email" className="form-label">
-                          Email address
-                        </label>
-                        <input
-                          type="email"
-                          className="form-control"
-                          id="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label htmlFor="password" className="form-label">
-                          Password
-                        </label>
-                        <input
-                          type="password"
-                          className="form-control"
-                          id="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-                      {error && <div className="text-danger mb-3">{error}</div>}
-                      <button type="submit" className="btn btn-primary">
-                        Add Customer
-                      </button>
-                    </form>
-                  </div>
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

@@ -30,9 +30,7 @@ function Section2() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(
-        Baseurl + "/api/v1/Banner/allabnner?type=2"
-      );
+      const response = await fetch(Baseurl + "/api/v1/Banner/allabnner?type=2");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -229,8 +227,6 @@ function Section2() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   useEffect(() => {
-
-
     fetchData();
   }, []);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -249,7 +245,7 @@ function Section2() {
                   <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                       <li class="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li class="breadcrumb-item active">Add </li>
                     </ol>
@@ -299,7 +295,6 @@ function Section2() {
                         >
                           <thead class="table-light">
                             <tr>
-
                               <th class="sort" data-sort="customer_name">
                                 Image
                               </th>
@@ -326,7 +321,6 @@ function Section2() {
                           <tbody class="list form-check-all">
                             {currentItems.map((item, index) => (
                               <tr key={index}>
-
                                 <td class="id" style={{ display: "none;" }}>
                                   <img
                                     src={item.image}
@@ -350,7 +344,6 @@ function Section2() {
                                         class="btn btn-sm btn-success edit-item-btn"
                                         onClick={() => handleEditClick(item)}
                                         data-bs-toggle="modal"
-
                                         data-bs-target="#editshowModal"
                                       >
                                         Edit
@@ -392,8 +385,9 @@ function Section2() {
                         <nav>
                           <ul className="pagination">
                             <li
-                              className={`page-item ${currentPage === 1 && "disabled"
-                                }`}
+                              className={`page-item ${
+                                currentPage === 1 && "disabled"
+                              }`}
                             >
                               <button
                                 className="page-link"
@@ -411,8 +405,9 @@ function Section2() {
                               (_, i) => (
                                 <li
                                   key={i}
-                                  className={`page-item ${currentPage === i + 1 && "active"
-                                    }`}
+                                  className={`page-item ${
+                                    currentPage === i + 1 && "active"
+                                  }`}
                                 >
                                   <button
                                     className="page-link"
@@ -424,11 +419,12 @@ function Section2() {
                               )
                             )}
                             <li
-                              className={`page-item ${currentPage ===
-                                Math.ceil(
-                                  filteredBanners.length / itemsPerPage
-                                ) && "disabled"
-                                }`}
+                              className={`page-item ${
+                                currentPage ===
+                                  Math.ceil(
+                                    filteredBanners.length / itemsPerPage
+                                  ) && "disabled"
+                              }`}
                             >
                               <button
                                 className="page-link"
@@ -664,7 +660,6 @@ function Section2() {
                         required
                         value={editdetails}
                         onChange={(e) => setEditdetails(e.target.value)}
-
                       />
                       <div className="invalid-feedback">
                         Please enter Details

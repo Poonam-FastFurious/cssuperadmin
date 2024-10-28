@@ -21,7 +21,7 @@ function SubCategory() {
   const [editLink, setEditLink] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [editImage, setEditImage] = useState("");
-  const [editcategoryName, setEditcategoryName] = useState("");
+
   const [searchTerm, setSearchTerm] = useState("");
   const fetchCategory = async () => {
     try {
@@ -60,7 +60,7 @@ function SubCategory() {
     setEditsubCategoryTitle(cat.subCategoryTitle);
     setEditLink(cat.link);
     setEditStatus(cat.status);
-    setEditcategoryName(cat.editcategoryName);
+
     setEditImage(null);
   };
   const handleEditSubmit = async (e) => {
@@ -68,10 +68,9 @@ function SubCategory() {
 
     const formData = new FormData();
     formData.append("id", editId);
-    formData.append("editsubCategoryTitle", editsubCategoryTitle);
+    formData.append("subCategoryTitle", editsubCategoryTitle);
     formData.append("link", editLink);
     formData.append("status", editStatus);
-    formData.append("editcategoryName", editcategoryName);
     if (editImage) {
       formData.append("image", editImage);
     }
@@ -222,9 +221,8 @@ function SubCategory() {
               theme: "light",
               onClose: () => {
                 fetchsubcategory();
-              }
+              },
             });
-
           } else {
             toast.error(response.statusText, "Failed to delete subcategory!");
             console.error("Error:", response.statusText);
@@ -241,7 +239,6 @@ function SubCategory() {
   );
   return (
     <>
-
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -253,7 +250,7 @@ function SubCategory() {
                   <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                       <li class="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li class="breadcrumb-item active">Add </li>
                     </ol>
@@ -278,7 +275,6 @@ function SubCategory() {
                             >
                               <i class="ri-add-line align-bottom me-1"></i> Add
                             </button>
-
                           </div>
                         </div>
                         <div class="col-sm">
@@ -304,99 +300,96 @@ function SubCategory() {
                         >
                           <thead class="table-light">
                             <tr>
-
-                              <th class="sort" data-sort="customer_name">
-                                Image
-                              </th>
-                              <th class="sort" data-sort="email">
-                                Title
-                              </th>
-                              <th class="sort" data-sort="email">
-                                Category
-                              </th>
-                              <th class="sort" data-sort="date">
-                                Link
-                              </th>
-                              <th class="sort" data-sort="status">
-                                Status
-                              </th>
-                              <th class="sort" data-sort="action">
-                                Action
-                              </th>
+                              <th data-sort="customer_name">Image</th>
+                              <th data-sort="email">Title</th>
+                              <th data-sort="email">Category</th>
+                              <th data-sort="date">Link</th>
+                              <th data-sort="status">Status</th>
+                              <th data-sort="action">Action</th>
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {filteredCategories.length > 0 ? (filteredCategories.map((subcat, index) => (
-                              <tr key={index}>
-
-
-                                <td class="email">
-                                  <img
-                                    className="avatar-xs rounded-circle"
-                                    src={subcat.image}
-                                    alt=""
-                                  ></img>
-                                </td>
-                                <td class="phone">{subcat.subCategoryTitle}</td>
-                                <td class="date">
-                                  {subcat.category
-                                    ? subcat.category.categoriesTitle
-                                    : "No Category"}
-                                </td>
-                                <td class="date">{subcat.link}</td>
-                                <td class="status">
-                                  <span class="badge bg-success-subtle text-success text-uppercase">
-                                    {subcat.status}
-                                  </span>
-                                </td>
-                                <td>
-                                  <div class="d-flex gap-2">
-                                    <div class="edit">
-                                      <button
-                                        class="btn btn-sm btn-success edit-item-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editModal"
-                                        onClick={() => handleEditClick(subcat)}
-                                      >
-                                        Edit
-                                      </button>
+                            {filteredCategories.length > 0 ? (
+                              filteredCategories.map((subcat, index) => (
+                                <tr key={index}>
+                                  <td class="email">
+                                    <img
+                                      className="avatar-xs rounded-circle"
+                                      src={subcat.image}
+                                      alt=""
+                                    ></img>
+                                  </td>
+                                  <td class="phone">
+                                    {subcat.subCategoryTitle}
+                                  </td>
+                                  <td class="date">
+                                    {subcat.category
+                                      ? subcat.category.categoriesTitle
+                                      : "No Category"}
+                                  </td>
+                                  <td class="date">{subcat.link}</td>
+                                  <td class="status">
+                                    <span class="badge bg-success-subtle text-success text-uppercase">
+                                      {subcat.status}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div class="d-flex gap-2">
+                                      <div class="edit">
+                                        <button
+                                          class="btn btn-sm btn-success edit-item-btn"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#editModal"
+                                          onClick={() =>
+                                            handleEditClick(subcat)
+                                          }
+                                        >
+                                          Edit
+                                        </button>
+                                      </div>
+                                      <div class="remove">
+                                        <button
+                                          class="btn btn-sm btn-danger remove-item-btn"
+                                          onClick={() =>
+                                            handleRemove(subcat._id)
+                                          }
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
                                     </div>
-                                    <div class="remove">
-                                      <button
-                                        class="btn btn-sm btn-danger remove-item-btn"
-                                        onClick={() => handleRemove(subcat._id)}
-                                      >
-                                        Remove
-                                      </button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="6" class="text-center">
+                                  <div class="noresult">
+                                    <div class="text-center">
+                                      <lord-icon
+                                        src="../../../msoeawqm.json"
+                                        trigger="loop"
+                                        colors="primary:#121331,secondary:#08a88a"
+                                        style={{
+                                          width: "75px",
+                                          height: "75px",
+                                        }}
+                                      ></lord-icon>
+                                      <h5 class="mt-2">
+                                        Sorry! No Result Found
+                                      </h5>
+                                      <p class="text-muted mb-0">
+                                        We've searched more than 150+ Orders We
+                                        did not find any orders for you search.
+                                      </p>
                                     </div>
                                   </div>
                                 </td>
                               </tr>
-                            ))) : (<tr>
-                              <td colSpan="6" class="text-center">
-                                <div class="noresult" >
-                                  <div class="text-center">
-                                    <lord-icon
-                                      src="../../../msoeawqm.json"
-                                      trigger="loop"
-                                      colors="primary:#121331,secondary:#08a88a"
-                                      style={{ width: "75px", height: "75px" }}
-                                    ></lord-icon>
-                                    <h5 class="mt-2">Sorry! No Result Found</h5>
-                                    <p class="text-muted mb-0">
-                                      We've searched more than 150+ Orders We did not
-                                      find any orders for you search.
-                                    </p>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>)}
+                            )}
                           </tbody>
                         </table>
-
                       </div>
-
-
                     </div>
                   </div>
                 </div>

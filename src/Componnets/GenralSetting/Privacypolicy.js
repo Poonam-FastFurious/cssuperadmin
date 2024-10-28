@@ -166,7 +166,7 @@ function PrivacyPolicy() {
                   <div className="mb-3">
                     <button
                       type="button"
-                      className="btn btn-primary me-2"
+                      className="btn btn-success me-2"
                       onClick={handleAddSection}
                     >
                       Add Section
@@ -195,7 +195,7 @@ function PrivacyPolicy() {
                   {error && <div className="alert alert-danger">{error}</div>}
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-success"
                     onClick={handleAddPrivacyPolicy}
                   >
                     Add Privacy Policy

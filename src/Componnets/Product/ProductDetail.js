@@ -56,7 +56,7 @@ function ProductDetail() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">
                         Product Details
@@ -150,9 +150,7 @@ function ProductDetail() {
                                     </div>
                                   </div>
                                   <div className="flex-grow-1">
-                                    <p className="text-muted mb-1">
-                                      Off Price :
-                                    </p>
+                                    <p className="text-muted mb-1">MRP :</p>
                                     <h5 className="mb-0">
                                       {products.cutPrice}
                                     </h5>
@@ -189,7 +187,11 @@ function ProductDetail() {
                                   </div>
                                   <div className="flex-grow-1">
                                     <p className="text-muted mb-1">status :</p>
-                                    <h5 className="mb-0">Active</h5>
+                                    <h5 className="mb-0">
+                                      {products.IsApproved
+                                        ? "Active"
+                                        : "Inactive"}
+                                    </h5>
                                   </div>
                                 </div>
                               </div>
@@ -456,10 +458,10 @@ function ProductDetail() {
         <footer className="footer">
           <div className="container-fluid">
             <div className="row">
-              <div className="col-sm-6">© ProvenRo.</div>
+              <div className="col-sm-6">© CharanSparsh.</div>
               <div className="col-sm-6">
                 <div className="text-sm-end d-none d-sm-block">
-                  Design & Develop by Brandbell
+                  Design & Develop by CharanSparsh
                 </div>
               </div>
             </div>

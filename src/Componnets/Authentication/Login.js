@@ -20,7 +20,7 @@ function Login() {
     return emailPattern.test(value);
   };
   const handleUsernameOrEmailChange = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase();
     setUsernameOrEmail(value);
     if (!isEmail(value) && value.includes("@")) {
       setValidationError("Invalid email format");
@@ -92,9 +92,9 @@ function Login() {
                   <div>
                     <Link to="#" className="d-inline-block auth-logo">
                       <img
-                        src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
+                        src="https://charansparsh.brandbell.in/assets/logocharansparsh-JWUXuxY_.png"
                         alt=""
-                        height="40"
+                        height="80"
                       />
                     </Link>
                   </div>
@@ -112,7 +112,7 @@ function Login() {
                     <div className="text-center mt-2">
                       <h5 className="text-primary">Welcome Back!</h5>
                       <p className="text-muted">
-                        Sign in to continue to Proven Ro.
+                        Sign in to continue to Charansparsh
                       </p>
                     </div>
                     <div className="p-2 mt-4">
@@ -226,8 +226,9 @@ function Login() {
               <div className="col-lg-12">
                 <div className="text-center">
                   <p className="mb-0 text-muted">
-                    &copy; Proven Ro Design with
-                    <i className="mdi mdi-heart text-danger"></i> by Brandbell
+                    &copy; Charansparsh Design with
+                    <i className="mdi mdi-heart text-danger"></i> by
+                    CharanSparsh
                   </p>
                 </div>
               </div>

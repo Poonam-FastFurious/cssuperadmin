@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Baseurl } from "../../config";
 
@@ -55,11 +55,15 @@ function ReturnPolicy() {
       });
 
       if (response.ok) {
-        toast.success(`Return policy ${policyExists ? "updated" : "added"} successfully`);
+        toast.success(
+          `Return policy ${policyExists ? "updated" : "added"} successfully`
+        );
         setIsEditMode(false);
         setPolicyExists(true);
       } else {
-        toast.error(`Failed to ${policyExists ? "update" : "add"} return policy`);
+        toast.error(
+          `Failed to ${policyExists ? "update" : "add"} return policy`
+        );
       }
     } catch (error) {
       toast.error("An error occurred during the request");
@@ -76,7 +80,9 @@ function ReturnPolicy() {
             <CKEditor
               editor={ClassicEditor}
               data={returnPolicyData}
-              onChange={(event, editor) => setReturnPolicyData(editor.getData())}
+              onChange={(event, editor) =>
+                setReturnPolicyData(editor.getData())
+              }
               disabled={!isEditMode}
             />
             <div className="mt-3">
@@ -102,24 +108,13 @@ function ReturnPolicy() {
               ) : (
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn btn-success"
                   onClick={() => setIsEditMode(true)}
                 >
                   Edit Return Policy
                 </button>
               )}
             </div>
-            <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar
-              newestOnTop
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-            />
           </div>
         </div>
       </div>

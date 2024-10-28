@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Baseurl } from "../config";
-
+import logo from "../assets/images/logocharansparsh.png";
 function Header() {
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("");
+  const location = useLocation();
   const navigate = useNavigate();
   const handleShowModal = () => {
     setShowModal(true);
   };
 
+  useEffect(() => {
+    setActiveTab(location.pathname);
+  }, [location]);
   const handleCloseModaldelete = () => {
     setShowModal(false);
   };
@@ -56,16 +61,12 @@ function Header() {
                 <div className="navbar-brand-box horizontal-logo">
                   <Link to="/" className="logo logo-dark">
                     <span className="logo-sm">
-                      <img
-                        src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
-                        alt=""
-                        height="40"
-                      />
+                      <img src={logo} alt="" height="40" />
                     </span>
                     <span className="logo-lg d-none">
                       <img
-                        src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
-                        alt=""
+                        src={logo}
+                        alt="ss"
                         height="40"
                       />
                     </span>
@@ -74,15 +75,15 @@ function Header() {
                   <Link to="/" className="logo logo-light">
                     <span className="logo-sm">
                       <img
-                        src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
-                        alt=""
+                        src={logo}
+                        alt="ss"
                         height="40"
                       />
                     </span>
                     <span className="logo-lg">
                       <img
-                        src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
-                        alt=""
+                        src={logo}
+                        alt="ss"
                         height="40"
                       />
                     </span>
@@ -257,16 +258,16 @@ function Header() {
             <Link to="/" className="logo logo-dark">
               <span className="logo-sm">
                 <img
-                  src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
+                  src={logo}
                   alt=""
                   height="40"
                 />
               </span>
               <span className="logo-lg">
                 <img
-                  src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
+                  src={logo}
                   alt=""
-                  height="40"
+                  height="50"
                 />
               </span>
             </Link>
@@ -274,14 +275,14 @@ function Header() {
             <Link to="/" className="logo logo-light">
               <span className="logo-sm">
                 <img
-                  src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
+                  src={logo}
                   alt=""
                   height="50"
                 />
               </span>
               <span className="logo-lg">
                 <img
-                  src="https://provenonline.in/wp-content/uploads/2023/04/Untitled-design-6.png"
+                  src={logo}
                   alt=""
                   height="50"
                 />
@@ -304,40 +305,72 @@ function Header() {
                   <span data-key="t-menu">Menu</span>
                 </li>
                 <li className="nav-item">
-                  <div className="nav-link menu-link">
+                  <Link
+                    style={{
+                      backgroundColor: activeTab === "/" ? "#D68A32" : "",
+                      color: activeTab === "/" ? "white" : "",
+                      borderRadius: "6px",
+                    }}
+                    className="nav-link menu-link"
+                    to="/"
+                  >
                     <i className="ri-dashboard-2-line"></i>
-
-                    <Link to="/">Dashboards</Link>
-                  </div>
-                  <div
-                    className="collapse menu-dropdown"
-                    id="sidebarDashboards"
-                  ></div>
-                  <li className="menu-title">
-                    <i className="ri-more-fill"></i>
-                    <span data-key="t-pages">PRODUCT MANAGEMENT</span>
-                  </li>
+                    <span data-key="t-dashboards">Dashboards</span>
+                  </Link>
                 </li>
-
                 <li className="nav-item">
                   <li className="nav-item">
-                    <Link to="/Categories" className="nav-link menu-link">
-                      <i className="ri-layout-3-line"></i>
-                      <span>Category</span>
+                    <Link
+                      className="nav-link menu-link"
+                      to="/#categorysidebar"
+                      data-bs-toggle="collapse"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="categorysidebar"
+                    >
+                      <i className="ri-apps-2-line"></i>
+                      <span data-key="t-apps">Manage Category</span>
                     </Link>
+                    <div
+                      className="collapse menu-dropdown"
+                      id="categorysidebar"
+                    >
+                      <ul className="nav nav-sm flex-column">
+                        <li className="nav-item">
+                          <Link to="/Categories" className="nav-link menu-link">
+                            <i className="ri-layout-3-line"></i>
+                            <span>Category</span>
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link
+                            to="/SubCategory"
+                            className="nav-link menu-link"
+                          >
+                            <i className="ri-layout-3-line"></i>
+                            <span>SubCategory</span>
+                          </Link>
+                        </li>
+                        {/* <li className="nav-item">
+                          <Link
+                            to="/headercategory"
+                            className="nav-link menu-link"
+                          >
+                            <i className="ri-layout-3-line"></i>
+                            <span>HeaderCategory</span>
+                          </Link>
+                        </li> */}
+                        <li className="nav-item">
+                          <Link to="/State" className="nav-link menu-link">
+                            <i className="ri-layout-3-line"></i>
+                            <span>State</span>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
                   </li>
-                  <li className="nav-item">
-                    <Link to="/SubCategory" className="nav-link menu-link">
-                      <i className="ri-layout-3-line"></i>
-                      <span>SubCategory</span>
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link to="/AddOns" className="nav-link menu-link">
-                      <i className="ri-layout-3-line"></i>
-                      <span>Add on</span>
-                    </Link>
-                  </li>
+                </li>
+                <li className="nav-item">
                   <li className="nav-item">
                     <Link
                       className="nav-link menu-link"
@@ -352,32 +385,83 @@ function Header() {
                     </Link>
                     <div className="collapse menu-dropdown" id="sidebarApps">
                       <ul className="nav nav-sm flex-column">
+                        {/* <li className="nav-item">
+                          <div
+                            to="/AddProduct"
+                            className="nav-link"
+                            data-key="t-chat"
+                          >
+                            Add Product
+                          </div>
+                        </li> */}
                         <li className="nav-item">
                           <Link
                             to="/Product"
                             className="nav-link"
                             data-key="t-chat"
                           >
-                            All Product
+                            List
                           </Link>
                         </li>
                         <li className="nav-item">
                           <Link
-                            to="/AddProduct"
+                            to="/RequestProduct"
                             className="nav-link"
                             data-key="t-chat"
                           >
-                            Add Product
+                            New Product Request
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link to="#" className="nav-link" data-key="t-chat">
+                            Review
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </li>
+                </li>
+                <li className="nav-item">
+                  <li className="nav-item">
+                    <Link
+                      className="nav-link menu-link"
+                      to="/#sidebarvendor"
+                      data-bs-toggle="collapse"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="sidebarvendor"
+                    >
+                      <i className="ri-apps-2-line"></i>
+                      <span data-key="t-vendor">Manage Vendor</span>
+                    </Link>
+                    <div className="collapse menu-dropdown" id="sidebarvendor">
+                      <ul className="nav nav-sm flex-column">
+                        <li className="nav-item">
+                          <Link
+                            to="/Addvendor"
+                            className="nav-link"
+                            data-key="t-vendor"
+                          >
+                            Add vendor
                           </Link>
                         </li>
 
                         <li className="nav-item">
                           <Link
-                            to="/review"
+                            to="/allvendor"
                             className="nav-link"
-                            data-key="t-chat"
+                            data-key="t-vendor"
                           >
-                            Products Reviews
+                            All vendor
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link
+                            to="/Payments"
+                            className="nav-link"
+                            data-key="t-vendor"
+                          >
+                            Vendor Payments
                           </Link>
                         </li>
                       </ul>
@@ -389,10 +473,60 @@ function Header() {
                   <span data-key="t-pages">ORDER MANAGEMENT</span>
                 </li>
                 <li className="nav-item">
-                  <Link to="/Order" className="nav-link menu-link">
-                    <i className="ri-layout-3-line"></i>
-                    <span>Manage Order</span>
-                  </Link>
+                  <li className="nav-item">
+                    <Link
+                      className="nav-link menu-link"
+                      to="/#sideorder"
+                      data-bs-toggle="collapse"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="sidebarvendor"
+                    >
+                      <i className="ri-apps-2-line"></i>
+                      <span data-key="t-vendor">Manage Order</span>
+                    </Link>
+                    <div className="collapse menu-dropdown" id="sideorder">
+                      <ul className="nav nav-sm flex-column">
+                        <li className="nav-item">
+                          <Link
+                            to="/Order"
+                            className="nav-link"
+                            data-key="t-vendor"
+                          >
+                            All Order
+                          </Link>
+                        </li>
+
+                        <li className="nav-item">
+                          <Link
+                            to="/Delivered"
+                            className="nav-link"
+                            data-key="td-vendor"
+                          >
+                            Delivered
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link
+                            to="/Processing"
+                            className="nav-link"
+                            data-key="td-vendor"
+                          >
+                            Processing
+                          </Link>
+                        </li>
+                        <li className="nav-item">
+                          <Link
+                            to="/Cancelled"
+                            className="nav-link"
+                            data-key="td-vendor"
+                          >
+                            Cancelled
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </li>
                 </li>
                 <li className="nav-item">
                   <Link to="/transaction" className="nav-link menu-link">
@@ -447,7 +581,7 @@ function Header() {
                       </li>
                       <li className="nav-item">
                         <Link
-                          to="/bannersection2"
+                          to="#"
                           className="nav-link"
                           data-key="t-nft-landing"
                         >
@@ -456,7 +590,7 @@ function Header() {
                       </li>
                       <li className="nav-item">
                         <Link
-                          to="/bannersection3"
+                          to="#"
                           className="nav-link"
                           data-key="t-nft-landing"
                         >
@@ -465,7 +599,7 @@ function Header() {
                       </li>
                       <li className="nav-item">
                         <Link
-                          to="/bannersection4"
+                          to="#"
                           className="nav-link"
                           data-key="t-nft-landing"
                         >
@@ -481,15 +615,9 @@ function Header() {
                     <span>Coupon</span>
                   </Link>
                 </li>
-                <li className="nav-item">
-                  <Link to="/Notification" className="nav-link menu-link">
-                    <i className="ri-layout-3-line"></i>
-                    <span>Notification</span>
-                  </Link>
-                </li>
                 <li className="menu-title">
                   <i className="ri-more-fill"></i>
-                  <span data-key="t-components">SYSTEM SETTINGS</span>
+                  <span data-key="t-components"> Stock & Reports</span>
                 </li>
                 <li className="nav-item">
                   <Link
@@ -501,11 +629,82 @@ function Header() {
                     aria-controls="sidebarPages"
                   >
                     <i className="ri-pages-line"></i>
-                    <span data-key="t-pages">Pages</span>
+                    <span data-key="t-pages">Inventory </span>
                   </Link>
                   <div className="collapse menu-dropdown" id="sidebarPages">
                     <ul className="nav nav-sm flex-column">
                       <li className="nav-item">
+                        <Link
+                          to="/StockList"
+                          className="nav-link"
+                          data-key="t-team"
+                        >
+                          Stock List
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/Returns"
+                          className="nav-link"
+                          data-key="t-team"
+                        >
+                          Returns
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link menu-link"
+                    to="/#sidebarAdvanceUI"
+                    data-bs-toggle="collapse"
+                    role="button"
+                    aria-expanded="false"
+                    aria-controls="sidebarAdvanceUI"
+                  >
+                    <i className="ri-stack-line"></i>
+                    <span data-key="t-advance-ui">Reports</span>
+                  </Link>
+                  <div className="collapse menu-dropdown" id="sidebarAdvanceUI">
+                    <ul className="nav nav-sm flex-column">
+                      <li className="nav-item">
+                        <Link to="/salesreport" className="nav-link">
+                          Sales Report
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/Productreport" className="nav-link">
+                          Product Report
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link to="/paymetsreport" className="nav-link">
+                          Paymets Report
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </li>{" "}
+                <li className="menu-title">
+                  <i className="ri-more-fill"></i>
+                  <span data-key="t-components">SYSTEM SETTINGS</span>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link menu-link"
+                    to="/#genralsettings"
+                    data-bs-toggle="collapse"
+                    role="button"
+                    aria-expanded="false"
+                    aria-controls="genralsettings"
+                  >
+                    <i className="ri-pages-line"></i>
+                    <span data-key="t-pages">Pages</span>
+                  </Link>
+                  <div className="collapse menu-dropdown" id="genralsettings">
+                    <ul className="nav nav-sm flex-column">
+                      {/* <li className="nav-item">
                         <Link
                           to="/Bloges"
                           className="nav-link"
@@ -513,7 +712,7 @@ function Header() {
                         >
                           Bloges
                         </Link>
-                      </li>
+                      </li> */}
 
                       <li className="nav-item">
                         <Link
@@ -563,52 +762,6 @@ function Header() {
                       </li>
                     </ul>
                   </div>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    className="nav-link menu-link"
-                    to="/#sidebarAdvanceUI"
-                    data-bs-toggle="collapse"
-                    role="button"
-                    aria-expanded="false"
-                    aria-controls="sidebarAdvanceUI"
-                  >
-                    <i className="ri-stack-line"></i>
-                    <span data-key="t-advance-ui">Genral settings</span>
-                  </Link>
-                  <div className="collapse menu-dropdown" id="sidebarAdvanceUI">
-                    <ul className="nav nav-sm flex-column">
-                      <li className="nav-item">
-                        <Link
-                          to="/Profile"
-                          className="nav-link"
-                          data-key="t-sweet-alerts"
-                        >
-                          Profile
-                        </Link>
-                      </li>
-
-                      <li className="nav-item">
-                        <Link
-                          to="/InquiryList"
-                          className="nav-link"
-                          data-key="t-sweet-alerts"
-                        >
-                          Enquiries
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
-                <li className="menu-title">
-                  <i className="ri-more-fill"></i>
-                  <span data-key="t-pages">EMPLOYEE MANAGEMENT</span>
-                </li>
-                <li className="nav-item">
-                  <Link to="/Empolyerole" className="nav-link menu-link">
-                    <i className="ri-layout-3-line"></i>
-                    <span>Employee Role</span>
-                  </Link>
                 </li>
               </ul>
             </div>

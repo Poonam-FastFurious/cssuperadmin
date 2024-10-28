@@ -160,7 +160,7 @@ function Testimonial() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="">Proven Ro</Link>
+                        <Link to="">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Testimonial</li>
                     </ol>
@@ -181,7 +181,7 @@ function Testimonial() {
                         <div className="d-flex gap-1 flex-wrap">
                           <button
                             type="button"
-                            className="btn btn-info"
+                            className="btn btn-success"
                             onClick={handleAddClick}
                           >
                             <i className="ri-file-download-line align-bottom me-1"></i>

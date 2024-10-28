@@ -6,19 +6,30 @@ import { Baseurl } from "../../config";
 import axios from "axios";
 import Swal from "sweetalert2";
 function Category() {
+  const [sortConfig, setSortConfig] = useState({
+    key: "categoriesTitle",
+    direction: "ascending",
+  });
   const [categoriesTitle, setCategoriesTitle] = useState("");
-  const [link, setLink] = useState("");
   const [status, setStatus] = useState("");
   const [image, setImage] = useState("");
+  const [isHeaderCategory, setIsHeaderCategory] = useState(false);
+  const [isCollectionCategory, setIsCollectionCategory] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
   // New state variables for editing
   const [editId, setEditId] = useState("");
   const [editCategoriesTitle, setEditCategoriesTitle] = useState("");
-  const [editLink, setEditLink] = useState("");
+  const [imagePreview, setImagePreview] = useState(""); // State for image preview
   const [editStatus, setEditStatus] = useState("");
   const [editImage, setEditImage] = useState("");
+  const [editisHeaderCategory, setEditisHeaderCategory] = useState(false);
+  const [editisCollectionCategory, setEditisCollectionCategory] =
+    useState(false);
+  const [imageError, setImageError] = useState("");
 
   const fetchCategory = async () => {
     try {
@@ -32,31 +43,68 @@ function Category() {
   };
   const clearForm = () => {
     setCategoriesTitle(""); // Clear the state for categoriesTitle
-    setLink(""); // Clear the state for link
+
     setStatus(""); // Clear the state for status
     setImage(null); // Clear the state for image
+    const imageInput = document.getElementById("imageInput");
+    if (imageInput) {
+      imageInput.value = "";
+    }
   };
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
+    if (file && !allowedTypes.includes(file.type)) {
+      setImageError("Please select a valid image file (JPEG, PNG, GIF).");
+      e.target.value = ""; // Clear the input
+    } else {
+      setImageError("");
+      setImage(file);
+    }
   };
   const handleEditImageChange = (e) => {
-    setEditImage(e.target.files[0]);
+    const file = e.target.files[0];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
+
+    if (file && !allowedTypes.includes(file.type)) {
+      setImageError("Please select a valid image file (JPEG, PNG, GIF).");
+      e.target.value = ""; // Clear the input
+    } else {
+      setImageError("");
+      setEditImage(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
   };
   const handleEditClick = (cat) => {
     setEditId(cat._id);
     setEditCategoriesTitle(cat.categoriesTitle);
-    setEditLink(cat.link);
+    setEditisHeaderCategory(cat.isHeaderCategory);
+    setEditisCollectionCategory(cat.isCollectionCategory);
     setEditStatus(cat.status);
-    setEditImage(null);
+    setEditImage(cat.image);
   };
+  console.log("demo", editisCollectionCategory);
+
+  const handleCheckboxChange = (e) => {
+    const { id, checked } = e.target;
+    if (id === "flexCheckIndeterminate1") {
+      setEditisHeaderCategory(checked);
+    } else if (id === "flexCheckIndeterminate2") {
+      setEditisCollectionCategory(checked);
+    }
+  };
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
     formData.append("id", editId);
     formData.append("categoriesTitle", editCategoriesTitle);
-    formData.append("link", editLink);
+
     formData.append("status", editStatus);
+    formData.append("isHeaderCategory", editisHeaderCategory); // Add this line
+    formData.append("isCollectionCategory", editisCollectionCategory); // Add this line
     if (editImage) {
       formData.append("image", editImage);
     }
@@ -76,7 +124,7 @@ function Category() {
 
       if (data.success) {
         toast.success("Category updated successfully", {
-          position: "top-right",
+          position: "top-center",
           autoClose: 1000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -115,10 +163,10 @@ function Category() {
 
     const formData = new FormData();
     formData.append("categoriesTitle", categoriesTitle);
-    formData.append("link", link);
     formData.append("status", status);
-
     formData.append("image", image);
+    formData.append("isHeaderCategory", isHeaderCategory); // Add this line
+    formData.append("isCollectionCategory", isCollectionCategory); // Add this line
 
     try {
       setLoading(true);
@@ -135,7 +183,7 @@ function Category() {
 
       if (data.success) {
         toast.success("Category added successfully ", {
-          position: "top-right",
+          position: "top-center",
           autoClose: 1000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -152,12 +200,12 @@ function Category() {
           },
         });
       } else {
-        throw new Error("category upload failed");
+        throw new Error("category add failed");
       }
     } catch (error) {
       console.error("Error:", error.message);
-      toast.error("Banner upload failed", {
-        position: "top-right",
+      toast.error("category add  failed", {
+        position: "top-center",
         autoClose: 1000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -207,7 +255,10 @@ function Category() {
           Swal.fire({
             icon: "error",
             title: "Failed to delete category",
-            text: error.message || "Failed to delete category",
+            text:
+              error.response?.data?.message ||
+              error.message ||
+              "Failed to delete category",
           });
         }
       }
@@ -220,22 +271,40 @@ function Category() {
   const filteredCategories = category.filter((cat) =>
     cat.categoriesTitle.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const sortedCategories = [...filteredCategories].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === "ascending" ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === "ascending" ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const requestSort = (key) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+    setSortConfig({ key, direction });
+  };
   return (
     <>
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
             <div class="row">
-              <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                  <h4 class="mb-sm-0">Add category</h4>
+              <div class="col-12 ">
+                <div class="page-title-box d-sm-flex align-items-center justify-content-between  ">
+                  <h4 class="mb-sm-0 color-white">Add category</h4>
 
                   <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                       <li class="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">Charansparsh </Link>
                       </li>
-                      <li class="breadcrumb-item active">Add </li>
+                      <li class="breadcrumb-item ">Add </li>
                     </ol>
                   </div>
                 </div>
@@ -258,7 +327,6 @@ function Category() {
                             >
                               <i class="ri-add-line align-bottom me-1"></i> Add
                             </button>
-
                           </div>
                         </div>
                         <div class="col-sm">
@@ -279,55 +347,65 @@ function Category() {
 
                       <div class="table-responsive table-card mt-3 mb-1">
                         <table
-                          class="table align-middle table-nowrap"
+                          className="table align-middle table-nowrap"
                           id="customerTable"
                         >
-                          <thead class="table-light">
+                          <thead className="table-light">
                             <tr>
-
-                              <th class="sort" data-sort="customer_name">
+                              <th
+                                className="sort"
+                                onClick={() => requestSort("image")}
+                              >
                                 Image
                               </th>
-                              <th class="sort" data-sort="email">
+                              <th
+                                className="sort"
+                                onClick={() => requestSort("categoriesTitle")}
+                              >
                                 Title
                               </th>
-
-                              <th class="sort" data-sort="date">
-                                Link
-                              </th>
-                              <th class="sort" data-sort="status">
+                              <th
+                                className="sort"
+                                onClick={() => requestSort("status")}
+                              >
                                 Status
                               </th>
-                              <th class="sort" data-sort="action">
-                                Action
+                              <th
+                                className="sort"
+                                onClick={() => requestSort("productCount")}
+                              >
+                                Product Count
                               </th>
+                              <th>Action</th>
                             </tr>
                           </thead>
-                          <tbody class="list form-check-all">
-                            {filteredCategories.length > 0 ? (
-                              filteredCategories.map((cat, index) => (
+                          <tbody className="list form-check-all">
+                            {sortedCategories.length > 0 ? (
+                              sortedCategories.map((cat, index) => (
                                 <tr key={index}>
-
-
-                                  <td class="email">
+                                  <td className="email">
                                     <img
                                       className="avatar-xs rounded-circle"
                                       src={cat.image}
                                       alt=""
-                                    ></img>
+                                    />
                                   </td>
-                                  <td class="phone">{cat.categoriesTitle}</td>
-                                  <td class="date">{cat.link}</td>
-                                  <td class="status">
-                                    <span class="badge bg-success-subtle text-success text-uppercase">
+                                  <td className="phone">
+                                    {cat.categoriesTitle}
+                                  </td>
+                                  <td className="status">
+                                    <span className="badge bg-success-subtle text-success text-uppercase">
                                       {cat.status}
                                     </span>
+                                  </td>{" "}
+                                  <td className="product-count">
+                                    {cat.productCount}
                                   </td>
                                   <td>
-                                    <div class="d-flex gap-2">
-                                      <div class="edit">
+                                    <div className="d-flex gap-2">
+                                      <div className="edit">
                                         <button
-                                          class="btn btn-sm btn-success edit-item-btn"
+                                          className="btn btn-sm btn-success edit-item-btn"
                                           data-bs-toggle="modal"
                                           data-bs-target="#editModal"
                                           onClick={() => handleEditClick(cat)}
@@ -335,9 +413,9 @@ function Category() {
                                           Edit
                                         </button>
                                       </div>
-                                      <div class="remove">
+                                      <div className="remove">
                                         <button
-                                          class="btn btn-sm btn-danger remove-item-btn"
+                                          className="btn btn-sm btn-danger remove-item-btn"
                                           onClick={() => handleDelete(cat._id)}
                                         >
                                           Remove
@@ -349,19 +427,24 @@ function Category() {
                               ))
                             ) : (
                               <tr>
-                                <td colSpan="6" class="text-center">
-                                  <div class="noresult" >
-                                    <div class="text-center">
+                                <td colSpan="4" className="text-center">
+                                  <div className="noresult">
+                                    <div className="text-center">
                                       <lord-icon
                                         src="../../../msoeawqm.json"
                                         trigger="loop"
                                         colors="primary:#121331,secondary:#08a88a"
-                                        style={{ width: "75px", height: "75px" }}
+                                        style={{
+                                          width: "75px",
+                                          height: "75px",
+                                        }}
                                       ></lord-icon>
-                                      <h5 class="mt-2">Sorry! No Result Found</h5>
-                                      <p class="text-muted mb-0">
-                                        We've searched more than 150+ Orders We did not
-                                        find any orders for you search.
+                                      <h5 className="mt-2">
+                                        Sorry! No Result Found
+                                      </h5>
+                                      <p className="text-muted mb-0">
+                                        We've searched more than 150+ Orders We
+                                        did not find any orders for you search.
                                       </p>
                                     </div>
                                   </div>
@@ -370,10 +453,7 @@ function Category() {
                             )}
                           </tbody>
                         </table>
-
                       </div>
-
-
                     </div>
                   </div>
                 </div>
@@ -430,45 +510,33 @@ function Category() {
                         id="customername-field"
                         class="form-control"
                         placeholder="Enter Title"
-                        required=""
+                        required
                         onChange={(e) => setCategoriesTitle(e.target.value)}
                         value={categoriesTitle}
                       />
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
 
-                    <div class="mb-3">
-                      <label for="email-field" class="form-label">
-                        Link
-                      </label>
-                      <input
-                        type="text"
-                        id="email-field"
-                        class="form-control"
-                        placeholder="Enter Link"
-                        required=""
-                        onChange={(e) => setLink(e.target.value)}
-                        value={link}
-                      />
-                      <div class="invalid-feedback">Please enter an Link.</div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="phone-field" class="form-label">
+                    <div className="mb-3">
+                      <label htmlFor="phone-field" className="form-label">
                         Image
                       </label>
                       <input
                         type="file"
-                        id="phone-field"
-                        class="form-control"
+                        id="imageInput"
+                        className="form-control"
                         placeholder="Enter Phone no."
-                        required=""
+                        required
+                        accept="image/*"
                         onChange={handleImageChange}
                       />
-                      <div class="invalid-feedback">Please enter a phone.</div>
+                      {imageError && (
+                        <div className="invalid-feedback d-block">
+                          {imageError}
+                        </div>
+                      )}
                     </div>
-
-                    <div>
+                    <div className=" mb-3">
                       <label for="status-field" class="form-label">
                         Status
                       </label>
@@ -477,14 +545,56 @@ function Category() {
                         data-trigger=""
                         name="status-field"
                         id="status-field"
-                        required=""
+                        required
                         onChange={(e) => setStatus(e.target.value)}
                         value={status}
                       >
-                        <option value="">Status</option>
                         <option value="active">Active</option>
-                        <option value="inactive">Block</option>
+                        <option value="inactive">Inactive</option>
                       </select>
+                    </div>
+                    <div className="mb-3">
+                      <label for="status-field" class="form-label">
+                        Categories Type
+                      </label>
+                      <div class="d-flex align-items-center">
+                        <div class="form-check me-3">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value=""
+                            id="flexCheckIndeterminate1"
+                            checked={isHeaderCategory}
+                            onChange={(e) =>
+                              setIsHeaderCategory(e.target.checked)
+                            } // Update state on change
+                          />
+                          <label
+                            class="form-check-label"
+                            for="flexCheckIndeterminate1"
+                          >
+                            IsHeader Categories
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value=""
+                            id="flexCheckIndeterminate2"
+                            checked={isCollectionCategory}
+                            onChange={(e) =>
+                              setIsCollectionCategory(e.target.checked)
+                            } // Update state on change
+                          />
+                          <label
+                            class="form-check-label"
+                            for="flexCheckIndeterminate2"
+                          >
+                            Collection
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="modal-footer">
@@ -512,6 +622,16 @@ function Category() {
                         >
                           <span className="visually-hidden">Loading...</span>
                         </div>
+                      </div>
+                    )}
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <img
+                          src={imagePreview}
+                          alt="Imag Preview"
+                          className="img-fluid"
+                          style={{ maxHeight: "150px", maxWidth: "100%" }}
+                        />
                       </div>
                     )}
                   </div>
@@ -555,7 +675,7 @@ function Category() {
                         id="id-field"
                         class="form-control"
                         placeholder="ID"
-                        readonly=""
+                        readonly
                         value={editId}
                       />
                     </div>
@@ -576,38 +696,26 @@ function Category() {
                       <div class="invalid-feedback">Please enter a Title</div>
                     </div>
 
-                    <div class="mb-3">
-                      <label for="email-field" class="form-label">
-                        Link
-                      </label>
-                      <input
-                        type="text"
-                        id="email-field"
-                        class="form-control"
-                        placeholder="Enter Link"
-                        required=""
-                        value={editLink}
-                        onChange={(e) => setEditLink(e.target.value)}
-                      />
-                      <div class="invalid-feedback">Please enter an Link.</div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="phone-field" class="form-label">
+                    <div className="mb-3">
+                      <label htmlFor="phone-field" className="form-label">
                         Image
                       </label>
                       <input
                         type="file"
                         id="phone-field"
-                        class="form-control"
+                        className="form-control"
                         placeholder="Enter Phone no."
-                        required=""
+                        accept="image/*"
                         onChange={handleEditImageChange}
                       />
-                      <div class="invalid-feedback">Please enter a Image</div>
+                      {imageError && (
+                        <div className="invalid-feedback d-block">
+                          {imageError}
+                        </div>
+                      )}
                     </div>
 
-                    <div>
+                    <div className=" mb-3">
                       <label for="status-field" class="form-label">
                         Status
                       </label>
@@ -616,14 +724,50 @@ function Category() {
                         data-trigger=""
                         name="status-field"
                         id="status-field"
-                        required=""
+                        required
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value)}
                       >
-                        <option>Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                       </select>
+                    </div>
+                    <div className="mb-3">
+                      <label for="status-field" class="form-label">
+                        Categories Type
+                      </label>
+                      <div class="d-flex align-items-center">
+                        <div class="form-check me-3">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="flexCheckIndeterminate1"
+                            checked={editisHeaderCategory} // Bind checked to the state
+                            onChange={handleCheckboxChange} // Call the change handler
+                          />
+                          <label
+                            class="form-check-label"
+                            for="flexCheckIndeterminate1"
+                          >
+                            IsHeader Categories
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="flexCheckIndeterminate2"
+                            checked={editisCollectionCategory} // Bind checked to the state
+                            onChange={handleCheckboxChange} // Call the change handler
+                          />
+                          <label
+                            class="form-check-label"
+                            for="flexCheckIndeterminate2"
+                          >
+                            Collection
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="modal-footer">
@@ -644,6 +788,16 @@ function Category() {
                         Update
                       </button>
                     </div>
+                    {loading && (
+                      <div className="loader">
+                        <div
+                          className="spinner-border text-primary"
+                          role="status"
+                        >
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>

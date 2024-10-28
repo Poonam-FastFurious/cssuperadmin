@@ -81,7 +81,6 @@ function Addon() {
     // If user confirms deletion
     if (confirmation.isConfirmed) {
       try {
-
         const response = await fetch(Baseurl + "/api/v1/addons/delete", {
           method: "DELETE",
           headers: {
@@ -164,7 +163,6 @@ function Addon() {
   );
   return (
     <>
-
       <div class="main-content">
         <div class="page-content">
           <div class="container-fluid">
@@ -176,7 +174,7 @@ function Addon() {
                   <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                       <li class="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li class="breadcrumb-item active">Add </li>
                     </ol>
@@ -201,7 +199,6 @@ function Addon() {
                             >
                               <i class="ri-add-line align-bottom me-1"></i> Add
                             </button>
-
                           </div>
                         </div>
                         <div class="col-sm">
@@ -227,7 +224,6 @@ function Addon() {
                         >
                           <thead class="table-light">
                             <tr>
-
                               <th class="sort" data-sort="customer_name">
                                 Name
                               </th>
@@ -245,66 +241,73 @@ function Addon() {
                             </tr>
                           </thead>
                           <tbody class="list form-check-all">
-                            {filteredAddons.length > 0 ? (filteredAddons.map((addon) => (
-                              <tr key={addon.id}>
-
-                                <td className="email">{addon.name}</td>
-                                <td className="date">{addon.price}</td>
-                                <td className="status">
-                                  <span
-                                    className={`badge bg-success-subtle text-success text-uppercase`}
-                                  >
-                                    {addon.status}
-                                  </span>
-                                </td>
-                                <td>
-                                  <div className="d-flex gap-2">
-                                    <div className="edit">
-                                      <button
-                                        className="btn btn-sm btn-success edit-item-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editModal"
-                                        onClick={() => handleEdit(addon)}
-                                      >
-                                        Edit
-                                      </button>
+                            {filteredAddons.length > 0 ? (
+                              filteredAddons.map((addon) => (
+                                <tr key={addon.id}>
+                                  <td className="email">{addon.name}</td>
+                                  <td className="date">{addon.price}</td>
+                                  <td className="status">
+                                    <span
+                                      className={`badge bg-success-subtle text-success text-uppercase`}
+                                    >
+                                      {addon.status}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div className="d-flex gap-2">
+                                      <div className="edit">
+                                        <button
+                                          className="btn btn-sm btn-success edit-item-btn"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#editModal"
+                                          onClick={() => handleEdit(addon)}
+                                        >
+                                          Edit
+                                        </button>
+                                      </div>
+                                      <div className="remove">
+                                        <button
+                                          className="btn btn-sm btn-danger remove-item-btn"
+                                          onClick={() =>
+                                            handleDelete(addon._id)
+                                          }
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
                                     </div>
-                                    <div className="remove">
-                                      <button
-                                        className="btn btn-sm btn-danger remove-item-btn"
-                                        onClick={() => handleDelete(addon._id)}
-                                      >
-                                        Remove
-                                      </button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="6" class="text-center">
+                                  <div class="noresult">
+                                    <div class="text-center">
+                                      <lord-icon
+                                        src="../../../msoeawqm.json"
+                                        trigger="loop"
+                                        colors="primary:#121331,secondary:#08a88a"
+                                        style={{
+                                          width: "75px",
+                                          height: "75px",
+                                        }}
+                                      ></lord-icon>
+                                      <h5 class="mt-2">
+                                        Sorry! No Result Found
+                                      </h5>
+                                      <p class="text-muted mb-0">
+                                        We've searched more than 150+ Orders We
+                                        did not find any orders for you search.
+                                      </p>
                                     </div>
                                   </div>
                                 </td>
                               </tr>
-                            ))) : (<tr>
-                              <td colSpan="6" class="text-center">
-                                <div class="noresult" >
-                                  <div class="text-center">
-                                    <lord-icon
-                                      src="../../../msoeawqm.json"
-                                      trigger="loop"
-                                      colors="primary:#121331,secondary:#08a88a"
-                                      style={{ width: "75px", height: "75px" }}
-                                    ></lord-icon>
-                                    <h5 class="mt-2">Sorry! No Result Found</h5>
-                                    <p class="text-muted mb-0">
-                                      We've searched more than 150+ Orders We did not
-                                      find any orders for you search.
-                                    </p>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>)}
+                            )}
                           </tbody>
                         </table>
-
                       </div>
-
-
                     </div>
                   </div>
                 </div>

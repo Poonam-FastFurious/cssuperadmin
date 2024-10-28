@@ -368,7 +368,7 @@
 }
 .page-title-box {
   padding: 10px 1.5rem;
-  background-color: var(--vz-secondary-bg);
+  background-color: #fff;
   -webkit-box-shadow: var(--vz-page-title-box-shadow);
   box-shadow: var(--vz-page-title-box-shadow);
   border-bottom: 1px solid var(--vz-page-title-border);
@@ -3886,23 +3886,23 @@ code {
   border-color: #1e7eb3 transparent transparent;
 }
 .ribbon-box .ribbon-info.ribbon-shape::before {
-  border-left-color: #299cdb;
-  border-top-color: #299cdb;
+  border-left-color: #d68a32;
+  border-top-color: #d68a32;
 }
 .ribbon-box .ribbon-info.ribbon-shape::after {
-  border-left-color: #299cdb;
-  border-bottom-color: #299cdb;
+  border-left-color: #d68a32;
+  border-bottom-color: #d68a32;
 }
 .ribbon-box.right .ribbon-info {
-  background: #299cdb;
+  background: #d68a32;
 }
 .ribbon-box.right .ribbon-info.ribbon-shape::before {
-  border-right-color: #299cdb;
-  border-top-color: #299cdb;
+  border-right-color: #d68a32;
+  border-top-color: #d68a32;
 }
 .ribbon-box.right .ribbon-info.ribbon-shape::after {
-  border-right-color: #299cdb;
-  border-bottom-color: #299cdb;
+  border-right-color: #d68a32;
+  border-bottom-color: #d68a32;
 }
 .ribbon-box .ribbon-warning {
   background: #f7b84b;
@@ -9485,7 +9485,6 @@ button.gridjs-sort-desc {
   appearance: none;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
-  
 }
 .gridjs-td .gridjs-checkbox[type="checkbox"] {
   border-radius: 0.25em;
@@ -16154,4 +16153,3 @@ span.flatpickr-weekday {
   bottom: -18px;
   right: -35px;
 }
-

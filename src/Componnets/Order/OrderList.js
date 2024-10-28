@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Baseurl } from "../../config";
 
 /* eslint-disable react/no-unescaped-entities */
@@ -13,18 +13,14 @@ function Order() {
   const [fetching, setFetching] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newStatus, setNewStatus] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+
   const [newShippingLink, setNewShippingLink] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const itemsPerPage = 10;
 
   // Calculate indexes for slicing current page items
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = orders.slice(indexOfFirstItem, indexOfLastItem);
 
   // Pagination control handlers
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -37,35 +33,40 @@ function Order() {
         const sortedOrders = data.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
+
+        // Filter orders based on the current vendor
+
         setOrders(sortedOrders);
-        const filteredCanceledOrders = data.data.filter(
+        const filteredCanceledOrders = sortedOrders.filter(
           (order) => order.status === "Cancelled"
         );
         setCanceledOrders(filteredCanceledOrders);
-        const filterdeliverd = data.data.filter(
+        const filterdeliverd = sortedOrders.filter(
           (order) => order.status === "Delivered"
         );
         setDelivered(filterdeliverd);
 
-        const filtershiped = data.data.filter(
+        const filtershiped = sortedOrders.filter(
           (order) => order.status === "Shipped"
         );
         setShiped(filtershiped);
       } catch (err) {
-        throw (new Error("data not fetch "), err);
+        console.error("Failed to fetch orders", err);
       } finally {
         setFetching(false);
       }
     };
-
     fetchProducts();
   }, []);
-
   const filteredOrders = orders.filter(
     (order) =>
       order.orderID.includes(searchQuery) ||
-      order.customer.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+      (order.customer &&
+        order.customer.fullName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()))
   );
+
   const handleEditClick = (order) => {
     setSelectedOrder(order);
     setNewStatus(order.status);
@@ -148,15 +149,8 @@ function Order() {
       // Handle error condition if required
     }
   };
-
-  const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(orders.length / itemsPerPage); i++) {
-    pageNumbers.push(i);
-  }
-
   return (
     <>
-      <ToastContainer autoClose={1000} />
       <div className="main-content">
         <div className="page-content">
           <div className="container-fluid">
@@ -168,7 +162,7 @@ function Order() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="">Proven Ro</Link>
+                        <Link to="">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Orders</li>
                     </ol>
@@ -185,9 +179,6 @@ function Order() {
                         <p className="text-uppercase fw-medium text-muted text-truncate mb-0">
                           Total Orders
                         </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <h5 className="text-success fs-14 mb-0">d</h5>
                       </div>
                     </div>
                     <div className="d-flex align-items-end justify-content-between mt-4">
@@ -382,7 +373,7 @@ function Order() {
                           <div>
                             <button
                               type="button"
-                              className="btn btn-primary w-100"
+                              className="btn btn-success w-100"
                             >
                               <i className="ri-equalizer-fill me-1 align-bottom"></i>
                               Clear
@@ -480,6 +471,12 @@ function Order() {
                                   >
                                     Customer
                                   </th>
+                                  <th
+                                    className="sort"
+                                    data-sort="customer_name"
+                                  >
+                                    Vendor
+                                  </th>
                                   <th className="sort" data-sort="date">
                                     Order Date
                                   </th>
@@ -519,7 +516,10 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer.fullName}
+                                      {order.customer?.fullName}
+                                    </td>
+                                    <td className="customer_name">
+                                      {order.vendorDetails[0]?.name}
                                     </td>
 
                                     <td className="date">
@@ -600,61 +600,6 @@ function Order() {
                                 </div>
                               </div>
                             )}
-                            <div className="d-flex justify-content-end mt-3">
-                              <nav>
-                                <ul className="pagination">
-                                  <li
-                                    className={`page-item ${
-                                      currentPage === 1 && "disabled"
-                                    }`}
-                                  >
-                                    <button
-                                      className="page-link"
-                                      onClick={() => paginate(currentPage - 1)}
-                                    >
-                                      Previous
-                                    </button>
-                                  </li>
-                                  {Array.from(
-                                    {
-                                      length: Math.ceil(
-                                        orders.length / itemsPerPage
-                                      ),
-                                    },
-                                    (_, i) => (
-                                      <li
-                                        key={i}
-                                        className={`page-item ${
-                                          currentPage === i + 1 && "active"
-                                        }`}
-                                      >
-                                        <button
-                                          className="page-link"
-                                          onClick={() => paginate(i + 1)}
-                                        >
-                                          {i + 1}
-                                        </button>
-                                      </li>
-                                    )
-                                  )}
-                                  <li
-                                    className={`page-item ${
-                                      currentPage ===
-                                        Math.ceil(
-                                          orders.length / itemsPerPage
-                                        ) && "disabled"
-                                    }`}
-                                  >
-                                    <button
-                                      className="page-link"
-                                      onClick={() => paginate(currentPage + 1)}
-                                    >
-                                      Next
-                                    </button>
-                                  </li>
-                                </ul>
-                              </nav>
-                            </div>
                           </div>
                         </div>
                         <div
@@ -727,7 +672,9 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer.fullName}
+                                      <td className="customer_name">
+                                        {order.customer?.fullName}
+                                      </td>
                                     </td>
                                     <td className="product_name">
                                       {order.products.length}
@@ -881,7 +828,9 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer.fullName}
+                                      <td className="customer_name">
+                                        {order.customer?.fullName}
+                                      </td>
                                     </td>
                                     <td className="product_name">
                                       {order.products.length}
@@ -1034,7 +983,9 @@ function Order() {
                                       </Link>
                                     </td>
                                     <td className="customer_name">
-                                      {order.customer.fullName}
+                                      <td className="customer_name">
+                                        {order.customer?.fullName}
+                                      </td>
                                     </td>
                                     <td className="product_name">
                                       {order.products.length}

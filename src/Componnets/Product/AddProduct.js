@@ -4,9 +4,11 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import axios from "axios";
 import { Baseurl } from "../../config";
+import { toast } from "react-toastify";
 
 function AddProduct() {
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -16,6 +18,8 @@ function AddProduct() {
     discount: "",
     cutPrice: "",
     categories: "",
+    subcategory: "",
+    state: "",
     tags: "",
     sku: "",
     shortDescription: "",
@@ -42,18 +46,53 @@ function AddProduct() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
+  
+    // Update the form data state
+    setFormData((prevState) => {
+      const newState = { ...prevState, [name]: value };
+  
+      // Handle price and cutPrice to calculate the discount
+      if (name === "price" || name === "cutPrice") {
+        const price = parseFloat(newState.price) || 0;
+        const cutPrice = parseFloat(newState.cutPrice) || 0;
+  
+        // Calculate discount if both price and cutPrice are valid
+        if (cutPrice > 0 && price > 0) {
+          const discount = ((cutPrice - price) / cutPrice) * 100;
+          newState.discount = discount.toFixed(2);
+        } else {
+          newState.discount = "";
+        }
+      }
+  
+      return newState;
     });
+  
+    // Clear any existing errors for the current field
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: "",
       });
     }
+  
+    // Fetch subcategories if the changed field is 'categories'
+    if (name === "categories") {
+      fetchSubcategories(value);
+    }
   };
-
+  
+  const fetchSubcategories = async (categoryId) => {
+    try {
+      const response = await axios.get(
+        `${Baseurl}/api/v1/subcategory/allcategory`
+      );
+      setSubcategories(response.data.data);
+    } catch (error) {
+      console.error("Error fetching subcategories", error);
+      setSubcategories([]); // Clear subcategories if the request fails
+    }
+  };
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     if (files && files.length > 0) {
@@ -159,10 +198,18 @@ function AddProduct() {
       const result = await response.json();
       console.log(result);
       if (response.ok) {
+        toast.success("Product created successfully");
         navigate("/Product");
       } else {
         console.error("Network response was not ok");
-        // Handle response errors here
+        if (result.errors && result.errors.length > 0) {
+          result.errors.forEach((error) => {
+            toast.error(`${error.path}: ${error.message}`);
+          });
+        } else {
+          // Generic error message
+          toast.error(result.message || "An error occurred");
+        }
       }
     } catch (error) {
       console.error("Error adding product", error);
@@ -182,7 +229,7 @@ function AddProduct() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Create Product</li>
                     </ol>
@@ -209,6 +256,7 @@ function AddProduct() {
                           htmlFor="product-title-input"
                         >
                           Product Title
+                          <span className="text-danger ml-8">*</span>
                         </label>
                         <input
                           type="text"
@@ -219,13 +267,16 @@ function AddProduct() {
                           name="title"
                           value={formData.title}
                           onChange={handleChange}
-                        />{" "}
+                        />
                         {errors.title && (
                           <div className="invalid-feedback">{errors.title}</div>
                         )}
                       </div>
                       <div>
-                        <label>Product Description</label>
+                        <label>
+                          Product Description
+                          <span className="text-danger ">*</span>
+                        </label>
                         <CKEditor
                           editor={ClassicEditor}
                           data={formData.description}
@@ -242,11 +293,17 @@ function AddProduct() {
 
                   <div className="card">
                     <div className="card-header">
-                      <h5 className="card-title mb-0">Product Gallery</h5>
+                      <h5 className="card-title mb-0">
+                        Product Gallery <span className="text-danger ">*</span>(
+                        size 1280x1280 pixels.)
+                      </h5>
                     </div>
                     <div className="card-body">
                       <div className="mb-4">
-                        <h5 className="fs-14 mb-1">Product Image</h5>
+                        <h5 className="fs-14 mb-1">
+                          Product Image{" "}
+                          <span className="text-danger ml-8">*</span>
+                        </h5>
                         <p className="text-muted">Add Product main Image.</p>
                         <div className="text-center">
                           <div className="position-relative d-inline-block">
@@ -263,6 +320,16 @@ function AddProduct() {
                                 </div>
                               </div>
                             </label>
+                            <div class="avatar-lg">
+                              <div class="avatar-title bg-light rounded  pb-4">
+                                <img
+                                  src=""
+                                  id="product-img"
+                                  class="avatar-md h-auto"
+                                  alt=""
+                                />
+                              </div>
+                            </div>
                             <input
                               className={`form-control d-none ${
                                 errors.image ? "is-invalid" : ""
@@ -329,7 +396,10 @@ function AddProduct() {
                         </div>
                       </div>
                       <div className="mb-4">
-                        <h5 className="fs-14 mb-1">Product Thumbnail</h5>
+                        <h5 className="fs-14 mb-1">
+                          Product Thumbnail (Atleast 5){" "}
+                          <span className="text-danger ml-8">*</span>
+                        </h5>
                         <p className="text-muted">Add Product thumbnail.</p>
                         <div className="text-center">
                           <div className="position-relative d-inline-block">
@@ -377,7 +447,11 @@ function AddProduct() {
                                 <div className="border rounded">
                                   <div className="d-flex p-2">
                                     <img
-                                      src={file}
+                                      src={
+                                        file instanceof File
+                                          ? URL.createObjectURL(file)
+                                          : file
+                                      }
                                       alt={`Thumbnail ${index}`}
                                       style={{
                                         width: "100px",
@@ -395,7 +469,10 @@ function AddProduct() {
                   </div>
                   <div className="card">
                     <div className="card-header">
-                      <h5 className="card-title mb-0">Product VideoUrl</h5>
+                      <h5 className="card-title mb-0">
+                        Product VideoUrl (Youtube only ){" "}
+                        <span className="text-danger ml-8">*</span>
+                      </h5>
                     </div>
                     <div className="card-body">
                       <div className="hstack gap-3 align-items-start">
@@ -449,7 +526,8 @@ function AddProduct() {
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
                                 <label className="form-label">
-                                  Product Category
+                                  Product Category{" "}
+                                  <span className="text-danger ml-8">*</span>
                                 </label>
                                 <select
                                   className={`form-select ${
@@ -482,7 +560,66 @@ function AddProduct() {
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
                                 <label className="form-label">
-                                  Product Tags
+                                  Product SubCategory
+                                  <span className="text-danger ml-8">*</span>
+                                </label>
+                                <select
+                                  className={`form-select ${
+                                    errors.subcategory ? "is-invalid" : ""
+                                  }`}
+                                  name="subcategory"
+                                  value={formData.subcategory}
+                                  onChange={handleChange}
+                                  disabled={!subcategories.length} // Disable if no subcategories
+                                >
+                                  <option value="">Select SubCategory</option>
+                                  {subcategories.map((subCat) => (
+                                    <option
+                                      key={subCat._id}
+                                      value={subCat.subCategoryTitle}
+                                    >
+                                      {subCat.subCategoryTitle}
+                                    </option>
+                                  ))}
+                                </select>
+                                {errors.subcategory && (
+                                  <div className="invalid-feedback">
+                                    {errors.subcategory}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  State
+                                  <span className="text-danger ml-8">*</span>
+                                </label>
+                                <select
+                                  className={`form-select `}
+                                  id="choices-category-input"
+                                  data-choices=""
+                                  name="state"
+                                  onChange={handleChange}
+                                  data-choices-search-false=""
+                                >
+                                  <option>select </option>
+                                  <option value="Uttar Pradesh">
+                                    Uttar Pradesh
+                                  </option>
+                                  <option value="Rajsthan">Rajsthan</option>
+                                  <option value=" Madhya Pradesh">
+                                    Madhya Pradesh
+                                  </option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  Product Tags{" "}
+                                  <span className="text-danger ml-8">*</span>
+                                  (for multiple use comma)
                                 </label>
                                 <input
                                   type="text"
@@ -504,50 +641,9 @@ function AddProduct() {
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
                                 <label className="form-label">
-                                  Product Price
+                                  MRP{" "}
+                                  <span className="text-danger ml-8">*</span>
                                 </label>
-                                <input
-                                  type="number"
-                                  className={`form-control ${
-                                    errors.price ? "is-invalid" : ""
-                                  }`}
-                                  placeholder="Enter price"
-                                  name="price"
-                                  value={formData.price}
-                                  onChange={handleChange}
-                                />
-                                {errors.price && (
-                                  <div className="invalid-feedback">
-                                    {errors.price}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label className="form-label">
-                                  Product Discount
-                                </label>
-                                <input
-                                  type="number"
-                                  className={`form-control ${
-                                    errors.discount ? "is-invalid" : ""
-                                  }`}
-                                  placeholder="Enter discount"
-                                  name="discount"
-                                  value={formData.discount}
-                                  onChange={handleChange}
-                                />
-                                {errors.discount && (
-                                  <div className="invalid-feedback">
-                                    {errors.discount}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-sm-6">
-                              <div className="mb-3">
-                                <label className="form-label">Cut Price</label>
                                 <input
                                   type="number"
                                   className={`form-control ${
@@ -568,7 +664,74 @@ function AddProduct() {
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
                                 <label className="form-label">
-                                  Product SKU
+                                  Product Price{" "}
+                                  <span className="text-danger ml-8">*</span>
+                                </label>
+                                <div class="input-group has-validation mb-3">
+                                  <span
+                                    class="input-group-text"
+                                    id="product-price-addon"
+                                  >
+                                    ₹
+                                  </span>
+                                  <input
+                                    type="number"
+                                    className={`form-control ${
+                                      errors.price ? "is-invalid" : ""
+                                    }`}
+                                    placeholder="Enter price"
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleChange}
+                                  />
+                                </div>
+
+                                {errors.price && (
+                                  <div className="invalid-feedback">
+                                    {errors.price}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  Product Discount{" "}
+                                  <span className="text-danger ml-8">*</span>
+                                </label>
+                                <div class="input-group has-validation mb-3">
+                                  <span
+                                    class="input-group-text"
+                                    id="product-discount-addon"
+                                  >
+                                    %
+                                  </span>{" "}
+                                  <input
+                                    readOnly
+                                    type="number"
+                                    className={`form-control ${
+                                      errors.discount ? "is-invalid" : ""
+                                    }`}
+                                    placeholder="Enter discount"
+                                    name="discount"
+                                    value={formData.discount}
+                                    onChange={handleChange}
+                                  />
+                                </div>
+
+                                {errors.discount && (
+                                  <div className="invalid-feedback">
+                                    {errors.discount}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="col-lg-3 col-sm-6">
+                              <div className="mb-3">
+                                <label className="form-label">
+                                  Product SKU{" "}
+                                  <span className="text-danger ml-8">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -589,7 +752,10 @@ function AddProduct() {
                             </div>
                             <div className="col-lg-3 col-sm-6">
                               <div className="mb-3">
-                                <label className="form-label">Stocks</label>
+                                <label className="form-label">
+                                  Stocks{" "}
+                                  <span className="text-danger ml-8">*</span>
+                                </label>
                                 <input
                                   type="number"
                                   className={`form-control ${
@@ -610,7 +776,8 @@ function AddProduct() {
                             <div className="col-lg-12">
                               <div className="mb-3">
                                 <label className="form-label">
-                                  Short Description
+                                  Short Description{" "}
+                                  <span className="text-danger ml-8">*</span>
                                 </label>
                                 <textarea
                                   type="text"
@@ -635,7 +802,7 @@ function AddProduct() {
                     </div>
                   </div>
                   <div className="text-strat">
-                    <button type="submit" className="btn btn-primary">
+                    <button type="submit" className="btn btn-success">
                       {loading ? "Submitting..." : "Submit"}
                     </button>
                   </div>

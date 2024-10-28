@@ -5,10 +5,9 @@ import { Baseurl } from "../../config";
 
 function Transaction() {
   const [transactions, setTransactions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // 10 items per page
-  const [searchEmail, setSearchEmail] = useState("");
-  const [searchDate, setSearchDate] = useState("");
+
+  // 10 items per page
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -25,48 +24,6 @@ function Transaction() {
     fetchTransactions();
   }, []);
   // Filter transactions based on search criteria
-  const filteredTransactions = transactions.filter((transaction) => {
-    // Filter by email
-    if (
-      searchEmail &&
-      !transaction.user.email.toLowerCase().includes(searchEmail.toLowerCase())
-    ) {
-      return false;
-    }
-    // Filter by date
-    if (searchDate) {
-      const transactionDate = new Date(transaction.createdAt);
-      const formattedSearchDate = new Date(searchDate);
-      // Compare dates (considering only date part, not time)
-      if (
-        transactionDate.getFullYear() !== formattedSearchDate.getFullYear() ||
-        transactionDate.getMonth() !== formattedSearchDate.getMonth() ||
-        transactionDate.getDate() !== formattedSearchDate.getDate()
-      ) {
-        return false;
-      }
-    }
-    return true;
-  });
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTransactions = filteredTransactions.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-
-  // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Handle search input changes
-  const handleEmailChange = (event) => {
-    setSearchEmail(event.target.value);
-  };
-
-  const handleDateChange = (event) => {
-    setSearchDate(event.target.value);
-  };
   return (
     <>
       <div className="main-content">
@@ -80,7 +37,7 @@ function Transaction() {
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="">Proven Ro</Link>
+                        <Link to="">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Transactions</li>
                     </ol>
@@ -118,8 +75,6 @@ function Transaction() {
                               type="text"
                               className="form-control search"
                               placeholder="Search by email..."
-                              value={searchEmail}
-                              onChange={handleEmailChange}
                             />
                             <i className="ri-search-line search-icon"></i>
                           </div>
@@ -136,8 +91,6 @@ function Transaction() {
                               data-range-date="true"
                               id="demo-datepicker"
                               placeholder="Select date"
-                              value={searchDate}
-                              onChange={handleDateChange}
                             />
                           </div>
                         </div>
@@ -146,7 +99,7 @@ function Transaction() {
                           <div>
                             <button
                               type="button"
-                              className="btn btn-primary w-100"
+                              className="btn btn-success w-100"
                             >
                               <i className="ri-equalizer-fill me-1 align-bottom"></i>
                               Filters
@@ -174,11 +127,11 @@ function Transaction() {
                         </tr>
                       </thead>
                       <tbody>
-                        {currentTransactions.map((transaction, index) => (
+                        {transactions.map((transaction, index) => (
                           <tr key={index}>
-                            <th scope="row">{indexOfFirstItem + index + 1}</th>
-                            <td>{transaction.user.email}</td>
-                            <td>{transaction.user.fullName}</td>
+                            <th scope="row">{index + 1}</th>
+                            <td>{transaction.user?.email}</td>
+                            <td>{transaction.user?.fullName}</td>
                             <td>{transaction.paymentID}</td>
                             <td>Pending</td>
                             <td>
@@ -192,7 +145,7 @@ function Transaction() {
                         ))}
                       </tbody>
                     </table>
-                    <nav className="my-4 mx-2">
+                    {/* <nav className="my-4 mx-2">
                       <ul className="pagination">
                         <li
                           className={`page-item ${
@@ -201,7 +154,7 @@ function Transaction() {
                         >
                           <button
                             className="page-link"
-                            onClick={() => paginate(currentPage - 1)}
+                           
                           >
                             Previous
                           </button>
@@ -221,7 +174,7 @@ function Transaction() {
                             >
                               <button
                                 className="page-link"
-                                onClick={() => paginate(index + 1)}
+                               
                               >
                                 {index + 1}
                               </button>
@@ -238,13 +191,13 @@ function Transaction() {
                         >
                           <button
                             className="page-link"
-                            onClick={() => paginate(currentPage + 1)}
+                          
                           >
                             Next
                           </button>
                         </li>
                       </ul>
-                    </nav>
+                    </nav> */}
                   </div>
                 </div>
               </div>

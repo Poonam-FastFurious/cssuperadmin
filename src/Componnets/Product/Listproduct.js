@@ -4,30 +4,31 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Baseurl } from "../../config";
+import { toast } from "react-toastify";
 
 function Listproduct() {
   const [products, setProducts] = useState([]);
+  const [isProcessing, setIsProcessing] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); // New state for search query
   const [filteredProducts, setFilteredProducts] = useState([]); // State for filtered products
 
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(Baseurl + "/api/v1/Product/products");
+      const sortedProducts = response.data.data.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setProducts(sortedProducts);
+      setFilteredProducts(sortedProducts);
+    } catch (error) {
+      setError("Error fetching products. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(Baseurl + "/api/v1/Product/products");
-        const sortedProducts = response.data.data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setProducts(sortedProducts);
-        setFilteredProducts(sortedProducts);
-      } catch (error) {
-        setError("Error fetching products. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
@@ -45,7 +46,45 @@ function Listproduct() {
 
     setFilteredProducts(filtered);
   };
+  const handleApprove = (id) => {
+    // Set the processing state for this specific user
+    setIsProcessing((prev) => ({ ...prev, [id]: true }));
 
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Once approved, you won't be able to change this status!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, approve it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`${Baseurl}/api/v1/Product/Aprove?id=${id}`, {
+          method: "PATCH",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              toast.success("Product approved successfully!");
+              fetchProducts();
+            } else {
+              toast.error("Failed to approve Product.");
+            }
+          })
+          .catch(() => {
+            toast.error("An error occurred. Please try again.");
+          })
+          .finally(() => {
+            // Remove the processing state for this user after request completes
+            setIsProcessing((prev) => ({ ...prev, [id]: false }));
+          });
+      } else {
+        // If the confirmation is canceled, stop processing
+        setIsProcessing((prev) => ({ ...prev, [id]: false }));
+      }
+    });
+  };
   const handleDelete = (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -91,11 +130,10 @@ function Listproduct() {
               <div className="col-12">
                 <div className="page-title-box d-sm-flex align-items-center justify-content-between">
                   <h4 className="mb-sm-0">Products</h4>
-
                   <div className="page-title-right">
                     <ol className="breadcrumb m-0">
                       <li className="breadcrumb-item">
-                        <Link to="#">Proven Ro</Link>
+                        <Link to="#">CharanSparsh</Link>
                       </li>
                       <li className="breadcrumb-item active">Products</li>
                     </ol>
@@ -111,7 +149,7 @@ function Listproduct() {
                     <div className="card-header border-0">
                       <div className="row g-4">
                         <div className="col-sm-auto">
-                          <div>
+                          {/* <div>
                             <Link
                               to="/AddProduct"
                               className="btn btn-success"
@@ -120,7 +158,7 @@ function Listproduct() {
                               <i className="ri-add-line align-bottom me-1"></i>{" "}
                               Add Product
                             </Link>
-                          </div>
+                          </div> */}
                         </div>
                         <div className="col-sm">
                           <div className="d-flex justify-content-sm-end">
@@ -203,6 +241,8 @@ function Listproduct() {
                                   <th scope="col">Stock</th>
                                   <th scope="col">Price</th>
                                   <th scope="col">Discount</th>
+                                  <th scope="col">Vendor</th>
+                                  <th scope="col">Status</th>
                                   <th scope="col">Action</th>
                                 </tr>
                               </thead>
@@ -233,6 +273,20 @@ function Listproduct() {
                                     <td>{product.stocks}</td>
                                     <td>₹{product.price}</td>
                                     <td>{product.discount}</td>
+                                    <td>{product.vendor?.name}</td>
+                                    <td className="status">
+                                      <span
+                                        className={`badge text-uppercase ${
+                                          product.IsApproved
+                                            ? "bg-success-subtle text-success"
+                                            : "bg-warning-subtle text-warning"
+                                        }`}
+                                      >
+                                        {product.IsApproved
+                                          ? "active"
+                                          : "Pending"}
+                                      </span>
+                                    </td>
                                     <td>
                                       <div className="hstack gap-3 flex-wrap">
                                         <Link
@@ -250,6 +304,24 @@ function Listproduct() {
                                         >
                                           <i className="ri-delete-bin-line"></i>
                                         </Link>
+                                        <li className="list-inline-item">
+                                          <button
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() =>
+                                              handleApprove(product._id)
+                                            }
+                                            disabled={
+                                              product.IsApproved ||
+                                              isProcessing[product._id]
+                                            }
+                                          >
+                                            {product.IsApproved
+                                              ? "Approved"
+                                              : isProcessing[product._id]
+                                              ? "Processing..."
+                                              : "Pending"}
+                                          </button>
+                                        </li>
                                       </div>
                                     </td>
                                   </tr>
