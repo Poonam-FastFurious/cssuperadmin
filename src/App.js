@@ -87,6 +87,7 @@ function App() {
             {/* <Route path="/headercategory" element={<HeaderCategory />}></Route> */}
             <Route path="/Order" element={<AllOrder />}></Route>
             <Route path="/Processing" element={<ProcessingOrder />}></Route>
+            {/* /// cancel order routes  */}
             <Route path="/Cancelled" element={<Canceled />}></Route>
             <Route path="/Delivered" element={<Deliverd />}></Route>
             <Route path="/order/:id" element={<OrderDetail />}></Route>
